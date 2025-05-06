@@ -16,7 +16,7 @@
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/pets" class="nav-link">
+              <router-link to="/walk" class="nav-link">
                 <i class="fa fa-dog"></i> 寵物散步
               </router-link>
             </li>
