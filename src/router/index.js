@@ -18,6 +18,10 @@ const router = createRouter({
       path: "/contact",
       component: Contact,
     },
+    {
+      path: "/hotel",
+      component: Hotel,
+    },
   ],
 })
 
