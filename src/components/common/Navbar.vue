@@ -16,6 +16,9 @@
         <li class="nav-item">
           <RouterLink to="/contact"class="nav-link">聯絡我們</RouterLink>
         </li>
+        <li class="nav-item">
+          <RouterLink to="/hotel"class="nav-link">寵物旅館</RouterLink>
+        </li>
       </ul>
     </div>
   </div>
