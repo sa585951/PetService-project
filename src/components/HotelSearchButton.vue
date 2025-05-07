@@ -1,6 +1,7 @@
-<template>
-<!-- From Uiverse.io by vikiWayne --> 
-<button class="button">搜尋</button>
+<template> 
+<!-- From Uiverse.io by vikiWayne -->  
+<button class="button"><slot></slot></button> 
+
 </template>
     
 <script setup>
@@ -25,12 +26,12 @@
   position: relative;
   overflow: hidden;
   outline: 2px solid rgb(175, 115, 42);
-  background-color: rgb(249, 245, 202);
+  background-color: rgb(250, 235, 215);
 }
 
 button:hover {
   color: #ffffff;
-  transform: scale(1.1);
+  transform: scale(1.025);
   outline: 2px solid rgb(175, 115, 42);
   box-shadow: 4px 5px 10px -3px rgb(175, 115, 42);
 }
