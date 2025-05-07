@@ -5,12 +5,14 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle.js'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
+import ChatRoom from './components/common/ChatRoom.vue'
 </script>
 
 <template>
 <div id="app">
   <AppHeader></AppHeader>
   <main><RouterView></RouterView></main>
+  <ChatRoom></ChatRoom>
   <AppFooter></AppFooter>
 </div>
 </template>
