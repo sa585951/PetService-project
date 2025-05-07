@@ -1,6 +1,6 @@
 <template>
 <div class="card mb-3" style="max-width: 100%;">
-    <div class="row g-0">
+    <div class="row g-0 hotel_card">
         <div class="col-md-4">
             <img src="../assets/Hotel/hotel_1.jpg" class="img-fluid rounded-start" alt="...">
         </div>
@@ -30,5 +30,17 @@
     .star {
         width: 30px;
         height: 30px;
+    }
+    .hotel_card
+    {
+        border:1px solid rgb(228, 187, 134);
+        border-radius: 5px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hotel_card:hover {
+        transform: scale(1.01);
+        box-shadow: 0px 0px 10px 2px rgb(231, 203, 167);
+        /* background-color: rgb(214, 230, 188); */
+        background-color: #fcfcfc;
     }
 </style>
