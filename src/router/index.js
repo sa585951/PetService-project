@@ -5,6 +5,8 @@ import Home from '../views/HomeView.vue'
 import About from '../views/AboutView.vue'
 import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
+import LoginView from '@/views/LoginView.vue'
+import RegisterStartView from '@/views/RegisterStartView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +36,14 @@ const router = createRouter({
       path: '/employee/:id',
       name: 'EmployeeDetail',
       component: EmployeeDetail
+    },
+    {
+      path: "/login",
+      component: LoginView,
+    },
+    {
+      path: "/registerstart",
+      component: RegisterStartView,
     },
   ],
 })
