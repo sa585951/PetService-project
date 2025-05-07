@@ -1,0 +1,76 @@
+// src/data.js
+export const employees = [
+    {
+      id: 1,
+      name: "元睿",
+      district: "鼓山區",
+      petType: ["狗", "貓"],
+      price: 350,
+      size: "小型、中型",
+      distance: "10公里內",
+      description: "大家好，我是元睿，一位熱愛與狗狗互動的遛狗專家，擁有ㄧ年的遛狗經驗，並對楠梓區的各大遛狗場所相當熟悉。我的目標是為每隻狗狗提供舒適愉快的戶外活動體驗，特別推薦凹仔底森林公園和兒童美術館公園。我會確保狗狗能充分活動、釋放壓力，同時保持安全。我能適應不同性格的狗狗，並用耐心和愛心建立信任，讓牠們感受到特別的照顧與陪伴。",
+      employee_photo: "Ray.jpg",
+      carousel: ["dog1.jpg", "dog2.jpg", "dog3.jpg"],
+      map: "https://www.google.com/maps?q=22.625081,120.267993&hl=zh-TW&z=15&output=embed"
+    },
+    {
+      id: 2,
+      name: "品叡",
+      district: "鼓山區",
+      petType: ["狗", "兔"],
+      price: 400,
+      size: "中型、大型",
+      description: "嗨！我是品叡，一名熱愛大自然與海景的遛狗達人，熟悉鼓山區的風景與步道。我特別喜歡帶狗狗到西子灣和柴山步道這些地點，讓牠們能在清新的空氣與大自然的懷抱中奔跑與放鬆，並提供有趣的互動和適當的鍛煉，讓牠們保持健康與愉快。我對鼓山區的每一條小路都瞭若指掌，讓您可以完全放心地將狗狗交給我。",
+      employee_photo: "Rui.jpg",
+      carousel: ["dog4.jpg", "dog5.jpg", "rabbit1.jpg"],
+      map: "https://www.google.com/maps?q=22.625081,120.267993&hl=zh-TW&z=15&output=embed"
+    },
+    {
+      id: 3,
+      name: "維哲",
+      district: "三民區",
+      petType: ["狗", "貓"],
+      price: 550,
+      size: "小型、中型",
+      description: "我是維哲，一位享受悠閒氛圍的遛狗專家，對三民區的愛河步道和三民公園相當熟悉。我擅長根據狗狗的性格與需求，選擇最適合的散步路線，例如愛河步道的寧靜水景或三民公園的寬闊綠地。我相信慢節奏的散步能幫助狗狗放鬆身心。無論是大型犬還是小型犬，我都能以專業的態度提供最貼心的服務，讓狗狗感受到與眾不同的散步體驗。",
+      employee_photo: "Zhe.jpg",
+      carousel: ["dog6.jpg", "dog7.jpg", "cat1.jpg"],
+      map: "https://www.google.com/maps?q=22.640081,120.312993&hl=zh-TW&z=15&output=embed"
+    },
+    {
+      id: 4,
+      name: "振豪",
+      district: "鹽埕區",
+      petType: ["狗", "兔"],
+      price: 580,
+      size: "中型、大型",
+      description: "Hi，我是振豪，擁有豐富的動物訓練經驗，並專精於鹽埕區的遛狗服務。我特別強調與狗狗建立信任關係，透過有趣的互動與專業的訓練技巧，讓牠們能在散步過程中學習與成長。鹽埕區的駁二藝術特區與鹽埕河濱公園是我最常帶狗狗前往的地點，這些地方環境多元且富有吸引力，適合狗狗探索與玩耍，確保狗狗在每次散步中都能感到快樂與安全。",
+      employee_photo: "David.jpg",
+      carousel: ["dog8.jpg", "dog9.jpg", "rabbit3.jpg"],
+      map: "https://www.google.com/maps?q=22.627081,120.283993&hl=zh-TW&z=15&output=embed"
+    },
+    {
+      id: 5,
+      name: "惠珍",
+      district: "鹽埕區",
+      petType: ["狗", "貓"],
+      price: 500,
+      size: "小型",
+      description: "我是惠珍，擁有動物照護背景，專注於為狗狗提供舒適、愉悅的戶外體驗。我特別喜愛文青風景點，這些地方不僅風景宜人，還能給狗狗帶來新鮮感。我擅長與狗狗溝通，根據牠們的喜好安排活動，並注重安全與健康，確保每隻狗狗都能在散步過程中充分放鬆。",
+      employee_photo: "Jennifer.jpg",
+      carousel: ["dog1.jpg", "cat2.jpg", "cat3.jpg"],
+      map: "https://www.google.com/maps?q=22.627081,120.283993&hl=zh-TW&z=15&output=embed"
+    },
+    {
+      id: 6,
+      name: "姵棻",
+      district: "前鎮區",
+      petType: ["狗", "貓", "兔"],
+      price: 520,
+      size: "小型、中型",
+      description: "我是姵棻，在前鎮區服務多年，累積了豐富的遛狗經驗。我特別擅長與不同性格的狗狗互動，無論牠們是活潑好動還是害羞內向，我都能找到適合的方式讓牠們感到舒適。我常帶狗狗到時代大道與前鎮河濱公園，這些地方空間寬敞，是狗狗遊玩和社交的好去處。我希望能讓每隻狗狗都享受到最棒的散步時光，並讓牠們在溫暖的陪伴中留下美好的記憶。",
+      employee_photo: "Angel.jpg",
+      carousel: ["dog2.jpg", "cat5.jpg", "rabbit1.jpg"],
+      map: "https://www.google.com/maps?q=22.580081,120.320993&hl=zh-TW&z=15&output=embed"
+    }
+  ];

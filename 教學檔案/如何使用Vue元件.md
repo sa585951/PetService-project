@@ -71,7 +71,7 @@ import Button from '@/components/Button.vue'
 
 ```vue
 <Button>
-  <span style="color: red;">自訂內容</span>
+  <span style="color: red;">自訂內容</span> 
 </Button>
 ```
 
@@ -89,7 +89,7 @@ import Button from '@/components/Button.vue'
 </script>
 
 <template>
-  <Button label="下一步" />
+  <Button label="下一步" >
 </template>
 ```
 
