@@ -7,6 +7,12 @@ import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterStartView from '@/views/RegisterStartView.vue'
+import DashboardView from '@/views/MemberDashboardView.vue'
+import MemberDashboardView from '@/views/MemberDashboardView.vue'
+import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
+import { useAuthStore } from '../stores/authStore.js'
+
+ 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +51,26 @@ const router = createRouter({
       path: "/registerstart",
       component: RegisterStartView,
     },
+    {
+      path: "/memberdashboard",
+      name: 'MemberDashboard',
+      component: MemberDashboardView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/forgotpassword",
+      component: ForgotPasswordView,
+    },
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    next('/login')
+  } else {
+    next()
+  }
+}) 
 
 export default router
