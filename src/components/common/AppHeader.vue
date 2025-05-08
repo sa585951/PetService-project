@@ -69,7 +69,7 @@
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/register" class="nav-link">
+                <router-link to="/registerstart" class="nav-link">
                   <i class="fa fa-user-plus"></i> 註冊
                 </router-link>
               </li>
