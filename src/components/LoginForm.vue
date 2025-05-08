@@ -1,5 +1,5 @@
 <template>
-        <div class="login-container">
+  <div class="login-container">
       <div class="login-form">
         
         <!-- Google 登入按鈕 -->
@@ -27,9 +27,7 @@
         
         <!-- 登入按鈕 -->
         <button class="login-btn" @click="login" :disabled="isLoading">
-          <span v-if="isLoading" class="spinner">
-            <i class="fas fa-spinner fa-spin"></i> 登入中...
-          </span>
+          <span v-if="isLoading" >{{ typingText }}</span>
           <span v-else>
           登入
           </span></button>
@@ -38,66 +36,92 @@
     </div>
 </template>
 
-<script>
-import GoogleLogin from './GoogleLogin.vue';
-import { useAuthStore } from '@/stores/authStore';
+<script setup>
+import { ref } from 'vue'; // 引入 ref
+import { useRouter } from 'vue-router'; // 引入 useRouter
+import GoogleLogin from './GoogleLogin.vue'; // 引入 GoogleLogin (如果需要)
+import { useAuthStore } from '@/stores/authStore'; // 引入 authStore (確認 @/stores/authStore 路徑正確)
 
-var baseAddress = 'https://localhost:7150';
-  export default {
-    components: {
-      GoogleLogin
-    },
-    name: 'LoginPage',
-    data() {
-      return {
-        username: '',
-        password: '',
-        isLoading:false
-         };
-    },
+// 在 <script setup> 頂層獲取 hooks 實例
+const router = useRouter();
+const authStore = useAuthStore();
 
-    methods: {
+// === 狀態變數 (使用 ref) ===
+const username = ref('');
+const password = ref('');
+const isLoading = ref(false);
+const error = ref(null); // 初始化為 null
+const typingText = ref('');
+const fullText = '登入中...';
+let interval = null;
 
-      async login() {
-        // 登入邏輯
-        this.isLoading = true;
-        try {
-          console.log('登入中...', this.username, this.password)
-        const payload = {
-          username: this.username,
-          password: this.password
-        };
+// === 後端 API 地址 ===
+// 注意：實際應用中建議使用環境變數管理 API 地址
+const baseAddress = 'https://localhost:7150';
 
-        const res = await fetch (`${baseAddress}/api/Account/Login`, {
-          method: 'POST',
-          headers:{
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-        if(!res.ok){
-            const msg = await res.text()
-            throw new Error(msg || '登入失敗');
-          }
-
-        const data = await res.json();
-        localStorage.setItem('token', data.token);
-        console.log('token', data.token);
-        localStorage.setItem('userName', data.name);
-        console.log('userName', data.name);
-        const authStore=useAuthStore();
-        authStore.setLoggedIn(true);
-        authStore.setToken(data.token);
-        this.$router.push({ name: 'successlogin' });
-
-        } catch (err) {
-          alert(err.message);
-        } finally {
-          this.isLoading = false;
-        }
-      }
+// === 登入處理函數 ===
+async function login() {
+  error.value = null; // 清除之前的錯誤訊息
+  isLoading.value = true; // 設定載入狀態
+  typingText.value='';
+  let index = 0;
+  interval = setInterval(() => {
+    typingText.value += fullText[index]
+    index++
+    if (index >= fullText.length) {
+      clearInterval(interval)
     }
+  }, 150)
+
+  // 模擬登入流程（你可以改成實際 API 呼叫）
+  setTimeout(() => {
+    isLoading.value = false
+    clearInterval(interval)
+    typingText.value = ''
+    // 導向首頁或顯示錯誤等
+  }, 3000)
+
+  try {
+    console.log('Attempting login for:', username.value); // 使用 .value 存取 ref 的值
+
+    const payload = {
+      username: username.value, // 從 ref 獲取值
+      password: password.value // 從 ref 獲取值
+    };
+
+    const res = await fetch(`${baseAddress}/api/Account/Login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      // 處理非 2xx 的響應狀態
+      const errorData = await res.text(); // 根據後端返回的錯誤格式，可能需要用 res.json()
+      throw new Error(`登入失敗: ${errorData || res.statusText}`); // 拋出錯誤以便在 catch 中捕獲
+    }
+
+    const data = await res.json(); // 假設後端成功時返回 { token: ..., name: ... }
+
+    console.log('Login successful. Data:', data);
+
+    // === 呼叫 Pinia 的 login Action ===
+    // 根據 authStore.js 中 login Action 的定義 (login({ userName, token }))
+    authStore.login({ userName: data.userName, token: data.token }); // 傳遞一個物件
+    router.push({ name: 'MemberDashboard' });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    error.value = err.message; // 將錯誤訊息顯示在模板中
+  } finally {
+    isLoading.value = false; // 無論成功或失敗，都結束載入狀態
   }
+}
+
+// 在 <script setup> 中，不需要 export default { components, name, data, methods }
+// 導入的元件 GoogleLogin 會自動在模板中可用。
 </script>
 
 <style scoped>
