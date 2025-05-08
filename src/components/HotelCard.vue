@@ -1,6 +1,6 @@
 <template>
 <div class="card mb-3" style="max-width: 100%;">
-    <div class="row g-0 hotel_card">
+    <div class="row g-0 hotel_card p-3">
         <div class="col-md-4">
             <img src="../assets/Hotel/hotel_1.jpg" class="img-fluid rounded-start" alt="...">
         </div>
