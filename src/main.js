@@ -5,7 +5,6 @@ import { useAuthStore } from './stores/authStore'
 import router from './router'
 import './assets/main.css'
 
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 
 const app = createApp(App);
