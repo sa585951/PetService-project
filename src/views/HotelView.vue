@@ -41,8 +41,8 @@
             <div class="card card_left"> 
                 <div class="card-body"> 
                     <p class="card-text fw-bold">環境設施</p> <hr/> 
-                    <p class="card-text">泳池</p> 
-                    <p class="card-text">戶外場地</p> 
+                    <Checkbox :checkboxId="checkboxId3" :labelText="dynamicText3"></Checkbox> 
+                    <Checkbox :checkboxId="checkboxId4" :labelText="dynamicText4" ></Checkbox> 
                     <hr/><p class="card-text fw-bold">照護需求</p> <hr/> 
                     <Checkbox :checkboxId="checkboxId1" :labelText="dynamicText1"></Checkbox> 
                     <Checkbox :checkboxId="checkboxId2" :labelText="dynamicText2" ></Checkbox> 
@@ -75,6 +75,10 @@
      const checkboxId2 = 'cbx-2'
      const dynamicText1 = '24小時照顧'
      const dynamicText2 = '接送服務' 
+     const checkboxId3 = 'cbx-3' 
+     const checkboxId4 = 'cbx-4'
+     const dynamicText3 = '戶外奔跑區'
+     const dynamicText4 = '登頂小木屋' 
     
 
 </script>
