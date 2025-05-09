@@ -16,7 +16,7 @@
         </div>
     </router-link>
 </template>
-njbj
+
 
 <script setup>
 defineProps({
