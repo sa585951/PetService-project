@@ -6,6 +6,9 @@ import 'bootstrap/dist/js/bootstrap.bundle.js'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 import ChatRoom from './components/common/ChatRoom.vue'
+
+import { useAuthStore } from './stores/authStore'
+const authStore = useAuthStore()
 </script>
 
 <template>

@@ -1,13 +1,14 @@
-<!-- src/views/Walk.vue -->
+<!-- src/views/WalkView.vue -->
 <template>
     <section>
-      <h1>遛狗服務員工列表</h1>
+      
       <EmployeeList />
     </section>
   </template>
   
   <script setup>
   import EmployeeList from '@/components/EmployeeList.vue'
+  
   </script>
   
   <style scoped>

@@ -42,13 +42,23 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li>
+                    <router-link to="/memberdashboard" class="dropdown-item">
+                      <i class="bi bi-house-door-fill"></i> 總覽
+                    </router-link>
+                  </li>
+                  <li>
                     <router-link to="/profile" class="dropdown-item">
-                      <i class="fa fa-user-circle"></i> 個人資料
+                      <i class="bi bi-person-fill"></i> 個人資料
                     </router-link>
                   </li>
                   <li>
                     <router-link to="/my-pets" class="dropdown-item">
-                      <i class="fa fa-paw"></i> 我的寵物
+                      <i class="bi bi-bag-check-fill"></i> 我的訂單
+                    </router-link>
+                  </li>
+                  <li>
+                    <router-link to="/my-pets" class="dropdown-item">
+                      <i class="bi bi-heart-fill"></i>我的寵物
                     </router-link>
                   </li>
                   <li>
@@ -69,7 +79,7 @@
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/register" class="nav-link">
+                <router-link to="/registerstart" class="nav-link">
                   <i class="fa fa-user-plus"></i> 註冊
                 </router-link>
               </li>
@@ -82,32 +92,60 @@
 </template>
 
 <script>
+import { useAuthStore } from '../../stores/authStore';
+import{computed} from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
   name: 'AppHeader',
-  data() {
-    return {
-      // 暫時使用靜態數據，實際應該從store獲取
-      isLoggedIn: false,
-      username: '用戶名'
-    }
-  },
-  methods: {
-    logout() {
-      // 實際應該呼叫store的logout方法
-      this.isLoggedIn = false;
-      this.$router.push('/login');
-    }
-  },
-  // 實際應用時應該使用store管理登入狀態
-  mounted() {
-    // 檢查本地存儲中是否有用戶信息
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      this.isLoggedIn = true;
-      this.username = user.name;
-    }
-  }
+  setup() {
+    const router = useRouter();
+    const authStore = useAuthStore();
+
+    // Pinia store中的登入狀態
+    const isLoggedIn = computed(() => authStore.isLoggedIn);
+    const username = computed(() => authStore.userName);
+
+    // 登出處理
+    const logout = () => {
+      authStore.logout();  // 這裡假設你在authStore裡實現了logout方法
+      router.push('/login');
+    };
+  
+
+  return{
+    isLoggedIn,
+    username,
+    logout
+  };
+
+
+  
+  // data() {
+  //   return {
+  //     // 暫時使用靜態數據，實際應該從store獲取
+  //     isLoggedIn: false,
+  //     username: '用戶名'
+  //   }
+  // },
+  // methods: {
+  //   logout() {
+  //     // 實際應該呼叫store的logout方法
+  //     this.isLoggedIn = false;
+  //     this.$router.push('/login');
+  //   }
+  // },
+  // // 實際應用時應該使用store管理登入狀態
+  // mounted() {
+  //   // 檢查本地存儲中是否有用戶信息
+  //   const userData = localStorage.getItem('user');
+  //   if (userData) {
+  //     const user = JSON.parse(userData);
+  //     this.isLoggedIn = true;
+  //     this.username = user.name;
+  //   }
+  // }
+}
 }
 </script>
 
