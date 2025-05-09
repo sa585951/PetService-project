@@ -1,11 +1,12 @@
-<!-- views/EmployeeDetail.vue -->
+<!-- views/EmployeeDetailView.vue -->
 <template>
   <div class="container py-4">
     <div class="row">
       <!-- 左側：圖片 + 詳細介紹 + 服務項目 -->
       <div class="col-md-7">
-        <!-- 圖片輪播區（主圖） -->
-<div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" ref="carouselRef">
+        <!-- 圖片輪播區 -->
+        <div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="2000" ref="carouselRef">
+
   <div class="carousel-inner">
     <div
       class="carousel-item"
@@ -67,12 +68,14 @@
           </div>
           <div class="mb-2">
             <label class="form-label">寵物數量</label>
-      <input v-model.number="form.quantity" type="number" class="form-control" min="1" />
+      <input v-model.number="form.quantity" type="number" class="form-control" min="1" max="5"  @input="checkQuantity"/>
+      <div v-if="quantityError" class="text-danger mt-1">最多只能選擇 5 隻寵物</div>
           </div>
 
           <div class="mb-2">
             <label class="form-label">預約日期</label>
-            <input v-model="form.date" type="date" class="form-control" />
+            <input v-model="form.date" type="date" class="form-control" 
+            :min="minDate" :max="maxDate"/>
           </div>
 
           <div class="mb-2">
@@ -139,28 +142,67 @@ const processedCarousel = computed(() => {
   if (employee && employee.carousel) {
     return employee.carousel.map(img => new URL(`../assets/walkservicesimages/${img}`, import.meta.url).href);
   }
-  return []; // 如果 employee 或 carousel 不存在，返回空陣列
+  return []; 
 });
+
+//預約限制2個月內
+const today = new Date()
+const minDate = today.toISOString().split('T')[0]
+const max = new Date()
+max.setMonth(max.getMonth() + 2)
+const maxDate = max.toISOString().split('T')[0]
+
+const quantityError = ref(false)
+function checkQuantity() {
+  quantityError.value = form.value.quantity > 5
+}
+
 // 計算小計
 const subtotal = computed(() => {
   return employee.price * form.value.quantity || 0
 })
 
+function isFormValid() {
+  return form.value.pet && form.value.date && form.value.quantity >= 1 && form.value.quantity <= 5
+}
+
 function addToCart() {
-  if (!form.value.pet || !form.value.date || form.value.quantity < 1) {
+  if (!isFormValid()) {
     alert('請完整填寫寵物種類、數量與日期')
     return
   }
-  alert(`已將 ${employee.name} 的服務加入購物車，總金額：${subtotal.value} 元`)
+  const message = `
+    已加入購物車：
+    員工：${employee.name}
+    寵物種類：${form.value.pet}
+    數量：${form.value.quantity}
+    預約日期：${form.value.date}
+    備註：${form.value.notes || '無'}
+    小計：${subtotal.value} 元
+  `
+  alert(message)
+  formReset()
 }
 
+
 function submitOrder() {
-  if (!form.value.pet || !form.value.date || form.value.quantity < 1) {
+  if (!isFormValid()) {
     alert('請完整填寫資訊後再送出訂單')
     return
   }
   alert(`訂單送出成功！共 ${form.value.quantity} 隻 ${form.value.pet}，總金額：${subtotal.value} 元`)
+  formReset()
 }
+function formReset() {
+  form.value = {
+    pet: '',
+    quantity: 1,
+    date: '',
+    notes: ''
+  }
+  quantityError.value = false
+}
+
 </script>
 
 
