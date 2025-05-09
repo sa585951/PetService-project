@@ -34,12 +34,12 @@
     register() {
       // 註冊邏輯
       console.log('前往註冊頁面')
-    //   this.$router.push('/startforSignup');
+      this.$router.push('/RegisterStart');
     },
     forgotPassword() {
       // 忘記密碼邏輯
       console.log('前往忘記密碼頁面')
-    //   this.$router.push('/forgotpassword');
+      this.$router.push('/forgotpassword');
     }
   }
   }
