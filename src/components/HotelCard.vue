@@ -1,4 +1,5 @@
 <template>
+<router-link :to="`/HotelDetail/${{ hotelId }}`" class="text-decoration-none" >
 <div class="card mb-3" style="max-width: 100%;" id="hotelId">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
@@ -41,6 +42,7 @@
         </div>
     </div>
 </div>
+</router-link>
 </template>
     
 <script setup>

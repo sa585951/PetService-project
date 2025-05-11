@@ -81,6 +81,8 @@
      const dynamicText4 = '登頂小木屋' 
     
 
+
+
 </script>
     
 <style scoped>
@@ -124,22 +126,24 @@
         border: none; 
         outline: none; 
         background: transparent; 
+        margin: 0px;
     } 
 
     hr { 
         margin: 8px -5px; 
     } 
     
+    i { 
+        color: rgb(175, 115, 42);
+    } 
+    
+/* 側邊攔-左 */
     p { 
         margin: 0; 
     } 
 
     .card_left { 
         background-color: rgb(255, 255, 255); 
-    } 
-
-    i { 
-        color: rgb(175, 115, 42);
     } 
 
 </style>
