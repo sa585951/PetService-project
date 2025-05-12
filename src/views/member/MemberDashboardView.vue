@@ -3,20 +3,7 @@
   <div class="container-fluid">
     <div class="row">
       <!-- 左側選單 -->
-      <div class="col-md-2 sidebar py-4">
-        <router-link to="/memberdashboard" class="sidebar-link" :class="{ active: activeTab === 'memberdashboard' }" @click="setActiveTab('memberdashboard')">
-          <i class="bi bi-house-door"></i> 總覽
-        </router-link>
-        <router-link to="/profile" class="sidebar-link" :class="{ active: activeTab === 'profile' }" @click="activeTab = 'profile'">
-          <i class="bi bi-person"></i> 個人資料
-        </router-link>
-        <router-link to="/orders" class="sidebar-link" :class="{ active: activeTab === 'orders' }" @click="activeTab = 'orders'">
-            <i class="bi bi-bag-check"></i> 我的訂單
-        </router-link>
-        <router-link to="/pets" class="sidebar-link" :class="{ active: activeTab === 'pets' }" @click="activeTab = 'pets'">
-            <i class="bi bi-heart"></i> 我的寵物
-        </router-link>
-      </div>
+      <MemberSidebar/>
       
       <!-- 右側內容 -->
       <div class="col-md-10 p-4 content-area">
@@ -34,9 +21,9 @@
                 </div>
                 <div class="card-body">
                   <div class="row align-items-center">
-                    <div class="col-md-4 text-center">
-                      <img :src="user.avatar" class="avatar mb-2" :alt="user.name">
-                    </div>
+                      <div class="col-md-4 text-center">
+                        <img :src="processedImageUrl" class="avatar rounded-circle" alt="會員頭像" />
+                      </div>
                     <div class="col-md-8">
                       <h5>{{ user.name }}</h5>
                       <p class="mb-1"><i class="bi bi-envelope me-2"></i>{{ user.email }}</p>
@@ -51,7 +38,7 @@
               <div class="card pet-section">
                 <div class="card-header d-flex align-items-center">
                   <span>我的寵物</span>
-                  <button class="secondary-btn" @click="activeTab = 'pets'"><i class="bi bi-gear"></i> 管理
+                  <button class="secondary-btn" @click="activeTab = 'pet'"><i class="bi bi-gear"></i> 管理
                   </button>
                 </div>
                 <div class="card-body pet-scrollable">
@@ -64,7 +51,7 @@
                       </div>
                     </div>
                     <div class="col-md-6 col-xl-4">
-                      <div class="add-pet-card" @click="activeTab = 'pets'">
+                      <div class="add-pet-card" @click="activeTab = 'pet'">
                         <i class="bi bi-plus-circle add-pet-icon"></i>
                         <div>新增寵物</div>
                       </div>
@@ -140,90 +127,141 @@
 
   
 <script setup>
-// 引入必要的 Composition API 函數和 Router Hooks
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios';
 
 // 引入 Pinia Store
 import { useAuthStore } from '@/stores/authStore'; // 確保路徑正確
+import MemberSidebar from '@/components/MemberSidebar.vue';
 
-// 獲取 Router 和當前 Route 實例
 const route = useRoute();
 const router = useRouter();
-
-// 獲取 Auth Store 實例
 const authStore = useAuthStore();
 
-// 從 Auth Store 獲取登入狀態（假設你需要用它控制最外層的 v-if）
+// 從 Auth Store 獲取登入狀態
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
+const baseAddress = 'https://localhost:7150';
+const defaultAvatar = '../assets/picture/user-avatar.png';
 
-// === 新增：用於管理左側選單 active 狀態和內容顯示的狀態變數 ===
-const activeTab = ref('memberdashboard'); // 初始化 activeTab，預設為 'memberdashboard'
+// 響應式資料
+const activeTab = ref('memberdashboard'); // 初始化 activeTab
+const previewUrl = ref(null); // 用於顯示預覽圖（如果需要的話）
 
+const user = ref({
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  avatarUrl: ''
+});
 
-// === 新增：處理選單點擊及導向的函數 ===
+// 計算屬性 - 處理頭像URL
+const processedImageUrl = computed(() => {
+  if (previewUrl.value) {
+    // 如果是選擇檔案後的預覽（base64格式）
+    return previewUrl.value;
+  } else if (user.value.avatarUrl) {
+    // 處理從API返回的圖片URL
+    if (user.value.avatarUrl.startsWith('http') || user.value.avatarUrl.startsWith('blob')) {
+      // 如果是完整URL或blob URL
+      return user.value.avatarUrl;
+    } else if (user.value.avatarUrl.startsWith('/')) {
+      // 如果是相對路徑（如: /uploads/avatars/avatar_xxx.jpg），加上基礎地址
+      return `${baseAddress}${user.value.avatarUrl}`;
+    } else {
+      // 如果沒有斜線開頭，也加上基礎地址和斜線
+      return `${baseAddress}/${user.value.avatarUrl}`;
+    }
+  }
+  // 預設頭像
+  return defaultAvatar;
+});
 const setActiveTab = (tabName) => {
-    activeTab.value = tabName; // 設定 activeTab 狀態
-    // 執行路由導向到對應的路徑
-    router.push(`/${tabName}`); // 假設路由路徑就是 / + tabName
+  activeTab.value = tabName; // 設定 activeTab 狀態
+  
+  // 根據 tabName 導向對應的路由
+  const routeMap = {
+    'memberdashboard': '/memberdashboard',
+    'profile': '/profile',
+    'orders': '/member/orders',
+    'pet': '/pet'
+  };
+  
+  if (routeMap[tabName]) {
+    router.push(routeMap[tabName]);
+  }
 };
 
-
-// === 新增：組件載入時，根據當前路由設定 activeTab 的初始值 ===
+const fetchProfile = async () => {
+  const token = localStorage.getItem("token");
+  
+  if (!token) {
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    const response = await axios.get(`${baseAddress}/api/Member/GetProfile`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    const data = response.data;
+    console.log('獲取的用戶資料:', data);
+    console.log('頭像URL:', data.avatarUrl); // 調試用，確認頭像路徑
+    
+    // 更新用戶資料
+    user.value = {
+      name: data.userName || data.name || '',
+      email: data.email || '',
+      phone: data.phone || '',
+      address: data.address || '',
+      avatarUrl: data.avatarUrl || ''
+    };
+    
+    // 調試用，確認處理後的完整頭像URL
+    console.log('處理後的頭像URL:', processedImageUrl.value);
+  } catch (error) {
+    console.error('獲取用戶資料失敗:', error);
+    if (error.response && error.response.status === 401) {
+      // 如果是認證失敗，導向登入頁
+      router.push('/login');
+    }
+  }
+};
+// 根據路由路徑決定 activeTab 的輔助函數
+const getActiveTabFromPath = (path) => {
+  if (path.includes('/memberdashboard')) {
+    return 'memberdashboard';
+  } else if (path.includes('/profile')) {
+    return 'profile';
+  } else if (path.includes('/orders')) {
+    return 'orders';
+  } else if (path.includes('/pet')) {
+    return 'pet';
+  }
+  return 'memberdashboard'; // 預設值
+};
+// 生命週期
 onMounted(() => {
-    // 根據當前的路由路徑來判斷哪個 tab 應該是 active
-    const currentPath = route.path;
-    if (currentPath.includes('/memberdashboard')) {
-        activeTab.value = 'memberdashboard';
-    } else if (currentPath.includes('/profile')) {
-        activeTab.value = 'profile';
-    } else if (currentPath.includes('/orders')) {
-        activeTab.value = 'orders';
-    } else if (currentPath.includes('/pets')) {
-        activeTab.value = 'pets';
-    }
-    // 添加其他 tab 的判斷...
-    console.log('MemberDashboard mounted. Initial activeTab:', activeTab.value, 'Current path:', currentPath); // 可選：用於除錯
+  // 根據當前的路由路徑來判斷 activeTab
+  const currentPath = route.path;
+  activeTab.value = getActiveTabFromPath(currentPath);
+  
+  console.log('MemberDashboard mounted. Initial activeTab:', activeTab.value, 'Current path:', currentPath);
+  
+  // 獲取用戶資料
+  fetchProfile();
 });
-
-
-// === 新增：監聽路由變化，保持 activeTab 與路由同步 ===
+// 監聽路由變化，保持 activeTab 與路由同步
 watch(() => route.path, (newPath) => {
-    console.log('Route path changed to:', newPath); // 可選：用於除錯
-    // 根據新的路由路徑來更新 activeTab
-    if (newPath.includes('/memberdashboard')) {
-        activeTab.value = 'memberdashboard';
-    } else if (newPath.includes('/profile')) {
-        activeTab.value = 'profile';
-    } else if (newPath.includes('/orders')) {
-        activeTab.value = 'orders';
-    } else if (newPath.includes('/pets')) {
-        activeTab.value = 'pets';
-    }
-    // 添加其他 tab 的判斷...
-     console.log('activeTab updated to:', activeTab.value); // 可選：用於除錯
+  console.log('Route path changed to:', newPath);
+  activeTab.value = getActiveTabFromPath(newPath);
+  console.log('activeTab updated to:', activeTab.value);
 });
-
-
-// === 新增：模板中使用的用戶數據狀態 (需要從後端獲取) ===
-// 這裡先用一個假的數據結構，你需要在 mounted 或其他地方獲取真實數據
-const user = ref({
-    name: '載入中...',
-    avatar: 'https://via.placeholder.com/150/007bff/fff?text=User',
-    email: 'loading@example.com',
-    phone: 'N/A',
-    address: '載入中...'
-});
-
-// === 你需要實現獲取用戶數據的邏輯（例如在 onMounted 中） ===
-// 這裡只提供一個框架，你需要填寫實際的 fetch 或 axios 呼叫
-/*
-onMounted(async () => {
-   // 獲取真實用戶數據並更新 user.value
-});
-*/
-
 </script>
   
 <style scoped>
@@ -243,33 +281,6 @@ body {
 .dashboard-content {
   height: 100%;
   overflow: hidden;
-}
-
-
-.sidebar {
-  height: 100vh;
-  border-right: 1px solid #e5e5e5;
-  overflow-y: auto;
-}
-
-.sidebar-link {
-  display: flex;
-  align-items: center;
-  padding: 15px;
-  color: #333;
-  text-decoration: none;
-  transition: all 0.3s;
-  margin-bottom: 5px;
-}
-
-.sidebar-link:hover, .sidebar-link.active {
-  background-color: #f5f5f5;
-  color: #ACC572;
-}
-
-.sidebar-link i {
-  margin-right: 10px;
-  font-size: 1.2rem;
 }
 
 .member-card {

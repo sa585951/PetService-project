@@ -5,12 +5,17 @@ import Home from '../views/HomeView.vue'
 import About from '../views/AboutView.vue'
 import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
-import LoginView from '@/views/LoginView.vue'
-import RegisterStartView from '@/views/RegisterStartView.vue'
-import DashboardView from '@/views/MemberDashboardView.vue'
-import MemberDashboardView from '@/views/MemberDashboardView.vue'
-import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
+import LoginView from '@/views/account/LoginView.vue'
+import RegisterStartView from '@/views/account/RegisterStartView.vue'
+import DashboardView from '@/views/member/MemberDashboardView.vue'
+import MemberDashboardView from '@/views/member/MemberDashboardView.vue'
+import ForgotPasswordView from '@/views/account/ForgotPasswordView.vue'
 import { useAuthStore } from '../stores/authStore.js'
+import ProfileView from '@/views/member/ProfileView.vue'
+import PetView from '@/views/member/PetView.vue'
+import AddPetView from '@/views/member/AddPetView.vue'
+import EditPetView from '@/views/member/EditPetView.vue'
+import RegisterView from '@/views/account/RegisterView.vue'
 
  
 
@@ -52,6 +57,10 @@ const router = createRouter({
       component: RegisterStartView,
     },
     {
+      path: "/register",
+      component: RegisterView,
+    },
+    {
       path: "/memberdashboard",
       name: 'MemberDashboard',
       component: MemberDashboardView,
@@ -61,6 +70,26 @@ const router = createRouter({
       path: "/forgotpassword",
       component: ForgotPasswordView,
     },
+    {
+      path: "/profile",
+      component: ProfileView,
+       meta: { requiresAuth: true },
+    },
+    {
+      path: "/pet",
+      component: PetView,
+       meta: { requiresAuth: true },
+    },
+    {
+      path:"/addpet",
+      component: AddPetView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path:"/editpet",
+      component: EditPetView,
+      meta: { requiresAuth: true },
+    }
   ],
 })
 
