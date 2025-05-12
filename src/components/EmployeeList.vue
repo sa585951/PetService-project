@@ -43,9 +43,9 @@
     </div>
   </div>
   
-  <h2 class="text-center mb-5">散步服務員工列表</h2>
+  <h2 class="text-center mb-1">散步服務員工列表</h2>
   <!-- 員工清單 -->
-  <div class="container my-5">
+  <div class="container mt-3 my-5">
     <div class="row justify-content-center" v-for="emp in filteredEmployees" :key="emp.id">
       <div class="col-md-6 mb-4">
         <EmployeeCard :employee="emp" />
@@ -185,4 +185,5 @@ input {
     font-size: 14px;
   }
 }
+
 </style>

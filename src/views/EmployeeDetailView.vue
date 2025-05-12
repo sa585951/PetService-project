@@ -81,16 +81,17 @@
           <div class="mb-2">
             <label class="form-label">其他備註</label>
             <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
+            <div class="text-danger mt-1">請填寫寵物品種</div>
+
           </div>
              <!-- 小計顯示 -->
           <div class="mt-3">
             <p><strong>單價：</strong>{{ employee.price }} 元</p>
             <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
           </div>
-          <!-- 按鈕 -->
+
           <div class="d-flex gap-2 mt-3">
             <button class="btn btn-outline-primary" @click="addToCart">加入購物車</button>
-            <button class="btn btn-success" @click="submitOrder">送出訂單</button>
           </div>
         </div>
       </div>
@@ -185,14 +186,7 @@ function addToCart() {
 }
 
 
-function submitOrder() {
-  if (!isFormValid()) {
-    alert('請完整填寫資訊後再送出訂單')
-    return
-  }
-  alert(`訂單送出成功！共 ${form.value.quantity} 隻 ${form.value.pet}，總金額：${subtotal.value} 元`)
-  formReset()
-}
+
 function formReset() {
   form.value = {
     pet: '',
