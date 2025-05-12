@@ -1,6 +1,7 @@
 <template>
 <router-link :to="`/HotelDetail/${{ hotelId }}`" class="text-decoration-none" >
 <div class="card mb-3" style="max-width: 100%;" id="hotelId">
+    <div class="price-tag">600元起</div>
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
             <img src="../assets/Hotel/hotel_1.jpg" class="img-fluid rounded-start" alt="...">
@@ -8,6 +9,7 @@
         <div class="col-md-8">
             <div class="card-body">
                 <h4 class="card-title fw-bold">Card title</h4>
+                
                 <div class="p-0">
                     <img class="star" src="../assets/Hotel/star_light.png">
                     <img class="star" src="../assets/Hotel/star_light.png">
@@ -19,7 +21,7 @@
                     <p class="card-text">地址</p>
                     <p class="card-text">電話</p>
                     <p class="card-text">Email</p>
-                    <div class="">
+                    <div style="width: 90%;">
                         <table class="room-table card-text">
                             <tbody>
                                 <tr>
@@ -50,6 +52,9 @@
 </script>
     
 <style scoped>
+    .card {
+        position: relative
+    }
     .star {
         width: 30px;
         height: 30px;
@@ -86,4 +91,33 @@
         font-size: 14px;
         font-size: 1rem;
     }
+
+    /* 價錢標籤CSS開始 */
+    .price-tag {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: rgb(235, 207, 170);
+        color: #5a3e00;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        animation: floatAndGlow 2.5s ease-in-out infinite;
+        z-index: 2;
+        will-change: transform;
+    }
+    @keyframes floatAndGlow {
+        0% {
+            transform: translateY(0px);
+            /* box-shadow: 0 0 10px rgba(179, 139, 65, 0.6); */
+        }
+        50% {
+            transform: translateY(-5px);
+            /* box-shadow: 0 0 20px rgba(179, 139, 65, 0.6); */
+        }
+        100% {
+            transform: translateY(0px);
+            /* box-shadow: 0 0 10px rgba(212, 160, 62, 0.6); */
+        }
+    }   /* 價錢標籤CSS結束 */
 </style>
