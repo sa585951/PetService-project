@@ -17,7 +17,6 @@
     </router-link>
 </template>
 
-
 <script setup>
 defineProps({
     employee: Object
@@ -74,9 +73,8 @@ defineProps({
 }
 
 .employee-card:hover {
-  transform: translateY(-10px) scale(1.25);
+  transform: translateY(-10px) scale(1.1);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
-
 </style>
