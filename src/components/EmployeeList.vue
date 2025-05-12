@@ -44,14 +44,31 @@
   </div>
   
   <h2 class="text-center mb-1">散步服務員工列表</h2>
-  <!-- 員工清單 -->
-  <div class="container mt-3 my-5">
-    <div class="row justify-content-center" v-for="emp in filteredEmployees" :key="emp.id">
-      <div class="col-md-6 mb-4">
+  <div class="row">
+  <!-- 左側留白區 -->
+  <div class="col-md-3"></div>
+
+  <!-- 員工清單區（置中） -->
+  <div class="col-md-6 d-flex justify-content-center">
+    <div class="row w-100 justify-content-center">
+      <div v-for="emp in filteredEmployees" :key="emp.id" class="col-12 mb-4">
         <EmployeeCard :employee="emp" />
       </div>
     </div>
   </div>
+
+  <!-- 描述區塊 -->
+  <div class="col-md-3">
+    <div class="description-box p-3">
+      <h4>選擇我們的散步服務</h4>
+      <p><strong>專業團隊</strong><br>我們的散步服務由經驗豐富的專業團隊提供，確保您的寵物得到最佳照顧。</p>
+      <p><strong>安全第一</strong><br>我們注重寵物的安全，散步過程中使用安全繩具，並隨時關注寵物的狀況。</p>
+      <p><strong>靈活安排</strong><br>提供靈活的散步時間安排，滿足您和寵物的需求。</p>
+      <p><strong>即時更新</strong><br>散步過程中，我們會提供即時更新，讓您隨時了解寵物的狀況。</p>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script setup>
@@ -74,7 +91,7 @@ const filteredEmployees = computed(() => {
 const districts = ["鼓山區", "三民區", "鹽埕區", "前金區", "苓雅區"]
 const petTypes = ["狗", "貓", "兔"]
 
-// 手動初始化輪播
+// 及時輪播
 onMounted(async () => {
   await nextTick() // 確保 DOM 渲染完成
   const carouselElement = document.getElementById('employeeCarousel')
