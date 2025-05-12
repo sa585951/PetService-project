@@ -16,7 +16,7 @@
         </div>
     </router-link>
 </template>
-testtesttesttesttesttesttesttesttesttesttesttesttesttesttest
+
 
 <script setup>
 defineProps({
@@ -69,4 +69,14 @@ defineProps({
         background-position: 0% 50%;
     }
 }
+.employee-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.employee-card:hover {
+  transform: translateY(-10px) scale(1.25);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
 </style>
