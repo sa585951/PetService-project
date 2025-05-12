@@ -86,7 +86,7 @@
           </div>
              <!-- 小計顯示 -->
           <div class="mt-3">
-            <p><strong>單價：</strong>{{ employee.price }} 元</p>
+            <p><strong>單價/1小時：</strong>{{ employee.price }} 元</p>
             <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
           </div>
 
@@ -146,11 +146,11 @@ const processedCarousel = computed(() => {
   return []; 
 });
 
-//預約限制2個月內
+//預約限制1個月內
 const today = new Date()
 const minDate = today.toISOString().split('T')[0]
 const max = new Date()
-max.setMonth(max.getMonth() + 2)
+max.setMonth(max.getMonth() + 1)
 const maxDate = max.toISOString().split('T')[0]
 
 const quantityError = ref(false)
