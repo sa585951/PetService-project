@@ -28,31 +28,29 @@ defineProps({
     position: relative;
     border-radius: 15px;
     padding: 10px;
-    /* 讓動畫有空間可見 */
     background: transparent;
     overflow: hidden;
     z-index: 0;
     display: block;
-    /* 確保能套到整個 router-link */
 }
 
 .employee-card::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 4px; /* 調整線條起始位置 */
+    left: 4px; 
+    right: 4px; 
+    bottom: 4px; 
     background: linear-gradient(135deg, #ff00a6, #3333ff, #00ffcc, goldenrod);
-    background-size: 600% 600%;
+    background-size: 400% auto;
     z-index: -1;
-    border-radius: 20px;
-    animation: borderFlow 8s ease infinite;
+    border-radius: 16px;
+    animation: borderFlow 4s ease infinite;
 }
 
 .card-glow {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 15px;
     padding: 10px;
     height: 100%;
 }
@@ -69,5 +67,14 @@ defineProps({
     100% {
         background-position: 0% 50%;
     }
+}
+.employee-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.employee-card:hover {
+  transform: translateY(-10px) scale(1.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 </style>

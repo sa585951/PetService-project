@@ -5,6 +5,7 @@ import Home from '../views/HomeView.vue'
 import About from '../views/AboutView.vue'
 import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
+import HotelDetail from '../views/HotelDetailView.vue'
 import LoginView from '@/views/account/LoginView.vue'
 import RegisterStartView from '@/views/account/RegisterStartView.vue'
 import DashboardView from '@/views/member/MemberDashboardView.vue'
@@ -37,6 +38,10 @@ const router = createRouter({
     {
       path: "/hotel",
       component: Hotel,
+    },
+    {
+      path: "/HotelDetail/:id",
+      component: HotelDetail,
     },
     {
       path: "/walk",
