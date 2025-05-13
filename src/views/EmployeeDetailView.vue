@@ -5,7 +5,7 @@
       <!-- 左側：圖片 + 詳細介紹 + 服務項目 -->
       <div class="col-md-7">
         <!-- 圖片輪播區 -->
-        <div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="2000" ref="carouselRef">
+        <div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="3000" ref="carouselRef">
 
   <div class="carousel-inner">
     <div
@@ -93,7 +93,7 @@
           </div>
              <!-- 小計顯示 -->
           <div class="mt-3">
-            <p><strong>單價/1小時：</strong>{{ employee.price }} 元</p>
+            <p><strong>單價：</strong>{{ employee.price }} 元/小時(單次計費)</p>
             <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
           </div>
 
