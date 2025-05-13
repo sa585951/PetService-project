@@ -57,7 +57,7 @@
                     </router-link>
                   </li>
                   <li>
-                    <router-link to="/my-pets" class="dropdown-item">
+                    <router-link to="/pet" class="dropdown-item">
                       <i class="bi bi-heart-fill"></i>我的寵物
                     </router-link>
                   </li>

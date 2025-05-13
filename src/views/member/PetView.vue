@@ -47,7 +47,7 @@ import { useAuthStore } from '@/stores/authStore'; // 假設您有身份驗證�
 const authStore = useAuthStore();
 const router = useRouter();
 
-const baseAddress = 'https://localhost:7150'; // 您的 API 基礎位址
+const baseAddress = 'https://localhost:7089'; // 您的 API 基礎位址
 const defaultPetPhoto = '/assets/picture/default-pet.png'; // 預設寵物圖片路徑，請確保存在
 
 const pets = ref([]); // 用於儲存寵物資料的響應式陣列

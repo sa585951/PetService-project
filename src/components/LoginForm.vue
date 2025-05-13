@@ -57,7 +57,7 @@ let interval = null;
 
 // === 後端 API 地址 ===
 // 注意：實際應用中建議使用環境變數管理 API 地址
-const baseAddress = 'https://localhost:7150';
+const baseAddress = 'https://localhost:7089';
 
 // === 登入處理函數 ===
 async function login() {

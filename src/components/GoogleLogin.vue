@@ -35,7 +35,7 @@ const initGoogle = () => {
   }
 
   window.google.accounts.id.initialize({
-    client_id: "102183488459-f1f6gdj7ceoequ9gen96n4qp748ljnr8.apps.googleusercontent.com",
+    client_id: "484288879708-9rr8ulohmiv37n7vjsvtcsvrm71abs0e.apps.googleusercontent.com",
     callback: handleGoogleResponse, // 直接引用函式本身
     ux_mode: "popup", // 或 'redirect'
   });
