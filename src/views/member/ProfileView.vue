@@ -152,7 +152,7 @@ const originalForm = ref({}) // 用於暫存原始表單資料
 const activeTab = ref('profile')
 
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const baseAddress = 'https://localhost:7150';
+const baseAddress = 'https://localhost:7089';
 const defaultAvatar = '../assets/picture/user-avatar.png';
 
 const previewUrl = ref(null); // 用於顯示新選擇的頭像預覽圖 (blob URL)

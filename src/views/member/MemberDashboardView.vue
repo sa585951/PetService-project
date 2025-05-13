@@ -142,7 +142,7 @@ const authStore = useAuthStore();
 // 從 Auth Store 獲取登入狀態
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
-const baseAddress = 'https://localhost:7150';
+const baseAddress = 'https://localhost:7089';
 const defaultAvatar = '../assets/picture/user-avatar.png';
 
 // 響應式資料
@@ -222,6 +222,13 @@ const fetchProfile = async () => {
       avatarUrl: data.avatarUrl || ''
     };
     
+    // ****** 添加這段程式碼來更新 Pinia Store 的 userName ******
+    // 從新獲取的資料中取出使用者名稱 (使用與更新 user.value.name 相同的邏輯)
+    const newUserName = data.userName || data.name || '';
+    // 將新的使用者名稱賦值給 Pinia Store 的 userName 狀態
+    authStore.userName = newUserName;
+    // ********************************************************
+
     // 調試用，確認處理後的完整頭像URL
     console.log('處理後的頭像URL:', processedImageUrl.value);
   } catch (error) {
@@ -230,6 +237,8 @@ const fetchProfile = async () => {
       // 如果是認證失敗，導向登入頁
       router.push('/login');
     }
+    authStore.userName = null;
+    authStore.isLoggedIn(false);
   }
 };
 // 根據路由路徑決定 activeTab 的輔助函數

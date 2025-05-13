@@ -134,7 +134,7 @@
 <script>
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
-var baseAddress = 'https://localhost:7150';
+var baseAddress = 'https://localhost:7089';
 export default {
   data() {
     return {
