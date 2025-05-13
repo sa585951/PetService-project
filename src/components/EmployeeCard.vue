@@ -1,14 +1,17 @@
 <!-- components/EmployeeCard.vue -->
 <template>
     <router-link :to="`/employee/${employee.id}`" class="employee-card text-decoration-none text-dark">
-        <div class="card-glow">
+    <div class="card-glow position-relative">
+    <div style="position: absolute; top: 10px; right: 10px; font-weight: bold; ">
+     <span style="color: gold;font-size: 2rem;">${{ employee.price }}</span><span style="color: black;">/小時計費</span>
+        </div>
             <div class="row align-items-center">
                 <div class="col-4">
                     <img :src="`src/assets/walkservicesimages/${employee.employee_photo}`" :alt="employee.name"
                         class="img-fluid rounded" />
                 </div>
                 <div class="col-8">
-                    <h5>{{ employee.name }}</h5>
+                    <h5 class="fs-3 fw-bold">{{ employee.name }}</h5>
                     <p class="mb-1"><strong>服務地區：</strong>{{ employee.district }}</p>
                     <p><strong>可接寵物類型：</strong>{{ employee.petType.join(', ') }}</p>
                 </div>

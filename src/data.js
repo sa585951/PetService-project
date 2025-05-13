@@ -11,7 +11,7 @@ export const employees = [
       availableTime: ["9:00", "10:00", "11:00","14:00", "15:00", "16:00", "17:00"],
       description: "大家好，我是元睿，一位熱愛與狗狗互動的遛狗專家，擁有ㄧ年的遛狗經驗，並對楠梓區的各大遛狗場所相當熟悉。我的目標是為每隻狗狗提供舒適愉快的戶外活動體驗，特別推薦凹仔底森林公園和兒童美術館公園。我會確保狗狗能充分活動、釋放壓力，同時保持安全。我能適應不同性格的狗狗，並用耐心和愛心建立信任，讓牠們感受到特別的照顧與陪伴。",
       employee_photo: "Ray.jpg",
-      carousel: ["dog1.jpg", "dog2.jpg", "dog3.jpg"],
+      carousel: ["dog1.jpg", "dog2.jpg", "cat3.jpg"],
       map: "https://www.google.com/maps?q=22.625081,120.267993&hl=zh-TW&z=15&output=embed"
     },
     {
