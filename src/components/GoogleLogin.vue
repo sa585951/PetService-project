@@ -12,67 +12,89 @@
     </button>
   </div>
 </template>
-<script>
- export default {
-    name: "GoogleLogin",
-    mounted() {
-      this.loadGoogleLogin();
-    },
-     methods: {
-      loadGoogleLogin() {
-      // 加載 GIS SDK
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = this.initGoogle;
-      document.head.appendChild(script);
-    },
-    initGoogle() {
-      window.google.accounts.id.initialize({
-        client_id: "102183488459-f1f6gdj7ceoequ9gen96n4qp748ljnr8.apps.googleusercontent.com", 
-        callback: this.handleGoogleResponse,
-        ux_mode: "popup",
-      });
+<script setup>
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleBtn"),
-        {
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          width: 250,
-        }
-      );
-    },
-    async handleGoogleResponse(response) {
-      try {
-        const res = await fetch("https://localhost:7150/api/account/GoogleLogin", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ idToken: response.credential }),
-        });
+const router = useRouter();
+// 定義函式 (原先在 methods 中的方法)
+const loadGoogleLogin = () => {
+  const script = document.createElement("script");
+  script.src = "https://accounts.google.com/gsi/client";
+  script.async = true;
+  script.defer = true;
+  script.onload = initGoogle; // 直接引用函式本身
+  document.head.appendChild(script);
+};
 
-        if (!res.ok) throw new Error("登入失敗");
+const initGoogle = () => {
+  // 增加檢查，確保 Google Identity Services SDK 已經載入
+  if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+    console.error("Google Identity Services SDK is not available.");
+    return;
+  }
 
-        const data = await res.json();
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userName", data.userName);
+  window.google.accounts.id.initialize({
+    client_id: "102183488459-f1f6gdj7ceoequ9gen96n4qp748ljnr8.apps.googleusercontent.com",
+    callback: handleGoogleResponse, // 直接引用函式本身
+    ux_mode: "popup", // 或 'redirect'
+  });
+};
 
-        if (data.needSupplement) {
-          this.$router.push("/googlesignupsupplement");
-        } else {
-          this.$router.push("/sucesslogin");
-        }
-      } catch (err) {
-        console.error("登入失敗", err);
-        alert("Google 登入失敗");
-      }
-    },
-}
- }
+const handleCustomGoogleSignIn = () => {
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    // 觸發 Google 登入提示（通常會顯示 One Tap 或彈出視窗）
+    window.google.accounts.id.prompt((notification) => {
+      // 這個回調函數是可選的，用於監聽提示的狀態
+      // console.log('Google prompt notification:', notification);
+    });
+  } else {
+    console.error("Google Identity Services SDK 尚未載入或初始化。");
+    alert("Google 登入服務尚未準備好，請稍後再試。");
+  }
+};
+
+const handleGoogleResponse = async (response) => {
+  try {
+    // 確保 client_id 是有效的
+    if (!response.credential || response.credential.length < 100) { // 一個非常基本的憑證長度檢查
+      console.error("收到的憑證（idToken）似乎無效，長度異常或不存在。");
+      alert("Google 登入失敗：憑證無效。");
+      return;
+    }
+
+    const res = await fetch("https://localhost:7150/api/account/GoogleLogin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idToken: response.credential }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json(); // 嘗試解析錯誤訊息
+      throw new Error(errorData.message || "登入失敗");
+    }
+
+    const data = await res.json();
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userName", data.userName);
+
+    if (data.needSupplement) {
+      router.push("/googlesignupsupplement"); // 使用 router 實例進行導航
+    } else {
+      router.push("/sucesslogin"); // 使用 router 實例進行導航
+    }
+  } catch (err) {
+    console.error("登入失敗", err);
+    alert(`Google 登入失敗: ${err.message || '未知錯誤'}`);
+  }
+};
+
+// mounted 生命週期鉤子，在 <script setup> 中使用 onMounted
+onMounted(() => {
+  loadGoogleLogin(); // 載入 Google 登入 SDK
+});
 </script>
 
 <style scoped>
