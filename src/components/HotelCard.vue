@@ -1,25 +1,26 @@
 <template>
-<router-link :to="`/HotelDetail/${{ hotelId }}`" class="text-decoration-none" >
+<div v-for="hotel in hotels" :key="hotel.fId">
+<router-link :to="`/HotelDetail/${hotel.fId}`" class="text-decoration-none" >
 <div class="card mb-3" style="max-width: 100%;" id="hotelId">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
-            <img src="../assets/Hotel/hotel_1.jpg" class="img-fluid rounded-start" alt="...">
+            <img :src="`/Hotel/${hotel.fImage1}`" class="img-fluid rounded-start" alt="...">
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h4 class="card-title fw-bold">Card title</h4>
+                <h4 class="card-title fw-bold">{{ hotel.fName }}</h4>
                 <div class="price-tag">600元起</div>
                 <div class="p-0">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_gray.png">
-                </div>
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                </div>  
                 <div class="pt-2">
-                    <p class="card-text">地址</p>
-                    <p class="card-text">電話</p>
-                    <p class="card-text">Email</p>
+                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{ hotel.fAddress }}</p>
+                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{ hotel.fPhone }}</p>
+                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{ hotel.fEmail }}</p>
                     <div style="width: 90%;">
                         <table class="room-table card-text">
                             <tbody>
@@ -44,10 +45,16 @@
     </div>
 </div>
 </router-link>
+</div>
 </template>
     
 <script setup>
-    
+    const props = defineProps({
+        hotels: {
+            type: Array,
+            default: () => [],
+        }
+    });
 </script>
     
 <style scoped>
@@ -89,6 +96,9 @@
         margin: 7px;
         font-size: 14px;
         font-size: 1rem;
+    }
+    i {
+        color: rgb(155, 97, 27);
     }
 
     /* 價錢標籤CSS開始 */
