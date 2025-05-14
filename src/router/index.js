@@ -18,7 +18,7 @@ import AddPetView from '@/views/member/AddPetView.vue'
 import EditPetView from '@/views/member/EditPetView.vue'
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
-
+import OrdersView from '@/views/member/OrdersView.vue'
 
 
 const router = createRouter({

@@ -25,7 +25,7 @@ export const useOrderStore = defineStore('order', {
       this.loading = true
       this.error = null
       try {
-        const res = await axios.get(`https://localhost:7089/api/Order/members/${memberId}`
+        const res = await axios.get(`${import.meta.env.VITE_API_BaseURL}/Order/members/${memberId}`
         )
         console.log('後端回傳的orders資料', res.data)
         this.orders = res.data
