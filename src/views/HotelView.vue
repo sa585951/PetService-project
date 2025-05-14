@@ -31,6 +31,7 @@
     </div>
 <div class="container">
     <div class="row">
+        <!-- 側邊欄 -->
         <div class="col-2">
             <div class="card card_left"> 
                 <div class="card-body"> 
@@ -43,27 +44,42 @@
                 </div> 
             </div> 
         </div> 
-
-    
+        <!-- 主要內容 -->
         <div class="col-10">
-            <HotelCard></HotelCard>
-            <HotelCard></HotelCard>
-            <HotelCard></HotelCard>
+            <HotelCard :hotels="hotels"></HotelCard>
         </div>
     </div>
     
 </div>
-
-
-    
+  
 </template>
-
 
 <script setup>
     // new AirDatepicker('#Datepicker_start');
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
+    import {onMounted, reactive, ref} from 'vue';  //匯入 onMounted 函式
+
+ //GET全部
+    const hotels = ref([]);
+    const loadHotels = async () => {
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel`;
+        const response = await fetch(API_URL, {
+            headers: {'Content-Type': 'application/json'}
+        });
+    const datas = await response.json();
+    hotels.value = datas;
+    console.log(hotels.value);
+    };
+    
+    onMounted(() => {
+        loadHotels();
+        
+    })
+
+
+
     //Checkbox測試 
      const checkboxId1 = 'cbx-1' 
      const checkboxId2 = 'cbx-2'

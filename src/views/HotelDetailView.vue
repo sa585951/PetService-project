@@ -26,11 +26,11 @@
                                     <div class="d-flex align-items-center">
                                     <h4 class="card-title fw-bold m-0">毛茸茸旅館</h4>
                                     <div class="p-0 ps-2">
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_gray.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
                                     </div>
                                     </div></div>
                                 <div class="pt-2 mb-3">
@@ -86,14 +86,14 @@
         </div>
         <div class="d-flex">
             <div class="card m-3" style="width: 26rem;">
-                <img src="../assets/Hotel/hotel_1.jpg" class="card-img-top" alt="小型犬房">
+                <img src="/Hotel/hotel1-1.png" class="card-img-top" alt="小型犬房">
                 <div class="card-body d-flex justify-content-between">
                     <h5 class="card-title">小型犬房</h5>
                     <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
                 </div>
             </div>
             <div class="card m-3" style="width: 26rem;">
-                <img src="../assets/Hotel/hotel_1.jpg" class="card-img-top" alt="小型犬房">
+                <img src="/Hotel/hotel1-1.png" class="card-img-top" alt="小型犬房">
                 <div class="card-body d-flex justify-content-between">
                     <h5 class="card-title">小型犬房</h5>
                     <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
@@ -116,9 +116,9 @@
     import { ref } from 'vue';
 //圖片
     const imageList = [
-        new URL('../assets/Hotel/hotel_1.jpg', import.meta.url).href,
-        new URL('../assets/Hotel/hotel_2.jpg', import.meta.url).href,
-        new URL('../assets/Hotel/hotel_3.jpg', import.meta.url).href
+        new URL('/Hotel/hotel1-1.png', import.meta.url).href,
+        new URL('/Hotel/hotel1-2.png', import.meta.url).href,
+        new URL('/Hotel/hotel1-3.png', import.meta.url).href
     ];
 
     const selectedImage = ref(imageList[0]);
