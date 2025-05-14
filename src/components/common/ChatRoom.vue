@@ -8,18 +8,34 @@
     <!-- 聊天室本體 -->
     <transition name="chatroom-fade">
       <div class="chatroom-wrapper" v-if="showChat">
-        <div class="chatroom-box">
+        <div
+          class="chatroom-box"
+          :style="userRole === 'member' ? { width: '350px' } : {}"
+        >
           <button class="close-chat-btn" @click="showChat = false">-</button>
-          <div class="container pt-5 h-100 ">
+          <div class="container pt-5 h-100">
             <div class="row rounded-lg overflow-hidden shadow h-100">
-              <!-- 使用者列表 -->
-              <div class="col-5 px-0 user-list bg-light">
+              
+              <!-- 使用者列表 (只給客服人員顯示) -->
+              <div class="col-5 px-0 user-list bg-light" v-if="userRole === 'employee'">
                 <div class="bg-gray px-4 py-2">
-                  <p class="h5 mb-0 py-1">用戶列表</p>
+                  <p class="h5 mb-0 py-1">進行中對話</p>
+                </div>
+                <!-- 搜尋功能 -->
+                <div class="px-3 py-2">
+                  <div class="input-group input-group-sm mb-2">
+                    <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱">
+                    <button class="btn btn-outline-secondary" @click="searchByName">搜尋</button>
+                  </div>
+                  <div class="input-group input-group-sm">
+                    <input v-model="startTime" type="datetime-local" class="form-control">
+                    <input v-model="endTime" type="datetime-local" class="form-control">
+                    <button class="btn btn-outline-secondary" @click="searchByTime">篩選</button>
+                  </div>
                 </div>
                 <div class="messages-box">
                   <div class="list-group rounded-0">
-                    <a v-for="user in users" :key="user.id" class="list-group-item list-group-item-action border-0">
+                    <a v-for="user in filteredUsers" :key="user.id" class="list-group-item list-group-item-action border-0">
                       <div class="d-flex align-items-start">
                         <img :src="user.avatar" class="rounded-circle mr-1" :alt="user.name" width="40" height="40">
                         <div class="flex-grow-1 ml-3">
@@ -33,33 +49,44 @@
                     </a>
                   </div>
                 </div>
+                <div class="bg-gray px-4 py-2">
+                  <p class="h5 mb-0 py-1">已結束對話</p>
+                </div>
               </div>
 
               <!-- 訊息區 -->
-              <div class="col-7 px-0 d-flex flex-column h-100">
+              <div
+                :class="userRole === 'member' ? 'col-12' : 'col-7'"
+                class="px-0 d-flex flex-column h-100"
+              >
                 <!-- 訊息內容 -->
                 <div class="px-4 py-2 chat-box bg-white flex-grow-1 overflow-auto">
                   <div v-for="msg in messages" :key="msg.id"
-                    :class="['pb-4', msg.fromMe ? 'chat-message-right' : 'chat-message-left']">
+                  :class="['pb-4', isMessageFromMe(msg) ? 'chat-message-right' : 'chat-message-left']">
                     <div class="d-flex align-items-start" :class="msg.fromMe ? 'flex-row-reverse' : ''">
                       <img :src="msg.avatar" class="rounded-circle" :class="msg.fromMe ? 'ml-1' : 'mr-1'"
                         :alt="msg.sender" width="40" height="40">
                       <div class="flex-shrink-1 bg-light rounded py-2 px-3" :class="msg.fromMe ? 'mr-3' : 'ml-3'">
-                        <div class="font-weight-bold mb-1">{{ msg.fromMe ? 'You' : msg.sender }}</div>
-                        <div v-html="msg.text"></div>
+                        <div class="font-weight-bold mb-1">{{ msg.fromMe ? 'YOU' : msg.sender }}</div>
+                        <div v-html="msg.text" @click="handleInnerClick"></div>
                       </div>
                     </div>
                     <div class="text-muted small text-nowrap mt-2">{{ msg.time }}</div>
                   </div>
                 </div>
 
-                <!-- 功能選單 -->
-                <div class="bot-options px-3 py-2 bg-white">
-                  <button class="btn btn-sm btn-outline-secondary mr-2 me-2"
-                    @click="botOptionClicked('訂單管理')">訂單管理</button>
-                  <button class="btn btn-sm btn-outline-secondary mr-2 me-2"
-                    @click="botOptionClicked('客服協助')">客服協助</button>
+                <!-- 功能選單 (只給會員看) -->
+                <div class="bot-options d-flex flex-row overflow-auto px-3 py-2 bg-white" style="white-space: nowrap;" v-if="userRole === 'member'">
+                  <button class="btn btn-sm btn-outline-secondary me-2" @click="botOptionClicked('訂單管理')">訂單管理</button>
+                  <button class="btn btn-sm btn-outline-secondary me-2" @click="botOptionClicked('立即散步')">選擇遛寵員</button>
+                  <button class="btn btn-sm btn-outline-secondary me-2" @click="botOptionClicked('寵物住宿')">旅館介紹</button>
+                  <button class="btn btn-sm btn-outline-secondary me-2" @click="botOptionClicked('客服協助')">客服協助</button>
                   <button class="btn btn-sm btn-outline-secondary" @click="botOptionClicked('常見問題')">常見問題</button>
+                </div>
+
+                <!-- 客服人員的結束對話按鈕 -->
+                <div class="bot-options px-3 py-2 bg-white" v-if="userRole === 'employee'">
+                  <button class="btn btn-sm btn-outline-secondary" @click="endConversation">結束對話</button>
                 </div>
 
                 <!-- 訊息輸入 -->
@@ -77,22 +104,40 @@
   </div>
 </template>
 
+
 <script>
+
 export default {
   name: "ChatRoom",
   data() {
     return {
+      userRole: 'member', // 可切換為 'employee' member
       showChat: false,
+      searchQuery: '',
+      startTime: '',
+      endTime: '',
       users: [
-        { id: 1, name: "Alice", avatar: "https://i.pravatar.cc/40?img=1", online: true },
-        { id: 2, name: "Bob", avatar: "https://i.pravatar.cc/40?img=2", online: false },
+        { id: 1, name: "alice", avatar: "https://i.pravatar.cc/40?img=1", online: true, joinedAt: "2024-05-01T10:00" },
+        { id: 2, name: "bob", avatar: "https://i.pravatar.cc/40?img=2", online: false, joinedAt: "2024-05-02T12:00" },
       ],
       messages: [
-        { id: 1, sender: "Alice", avatar: "https://i.pravatar.cc/40?img=1", text: "Hi there!", time: "10:00 AM", fromMe: false },
-        { id: 2, sender: "You", avatar: "https://i.pravatar.cc/40?img=3", text: "Hello!", time: "10:01 AM", fromMe: true },
+        { id: 1, sender: "alice", avatar: "https://i.pravatar.cc/40?img=1", text: "Hi there!", time: "10:00 AM", fromMe: false },
+        { id: 2, sender: "you", avatar: "https://i.pravatar.cc/40?img=3", text: "Hello!", time: "10:01 AM", fromMe: true },
       ],
       messageText: "",
     };
+  },
+  computed: {
+    filteredUsers() {
+      let result = this.users;
+      if (this.searchQuery) {
+        result = result.filter(u => u.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+      }
+      if (this.startTime && this.endTime) {
+        result = result.filter(u => u.joinedAt >= this.startTime && u.joinedAt <= this.endTime);
+      }
+      return result;
+    }
   },
   methods: {
     sendMessage() {
@@ -100,7 +145,7 @@ export default {
       const now = new Date();
       this.messages.push({
         id: Date.now(),
-        sender: "You",
+        sender: "you",
         avatar: "https://i.pravatar.cc/40?img=3",
         text: this.messageText,
         time: now.toLocaleTimeString(),
@@ -111,27 +156,90 @@ export default {
     botOptionClicked(option) {
       let response = "";
       switch (option) {
-        case "訂單管理":
-          response = `了解您目前的訂單狀況，請點選下方按鈕前往訂單管理。<br>
-        <button class='btn btn-sm btn-warning  mt-2'>前往訂單管理</button>`;
-          break;
-        case "客服協助":
-          response = `我們的客服人員將儘速與您聯繫。<br>
-        <button class='btn btn-sm btn-warning mt-2'>聯絡客服</button>`;
-          break;
-        case "常見問題":
-          response = `以下是常見問題集，請選擇您想了解的主題：<br>
-        <button class='btn btn-sm btn-warning  mt-2 me-2'>付款問題</button>`;
-          break;
+  case "訂單管理":
+    this.messages.push({
+      id: Date.now(),
+      sender: '系統小幫手',
+      avatar: 'https://i.pravatar.cc/40?img=4',
+      text: `了解您目前的訂單狀況，請點擊下方按鈕前往訂單管理：<br><div class="text-center"><button class='goto-button btn btn-sm btn-warning' data-target='OrderManagement'>前往訂單管理</button></div>`,
+      time: new Date().toLocaleTimeString(),
+      fromMe: false
+    });
+    break;
+
+  case '立即散步':
+    this.messages.push({
+      id: Date.now(),
+      sender: '系統小幫手',
+      avatar: 'https://i.pravatar.cc/40?img=4',
+      text: `了解我們的散步服務，請點擊下方按鈕前往預約：<br><div class="text-center"><button class='goto-button btn btn-sm btn-warning' data-target='WalkView'>前往選擇遛寵員</button></div>`,
+      time: new Date().toLocaleTimeString(),
+      fromMe: false
+    });
+    break;
+
+  case '寵物住宿':
+    this.messages.push({
+      id: Date.now(),
+      sender: '系統小幫手',
+      avatar: 'https://i.pravatar.cc/40?img=4',
+      text: `需要寵物住宿嗎？請點擊下方按鈕查看更多資訊：<br><div class="text-center"><button class='goto-button btn btn-sm btn-warning' data-target='HotelView'>前往旅館介紹</button></div>`,
+      time: new Date().toLocaleTimeString(),
+      fromMe: false
+    });
+    break;
+
+  case "客服協助":
+  response = "開始對話。";
+  this.messages.push({
+      id: Date.now(),
+      sender: '系統小幫手',
+      avatar: 'https://i.pravatar.cc/40?img=4',
+      text: response,
+      time: new Date().toLocaleTimeString(),
+      fromMe: false
+    });
+    break;
+
+  case "常見問題":
+    this.messages.push({
+      id: Date.now(),
+      sender: '系統小幫手',
+      avatar: 'https://i.pravatar.cc/40?img=4',
+      text: `以下是常見問題集，請點擊下方按鈕查看更多問題：<br><div class="text-center"><button class='goto-button btn btn-sm btn-warning' data-target='FAQ'>前往常見問題</button></div>`,
+      time: new Date().toLocaleTimeString(),
+      fromMe: false
+    });
+    break;
       }
-      this.messages.push({
-        id: Date.now(),
-        sender: "系統小幫手",
-        avatar: "https://i.pravatar.cc/40?img=4",
-        text: response,
-        time: new Date().toLocaleTimeString(),
-        fromMe: false,
-      });
+    },
+    handleInnerClick(event) {
+    const target = event.target;
+    if (target.classList.contains('goto-button')) {
+      const view = target.getAttribute('data-target');
+      if (view === 'WalkView') {
+        this.$router.push('/Walk');
+      } else if (view === 'HotelView') {
+        this.$router.push('/Hotel');
+      }
+    }
+  },
+  isMessageFromMe(msg) {
+    if (this.userRole === 'member') {
+      return msg.sender.toLowerCase() === 'alice';
+    } else if (this.userRole === 'employee') {
+      return msg.sender.toLowerCase() === '系統小幫手' || msg.sender.toLowerCase() === 'you';
+    }
+    return false;
+  },
+    endConversation() {
+      alert("對話已結束 (這裡可以寫轉移至已結束邏輯)");
+    },
+    searchByName() {
+      // 這個按鈕只是觸發重新整理 computed 的 filteredUsers
+    },
+    searchByTime() {
+      // 同上，實際功能由 computed 屬性處理
     }
   }
 };
@@ -254,5 +362,11 @@ export default {
   max-width: 200px;
   word-wrap: break-word;
   white-space: pre-wrap;
+}
+
+.input-group-sm .btn {
+  height: calc(1.8125rem + 2px); /* 和小型輸入框高度一致 */
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
 }
 </style>
