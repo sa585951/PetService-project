@@ -135,6 +135,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore'; // 確保路徑正確
 import MemberSidebar from '@/components/MemberSidebar.vue';
 
+import defaultAvatarImage from '@/assets/picture/user-avatar.png';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -143,7 +144,7 @@ const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
 const baseAddress = 'https://localhost:7089';
-const defaultAvatar = '../assets/picture/user-avatar.png';
+const defaultAvatar = defaultAvatarImage;
 
 // 響應式資料
 const activeTab = ref('memberdashboard'); // 初始化 activeTab

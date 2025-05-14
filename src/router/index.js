@@ -17,6 +17,7 @@ import PetView from '@/views/member/PetView.vue'
 import AddPetView from '@/views/member/AddPetView.vue'
 import EditPetView from '@/views/member/EditPetView.vue'
 import RegisterView from '@/views/account/RegisterView.vue'
+import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 
  
 
@@ -94,7 +95,11 @@ const router = createRouter({
       path:"/editpet",
       component: EditPetView,
       meta: { requiresAuth: true },
-    }
+    },
+    {
+      path: "/resetpassword",
+      component: ResetPasswordView,
+    },
   ],
 })
 

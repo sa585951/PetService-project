@@ -140,7 +140,8 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 import MemberSidebar from '@/components/MemberSidebar.vue'
-
+import defaultAvatarImage from '@/assets/picture/user-avatar.png';
+import Swal from 'sweetalert2';
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -153,7 +154,7 @@ const activeTab = ref('profile')
 
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const baseAddress = 'https://localhost:7089';
-const defaultAvatar = '../assets/picture/user-avatar.png';
+const defaultAvatar = defaultAvatarImage;
 
 const previewUrl = ref(null); // 用於顯示新選擇的頭像預覽圖 (blob URL)
 const newAvatarFile = ref(null); // 用於儲存新選擇的頭像檔案
@@ -251,7 +252,14 @@ const fetchProfile = async () => {
         user.email = data.email || '';
         user.phone = data.phone || '';
         user.address = data.address || '';
-        user.avatarUrl = data.avatarUrl || defaultAvatar; // 如果後端沒有回傳或為空，使用 defaultAvatar
+
+            if (data.avatarUrl && typeof data.avatarUrl === 'string' && data.avatarUrl.trim() !== '' && data.avatarUrl.toLowerCase() !== 'null' && data.avatarUrl.toLowerCase() !== 'undefined') {
+         user.avatarUrl = data.avatarUrl;
+    } else {
+         // 如果從後端拿到的 avatarUrl 無效或為空，則設定為空字串，確保 else if (user.avatarUrl) 判斷為假
+         user.avatarUrl = '';
+    }
+        // user.avatarUrl = data.avatarUrl || defaultAvatar; // 如果後端沒有回傳或為空，使用 defaultAvatar
         user.notificationsEnabled = data.notificationsEnabled ?? true;
         user.adsEnabled = data.adsEnabled ?? false;
 
@@ -315,7 +323,11 @@ const cancelChanges = () => {
     newAvatarFile.value = null; 
 
     formChanged.value = false;
-    alert('變更已取消');
+    //alert('變更已取消');
+    Swal.fire({
+    text:"變更已取消",
+    confirmButtonColor: '#ACC572', // 依然可以設定背景色
+        });
 };
 
 // 上傳頭像函式
@@ -412,7 +424,12 @@ const saveProfile = async () => {
         newAvatarFile.value = null; 
 
         formChanged.value = false;
-        alert('個人資料已更新成功！');
+        // alert('個人資料已更新成功！');
+        Swal.fire({
+            text:"個人資料已更新成功！",
+            confirmButtonColor: '#ACC572', // 依然可以設定背景色
+        });
+        
 
     } catch (error) {
         console.error('儲存資料失敗:', error);

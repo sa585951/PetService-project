@@ -1,10 +1,12 @@
 <template>
     <div class="register-container">
-        <div class="register-form">
-            <div v-if="isLoading">
-    <p>載入中...</p>
-  </div>
-  <div>
+        <div v-if="isLoading" class="loading-overlay">
+          <div class="loading-content">
+              <div class="spinner"></div>
+              <p class="loading-text">載入中...</p>
+          </div>
+    </div>
+    <div class="register-form" :class="{ 'blur-content': isLoading }">
     <form @submit.prevent="submitForm" >
     <!-- 姓名 -->
     <div class=""> <label for="name" class="form-label"></label>
@@ -15,6 +17,7 @@
         type="text" 
         class="form-control" 
         @input="() => { clearError('name'); checkFormValidity(); }"
+        @blur="validateField('name')" 
       />
       <p v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</p>
 <!-- 信箱 -->
@@ -107,10 +110,12 @@
 </div>
      <!-- 驗證碼 -->
 <div class="row">
-  <div class="col-8"><input type="text" v-model="inputValue" placeholder="驗證碼" @input="verifyCode" Class="form-control"></div>
-  <div class="col-4">  <button @click="handleClick" :disabled="countdown > 0" class="btn btn-secondary">{{ countdown>0 ? `${countdown} 秒後可重新發送` : `發送驗證碼`}}</button>
-  <span v-if="verifyStatus === true" class="verified">✅</span>
-        <span v-else-if="verifyStatus === false" class="unverified">❌ 驗證失敗</span></div>
+  <div class="col-5"><input type="text" v-model="inputValue" placeholder="驗證碼" @input="verifyCode" Class="form-control"></div>
+  <div class="col-6">  <button @click="handleClick" :disabled="countdown > 0" class="btn btn-secondary">{{ countdown>0 ? `${countdown} 秒後可重新發送` : `發送驗證碼`}}</button></div>
+    <div class="col-1">
+        <span v-if="verifyStatus === true" class="verified">✅</span>
+        <span v-else-if="verifyStatus === false" class="unverified">❌ 驗證失敗</span>
+    </div>
 </div>
       <!-- Recaptcha -->
       <div class="mt-4">
@@ -127,8 +132,8 @@
       </button>
     </form>
   </div>
-        </div>
-    </div>
+</div>
+
 </template>
 
 <script>
@@ -176,11 +181,14 @@ export default {
     } else {
       this.renderRecaptcha();
     }
-    Promise.all([this.fetchSources(), this.fetchPasswordPolicy()])
-    .then(() => {
-      this.isLoading = false; // 當兩個都完成後才顯示畫面
-    });
-  },
+     Promise.all([this.fetchSources(), this.fetchPasswordPolicy()])
+  .then(() => {
+    // 添加最小載入時間，避免畫面閃爍
+    setTimeout(() => {
+      this.isLoading = false;
+    }, 500);
+  });
+},
 
   methods: {
 
@@ -411,7 +419,10 @@ export default {
 
           // 更新應用程式的登入狀態
           const authStore=useAuthStore();
-          authStore.setLoggedIn(true);
+          authStore.login({
+            userName: response.data.name,
+            token: response.data.token
+          })
 
           this.$router.push({ name: 'MemberDashboard' });
         })
@@ -495,5 +506,49 @@ export default {
 .btn-secondary:hover {
   background-color: rgb(231, 179, 34);
   color: white;
+}
+/* 載入遮罩樣式 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 1rem;
+}
+
+/* 旋轉動畫 */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #ACC572;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 載入時模糊背景內容 */
+.blur-content {
+  filter: blur(2px);
+  pointer-events: none;
 }
 </style>
