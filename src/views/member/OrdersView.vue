@@ -1,13 +1,13 @@
 <template>
-  <div class="container">
-    <div class="row mt-5">
+  <div class="container-fluid">
+    <div class="row">
         <MemberSidebar />
-      <div class="col-md-10 content-area">
+      <div class="col-md-10 content-area py-4">
         <div class="card bg-light">
           <div class="card-header">
             <h2>訂單管理</h2>
             <div class="row w-100">
-              <div class="col-md-9">
+              <div class="col-md-10">
                 <input
                   v-model="searchQuery"
                   type="text"
@@ -15,7 +15,7 @@
                   placeholder="搜尋訂單編號或日期"
                 />
               </div>
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <button class="btn btn-primary w-100" @click="searchOrders">
                   搜尋
                 </button>
