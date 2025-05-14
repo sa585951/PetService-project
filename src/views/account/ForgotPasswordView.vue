@@ -3,7 +3,7 @@
         <div class="forgotpwd-card">
             <div>
                 <h2 class="title">忘記密碼?</h2>
-                <p>請輸入註冊時的信箱，我們將發送驗證碼智信箱，再點選驗證連結重設密碼。</p>
+                <p>請輸入註冊時的信箱，我們將發送重設密碼連結至信箱。</p>
                 <label for="email">Email</label>
                 <input v-model="email" placeholder="請輸入註冊 Email" />
                 <button class="btn-submit" @click="sendResetLink">送出</button>
@@ -28,7 +28,7 @@ export default {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: this.email,
-            frontendUrl: "http://localhost:8080"  // 你的前端 URL，依實際情況修改
+            frontendUrl: "http://localhost:5173"  // 你的前端 URL，依實際情況修改
           })
         });
 

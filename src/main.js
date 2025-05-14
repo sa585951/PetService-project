@@ -4,6 +4,8 @@ import { createPinia } from 'pinia'
 import { useAuthStore } from './stores/authStore'
 import router from './router'
 import './assets/main.css'
+import 'sweetalert2/dist/sweetalert2.min.css'
+
 
 
 
