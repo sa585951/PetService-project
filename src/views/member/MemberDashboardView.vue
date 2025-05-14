@@ -67,48 +67,27 @@
               <div class="card order-card">
                 <div class="card-header d-flex align-items-center">
                   <span>我的訂單</span>
-                  <button class="secondary-btn" @click="activeTab = 'orders'">
+                  <button class="secondary-btn" @click="router.push(`/member/orders`)">
                     查看所有訂單
                   </button>
                 </div>
                 <div class="card-body order-scrollable p-0">
-                  <div v-for="order in orders" :key="order.id" class="order-item">
-                    <div class="row align-items-center">
-                      <div class="col-md-3">
-                        <span class="badge" :class="getOrderStatusClass(order.status)">{{ order.status }}</span>
-                      </div>
-                      <div class="col-md-9">
-                        <p class="mb-0 fw-bold">訂單編號: {{ order.id }}</p>
-                        <small class="text-muted">{{ order.date }}</small>
-                      </div>
-                    </div>
-                    <div class="row mt-2">
-                      <div class="col-md-7">
-                        <div class="d-flex align-items-center">
-                          <i class="bi bi-box me-2"></i>
-                          <span>{{ order.items }} 件商品</span>
-                        </div>
-                      </div>
-                      <div class="col-md-5 text-end">
-                        <p class="mb-0 fw-bold">NT$ {{ order.total }}</p>
+                  <div v-for="o in orders" :key="o.fId" class="order-item d-flex align-items-center justify-content-between p-3 border-bottom">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-box fs-4 me-3"></i>
+                         <span class="fw-bold me-3">訂單 #{{ o.fId }}</span>
+                      <div>
+                        <span class="badge me-3" :class="{
+                          'bg-warning text-dark': o.fOrderStatus === '未付款',
+                          'bg-success text-white': o.fOrderStatus === '已付款',
+                          'bg-secondary text-white': o.fOrderStatus === '已取消'
+                        }">
+                         {{ o.fOrderStatus }}
+                        </span>
                       </div>
                     </div>
-                    <div class="mt-2 order-detail">
-                      <div v-for="(product, idx) in order.products" :key="idx" class="order-product">
-                        <div class="d-flex align-items-center">
-                          <div class="product-img-container me-2">
-                            <img :src="product.image" alt="商品圖片" class="product-img">
-                          </div>
-                          <div class="flex-grow-1">
-                            <div class="product-name">{{ product.name }}</div>
-                            <div class="d-flex justify-content-between">
-                              <span class="text-muted">x{{ product.quantity }}</span>
-                              <span>NT$ {{ product.price }}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                        <span class="fw-bold me-3">NT$ {{ o.fTotalAmount }}</span>
+                        <small class="">{{ formatDate(o.fCreatedAt) }}</small>
                   </div>
                 </div>
               </div>
@@ -133,19 +112,28 @@ import axios from 'axios';
 
 // 引入 Pinia Store
 import { useAuthStore } from '@/stores/authStore'; // 確保路徑正確
+import { useOrderStore } from '@/stores/order'; // 確保路徑正確
 import MemberSidebar from '@/components/MemberSidebar.vue';
 
 import defaultAvatarImage from '@/assets/picture/user-avatar.png';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-
+const orderStore = useOrderStore();
 // 從 Auth Store 獲取登入狀態
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
 const baseAddress = 'https://localhost:7089';
 const defaultAvatar = defaultAvatarImage;
-
+// 從orderStore取得訂單摘要
+const orders = computed(()=> orderStore.orders);
+// formatDate函數
+const formatDate = val => {
+  return new Date(val).toLocaleString('zh-TW', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
 // 響應式資料
 const activeTab = ref('memberdashboard'); // 初始化 activeTab
 const previewUrl = ref(null); // 用於顯示預覽圖（如果需要的話）
@@ -248,7 +236,7 @@ const getActiveTabFromPath = (path) => {
     return 'memberdashboard';
   } else if (path.includes('/profile')) {
     return 'profile';
-  } else if (path.includes('/orders')) {
+  } else if (path.includes('/member/orders')) {
     return 'orders';
   } else if (path.includes('/pet')) {
     return 'pet';
@@ -265,6 +253,10 @@ onMounted(() => {
   
   // 獲取用戶資料
   fetchProfile();
+  // 若會員ID存在,獲取訂單資料
+  if(authStore.memberId){
+    orderStore.fetchByMember(authStore.memberId);
+  }
 });
 // 監聽路由變化，保持 activeTab 與路由同步
 watch(() => route.path, (newPath) => {
@@ -397,6 +389,11 @@ body {
 
 .order-item:last-child {
   border-bottom: none;
+}
+
+.order-item:hover {
+  background-color: #f8f9fa; /* Bootstrap table-hover 類似顏色 */
+  transition: background-color 0.2s;
 }
 
 .order-detail {
