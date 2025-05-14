@@ -33,7 +33,7 @@
                                         <img class="star" src="../assets/Hotel/star_gray.png" />
                                     </div>
                                     </div></div>
-                                <div class="pt-2">
+                                <div class="pt-2 mb-3">
                                     <p class="card-text">
                                         <i class="bi bi-check2 me-2"></i>24小時陪伴
                                         <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
@@ -46,24 +46,28 @@
                                     <p class="card-text">電話</p>
                                     <p class="card-text">Email</p>
                                 <div>
-                                    <div class="container">
+                                    <div style="width: 95%;">
                                     <table class="room-table card-text">
                                     <tbody>
                                         <tr>
                                             <td class="td-title fw-bold">小型犬房</td>
-                                            <td class="td-title fw-bold">中型犬房</td>
+                                            <td>剩餘 10 間</td>
+                                            <td>600 元</td>
                                         </tr>
                                         <tr>
-                                            <td class="qty">剩餘 10 間</td>
+                                            <td class="td-title fw-bold">中型犬房</td>
                                             <td>剩餘 10 間</td>
+                                            <td>900 元</td>
                                         </tr>
                                         <tr>
                                             <td class="td-title fw-bold">大型犬房</td>
-                                            <td class="td-title fw-bold">貓咪房</td>
+                                            <td>剩餘 10 間</td>
+                                            <td>1200 元</td>
                                         </tr>
                                         <tr>
-                                            <td class="qty">剩餘 10 間</td>
+                                            <td class="td-title fw-bold">貓咪房</td>
                                             <td>剩餘 10 間</td>
+                                            <td>650 元</td>
                                         </tr>
                                     </tbody>
                                     </table>
@@ -71,7 +75,7 @@
                                 </div>
                                 
                                 </div>
-                            <div class="pt-5">
+                            <div class="pt-4 d-flex justify-content-end align-items-end pe-3">
                                 <!-- 開啟地圖 --><Map></Map>
                             </div>
                             
