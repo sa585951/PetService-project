@@ -1,6 +1,6 @@
 <template>
     <div class="Header_div mb-3">
-        <img src="../assets/Hotel/hotelBackground.jpg" class="img_background">
+        <img src="../assets/Picture/hotelBackground.jpg" class="img_background">
         <div class="search_bar1"> 
             <div class="search_bar2"> 
                 <div class="col-4 d-flex justify-content-center align-items-center"> 
