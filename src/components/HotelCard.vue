@@ -8,6 +8,7 @@
         <div class="col-md-8">
             <div class="card-body">
                 <h4 class="card-title fw-bold">Card title</h4>
+                <div class="price-tag">600元起</div>
                 <div class="p-0">
                     <img class="star" src="../assets/Hotel/star_light.png">
                     <img class="star" src="../assets/Hotel/star_light.png">
@@ -19,7 +20,7 @@
                     <p class="card-text">地址</p>
                     <p class="card-text">電話</p>
                     <p class="card-text">Email</p>
-                    <div class="">
+                    <div style="width: 90%;">
                         <table class="room-table card-text">
                             <tbody>
                                 <tr>
@@ -50,6 +51,9 @@
 </script>
     
 <style scoped>
+    .card {
+        position: relative
+    }
     .star {
         width: 30px;
         height: 30px;
@@ -86,4 +90,34 @@
         font-size: 14px;
         font-size: 1rem;
     }
+
+    /* 價錢標籤CSS開始 */
+    .price-tag {
+        width: 110px;
+        height: 40px;
+        font-size: 20px;
+        text-align: center;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: rgb(235, 207, 170);
+        color: #5a3e00;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        animation: floatAndGlow 2.5s ease-in-out infinite;
+        z-index: 2;
+        will-change: transform;
+    }
+    @keyframes floatAndGlow {
+        0% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+        100% {
+            transform: translateY(0px);
+        }
+    }   /* 價錢標籤CSS結束 */
 </style>
