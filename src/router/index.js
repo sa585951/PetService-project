@@ -17,8 +17,8 @@ import PetView from '@/views/member/PetView.vue'
 import AddPetView from '@/views/member/AddPetView.vue'
 import EditPetView from '@/views/member/EditPetView.vue'
 import RegisterView from '@/views/account/RegisterView.vue'
+import OrdersView from '@/views/member/OrdersView.vue'
 
- 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -78,21 +78,26 @@ const router = createRouter({
     {
       path: "/profile",
       component: ProfileView,
-       meta: { requiresAuth: true },
+      meta: { requiresAuth: true },
     },
     {
       path: "/pet",
       component: PetView,
-       meta: { requiresAuth: true },
+      meta: { requiresAuth: true },
     },
     {
-      path:"/addpet",
+      path: "/addpet",
       component: AddPetView,
       meta: { requiresAuth: true },
     },
     {
-      path:"/editpet",
+      path: "/editpet",
       component: EditPetView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/member/orders",
+      component: OrdersView,
       meta: { requiresAuth: true },
     }
   ],
@@ -105,6 +110,6 @@ router.beforeEach((to, from, next) => {
   } else {
     next()
   }
-}) 
+})
 
 export default router
