@@ -1,14 +1,14 @@
 <template>
-<div v-for="hotel in hotels" :key="hotel.fId">
-<router-link :to="`/HotelDetail/${hotel.fId}`" class="text-decoration-none" >
-<div class="card mb-3" style="max-width: 100%;" id="hotelId">
+<div v-for="hotel in hotels" :key="hotel.id">
+<router-link :to="`/HotelDetail/${hotel.id}`" class="text-decoration-none" >
+<div class="card mb-3" style="max-width: 100%;">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
-            <img :src="`/Hotel/${hotel.fImage1}`" class="img-fluid rounded-start" alt="...">
+            <img :src="`/Hotel/${hotel.image_1}`" class="img-fluid rounded-start" alt="...">
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h4 class="card-title fw-bold">{{ hotel.fName }}</h4>
+                <h4 class="card-title fw-bold">{{ hotel.name }}</h4>
                 <div class="price-tag">600元起</div>
                 <div class="p-0">
                     <img class="star" src="/Hotel/star_light.png">
@@ -18,26 +18,27 @@
                     <img class="star" src="/Hotel/star_light.png">
                 </div>  
                 <div class="pt-2">
-                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{ hotel.fAddress }}</p>
-                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{ hotel.fPhone }}</p>
-                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{ hotel.fEmail }}</p>
+                    <p class="card-text mb-4">
+                                        <i class="bi bi-check2 me-2"></i>24小時陪伴
+                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
+                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
+                                    </p>
+                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{ hotel.address }}</p>
+                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{ hotel.phone }}</p>
+                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{ hotel.email }}</p>
                     <div style="width: 90%;">
-                        <table class="room-table card-text">
+                        <!-- <table class="room-table card-text">
                             <tbody>
-                                <tr>
-                                    <td class="fw-bold">小型犬房</td>
+                                <tr v-for="(roomPair, pairIndex) in hotel.roomTypes.filter((_, i) => i % 2 === 0)" :key="pairIndex">
+                                    <td class="fw-bold">{{ hotel.roomTypes[pairIndex * 2]?.name }}</td>
                                     <td class="qty">剩餘 10 間</td>
-                                    <td class="fw-bold">中型犬房</td>
-                                    <td>剩餘 10 間</td> 
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">大型犬房</td>
-                                    <td class="qty">剩餘 10 間</td>
-                                    <td class="fw-bold">貓咪房</td>
-                                    <td>剩餘 10 間</td>
+                                    <td class="fw-bold" v-if="pairIndex * 2 + 1 < hotel.roomTypes.length"> 
+                                         hotel.roomTypes.length=3時 最後一筆pairIndex=2*2+1=5 >不會顯示 
+                                        {{ hotel.roomTypes[pairIndex * 2 + 1]?.name }}</td>
+                                    <td class="qty" v-if="pairIndex * 2 + 1 < hotel.roomTypes.length">剩餘 10 間</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table> -->
                     </div>
                 </div>
             </div>
@@ -90,6 +91,7 @@
         border-bottom: 1px dashed rgb(228, 187, 134);
     }
     .room-table td {
+        width: 25%;
         padding: 5px;
         }
     .card-text {
