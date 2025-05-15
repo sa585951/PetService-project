@@ -3,16 +3,12 @@
         <img src="../assets/Picture/hotelBackground.jpg" class="img_background">
         <div class="search_bar1"> 
             <div class="search_bar2"> 
-                <div class="col-4 d-flex justify-content-center align-items-center"> 
+                <div class="col-6 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                    <input type="date" id="Datepicker_start"> 
-                </div> 
-                <span><i class="bi bi-arrow-right"></i></span>
-                <div class="col-4 d-flex justify-content-center align-items-center"> 
-                    <!-- <i class="bi bi-calendar4"></i> -->
-                    <input type="date" id="checkout">
+                     <div class="w-75 d-flex justify-content-center">
+                    <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
-                <div class="col-2">
+                <div class="col-3"> 
                     <label for="guests" class="me-2">毛孩數量:</label> 
                     <select name="guests" id="guests">
                         <option value="1">1</option>
@@ -21,7 +17,7 @@
                         <option value="4">4</option>
                     </select>
                 </div>
-                <div class="col-2 p-2">
+                <div class="col-3 p-2">
                     <div class="col-2 p-2 text-center"> 
                         <SearchButton onclick="searchHotels()">搜尋</SearchButton> 
                     </div>
@@ -60,7 +56,38 @@
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
     import {onMounted, reactive, ref} from 'vue';  //匯入 onMounted 函式
+    import flatpickr from 'flatpickr';
+   import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+//日期選擇器
+    const datePickerRef = ref(null);
+    let fpInstance = null;
+    onMounted(async () => {
+        
+            fpInstance = flatpickr(datePickerRef.value, {
+                mode: "range",
+                minDate: "today",
+                enableTime: false,
+                dateFormat: "Y-m-d",
+                defaultDate: new Date(),
+                locale: zh_tw || "zh_tw" ,
+                defaultDate: null,
+                onChange: (selectedDates, dateStr, instance) => {
+                    console.log(flatpickr.l10n);
 
+                    console.log('選取的日期物件:', selectedDates);
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0]; // 開始日期的 Date 物件
+                        const endDate = selectedDates[1];   // 結束日期的 Date 物件
+                        console.log('開始日期:', startDate);
+                        console.log('結束日期:', endDate);
+                    } else if (selectedDates.length === 1) {
+                        console.log('選取退房日期');
+                    }
+        
+                }
+            });
+        
+    });
  //GET全部
     const hotels = ref([]);
     const loadHotels = async () => {
@@ -155,5 +182,10 @@
     .card_left { 
         background-color: rgb(255, 255, 255); 
     } 
-
+/* datepicker */
+    .datepicker{
+        border-bottom: 1px solid rgb(243, 221, 195);
+        border-radius: 0px;
+    }
+    
 </style>
