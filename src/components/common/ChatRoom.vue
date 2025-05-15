@@ -111,7 +111,7 @@ export default {
   name: "ChatRoom",
   data() {
     return {
-      userRole: 'member', // 可切換為 'employee' member
+      userRole: 'employee', // 可切換為 'employee' member
       showChat: false,
       searchQuery: '',
       startTime: '',
