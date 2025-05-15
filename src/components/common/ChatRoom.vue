@@ -6,21 +6,15 @@
       <div class="chatroom-wrapper" v-if="showChat">
         <div class="chatroom-box" :style="userRole === 'member' ? { width: '350px' } : {}">
           <button class="close-chat-btn" @click="showChat = false">-</button>
-
           <div class="container pt-5 h-100">
             <div class="row rounded-lg overflow-hidden shadow h-100">
               <div class="col-5 px-0 user-list bg-light" v-if="userRole === 'employee'">
-                <div class="bg-gray px-4 py-2"><p class="h5 mb-0 py-1">進行中對話</p></div>
-                <div class="px-3 py-2">
-                  <div class="input-group input-group-sm mb-2">
+                <div class="input-group input-group-sm ">
                     <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱" />
                     <button class="btn btn-outline-secondary">搜尋</button>
                   </div>
-                  <div class="input-group input-group-sm">
-                    <input v-model="startTime" type="datetime-local" class="form-control" />
-                    <input v-model="endTime" type="datetime-local" class="form-control" />
-                    <button class="btn btn-outline-secondary">篩選</button>
-                  </div>
+                <div class="bg-gray px-1"><p class="mb-0 py-1">進行中對話</p></div>
+                <div class="px-3 py-2">
                 </div>
                 <div class="messages-box">
                   <div class="list-group rounded-0">
@@ -38,7 +32,7 @@
                     </a>
                   </div>
                 </div>
-                <div class="bg-gray px-4 py-2"><p class="h5 mb-0 py-1">已結束對話</p></div>
+                <div class="bg-gray px-1"><p class="mb-0 py-1">已結束對話</p></div>
               </div>
 
               <div :class="userRole === 'member' ? 'col-12' : 'col-7'" class="px-0 d-flex flex-column h-100">
@@ -63,7 +57,7 @@
                 </div>
 
                 <div class="bot-options px-3 py-2 bg-white" v-if="userRole === 'employee'">
-                  <button class="btn btn-sm btn-outline-secondary" @click="endConversation">結束對話</button>
+                  <button class="btn btn-sm btn-outline-secondary " @click="endConversation">結束對話</button>
                 </div>
 
                 <div class="chat-input d-flex p-2 border-top">
@@ -108,10 +102,7 @@ export default {
     filteredUsers() {
       return this.users.filter(u => {
         const nameMatch = this.searchQuery ? u.name.toLowerCase().includes(this.searchQuery.toLowerCase()) : true;
-        const timeMatch = (this.startTime && this.endTime)
-          ? u.joinedAt >= this.startTime && u.joinedAt <= this.endTime
-          : true;
-        return nameMatch && timeMatch;
+        return nameMatch ;
       });
     }
   },
@@ -192,8 +183,8 @@ export default {
 }
 
 .chatroom-box {
-  width: 600px;
-  height: 600px;
+  width: 400px;
+  height: 400px;
   background: #ffc272;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -292,7 +283,6 @@ export default {
 }
 
 .bot-options {
-
   flex-shrink: 0;
 }
 
