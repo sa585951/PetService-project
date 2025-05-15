@@ -109,7 +109,7 @@ async function login() {
 
     // === 呼叫 Pinia 的 login Action ===
     // 根據 authStore.js 中 login Action 的定義 (login({ userName, token }))
-    authStore.login({ userName: data.userName, token: data.token }); // 傳遞一個物件
+    authStore.login({ userName: data.userName, token: data.token ,memberId:data.memberId}); // 傳遞一個物件
     router.push({ name: 'MemberDashboard' });
 
   } catch (err) {

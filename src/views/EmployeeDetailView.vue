@@ -5,7 +5,7 @@
       <!-- 左側：圖片 + 詳細介紹 + 服務項目 -->
       <div class="col-md-7">
         <!-- 圖片輪播區 -->
-        <div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="2000" ref="carouselRef">
+        <div id="carouselExample" class="carousel slide mb-3" data-bs-ride="carousel" data-bs-interval="3000" ref="carouselRef">
 
   <div class="carousel-inner">
     <div
@@ -77,20 +77,28 @@
             <input v-model="form.date" type="date" class="form-control" 
             :min="minDate" :max="maxDate"/>
           </div>
+          <div class="mb-2">
+            <label class="form-label">預約時間</label>
+            <select v-model="form.time" class="form-select">
+              <option value="">請選擇</option>
+              <option v-for="t in employee.availableTime" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
 
           <div class="mb-2">
             <label class="form-label">其他備註</label>
             <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
+            <div class="text-danger mt-1">請填寫寵物品種</div>
+
           </div>
              <!-- 小計顯示 -->
           <div class="mt-3">
-            <p><strong>單價：</strong>{{ employee.price }} 元</p>
+            <p><strong>單價：</strong>{{ employee.price }} 元/小時(單次計費)</p>
             <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
           </div>
-          <!-- 按鈕 -->
+
           <div class="d-flex gap-2 mt-3">
             <button class="btn btn-outline-primary" @click="addToCart">加入購物車</button>
-            <button class="btn btn-success" @click="submitOrder">送出訂單</button>
           </div>
         </div>
       </div>
@@ -119,12 +127,22 @@ import { employees } from '@/data';
 import { Carousel } from 'bootstrap'
 
 const carouselRef = ref(null)
+const bsCarousel = ref(null)
+
+//及時輪播
+onMounted(() => {
+  if (carouselRef.value) {
+    bsCarousel.value = new Carousel(carouselRef.value, {
+      interval: 3000,
+      ride: 'carousel'
+    })
+  }
+})
 
 function goToSlide(index) {
-  const carouselEl = carouselRef.value
-  if (!carouselEl) return
-  const bsCarousel = Carousel.getInstance(carouselEl) || new Carousel(carouselEl)
-  bsCarousel.to(index)
+  if (bsCarousel.value) {
+    bsCarousel.value.to(index)
+  }
 }
 const route = useRoute()
 const employeeId = Number(route.params.id)
@@ -134,6 +152,7 @@ const form = ref({
   pet: '',
   quantity: 1,
   date: '',
+  time: '',
   notes: ''
 })
 // 計算處理後的輪播圖片 URL 陣列
@@ -145,11 +164,11 @@ const processedCarousel = computed(() => {
   return []; 
 });
 
-//預約限制2個月內
+//預約限制1個月內
 const today = new Date()
 const minDate = today.toISOString().split('T')[0]
 const max = new Date()
-max.setMonth(max.getMonth() + 2)
+max.setMonth(max.getMonth() + 1)
 const maxDate = max.toISOString().split('T')[0]
 
 const quantityError = ref(false)
@@ -163,7 +182,13 @@ const subtotal = computed(() => {
 })
 
 function isFormValid() {
-  return form.value.pet && form.value.date && form.value.quantity >= 1 && form.value.quantity <= 5
+   return (
+    form.value.pet &&
+    form.value.date &&
+    form.value.time &&
+    form.value.quantity >= 1 &&
+    form.value.quantity <= 5
+  )
 }
 
 function addToCart() {
@@ -177,6 +202,7 @@ function addToCart() {
     寵物種類：${form.value.pet}
     數量：${form.value.quantity}
     預約日期：${form.value.date}
+    預約時間：${form.value.time}
     備註：${form.value.notes || '無'}
     小計：${subtotal.value} 元
   `
@@ -185,19 +211,13 @@ function addToCart() {
 }
 
 
-function submitOrder() {
-  if (!isFormValid()) {
-    alert('請完整填寫資訊後再送出訂單')
-    return
-  }
-  alert(`訂單送出成功！共 ${form.value.quantity} 隻 ${form.value.pet}，總金額：${subtotal.value} 元`)
-  formReset()
-}
+
 function formReset() {
   form.value = {
     pet: '',
     quantity: 1,
     date: '',
+    time: '',
     notes: ''
   }
   quantityError.value = false

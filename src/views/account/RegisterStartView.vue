@@ -54,7 +54,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
   height: 100vh;
   padding: 20px;
   overflow: hidden;
@@ -67,6 +66,7 @@ export default {
   padding: 40px;
   width: 100%;
   max-width: 480px;
+  margin: 0 auto;
   position: relative;
   overflow: hidden;
   text-align: center;
