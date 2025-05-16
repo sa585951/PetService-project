@@ -1,19 +1,19 @@
 <template>
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <span>訂單 #{{ order.fId }} • {{ order.fOrderType }}</span>
+      <span>訂單 #100{{ order.fId }} • {{ order.fOrderType }}</span>
       <span class="badge" :class="statusClass">{{ order.fOrderStatus }}</span>
     </div>
     <div class="card-body">
       <div class="row">
         <div class="col-md-3">
-          <p><strong>總金額：</strong>{{ order.fTotalAmount }}</p>
+          <span class="fw-bold me-3">總金額: NT${{ order.fTotalAmount }}</span>
         </div>
         <div class="col-md-4">
-          <p><strong>建立時間：</strong>{{ formatDate(order.fCreatedAt) }}</p>
+           <small class="text-muted">建立時間: {{ formatDate(order.fCreatedAt) }}</small>
         </div>
         <div class="col-md-4">
-          <p><strong>更新時間：</strong>{{ formatDate(order.fUpdatedAt) }}</p>
+           <small class="text-muted">更新時間: {{ formatDate(order.fUpdatedAt) }}</small>
         </div>
       </div>
       <div class="text-end">
@@ -66,4 +66,16 @@ const formatDate = val => {
   padding: 0.5em 0.75em;
   border-radius: 0.25rem;
 }
+.list-group-item {
+  border: none;               /* 只有下方做分隔線 */
+  border-bottom: 1px solid #eee;
+  border-radius: 0;
+}
+.list-group-item:last-child {
+  border-bottom: none;
+}
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
 </style>
