@@ -113,6 +113,7 @@ import axios from 'axios';
 // 引入 Pinia Store
 import { useAuthStore } from '@/stores/authStore'; // 確保路徑正確
 import { useOrderStore } from '@/stores/order'; // 確保路徑正確
+import { storeToRefs } from 'pinia';
 import MemberSidebar from '@/components/MemberSidebar.vue';
 
 import defaultAvatarImage from '@/assets/picture/user-avatar.png';
@@ -120,13 +121,26 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const orderStore = useOrderStore();
+const { orders } = storeToRefs(orderStore);
+
+const currentPage = ref(1);
+const pageSize = 10;
+function loadDashboardOrders(){
+  orderStore.fetchOrders({
+    memberId: authStore.memberId,
+    keywords: '',
+    orderType: 'all',
+    sortBy:'date_asc',
+    page: currentPage.value,
+    pageSize
+  })
+}
 // 從 Auth Store 獲取登入狀態
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 
 const baseAddress = 'https://localhost:7089';
 const defaultAvatar = defaultAvatarImage;
 // 從orderStore取得訂單摘要
-const orders = computed(()=> orderStore.orders);
 // formatDate函數
 const formatDate = val => {
   return new Date(val).toLocaleString('zh-TW', {
@@ -230,6 +244,8 @@ const fetchProfile = async () => {
     authStore.isLoggedIn(false);
   }
 };
+
+
 // 根據路由路徑決定 activeTab 的輔助函數
 const getActiveTabFromPath = (path) => {
   if (path.includes('/memberdashboard')) {
@@ -255,7 +271,7 @@ onMounted(() => {
   fetchProfile();
   // 若會員ID存在,獲取訂單資料
   if(authStore.memberId){
-    orderStore.fetchByMember(authStore.memberId);
+    loadDashboardOrders();
   }
 });
 // 監聽路由變化，保持 activeTab 與路由同步

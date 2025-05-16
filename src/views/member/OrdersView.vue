@@ -22,96 +22,70 @@
               </div>
             </div>
           </div>
-
           <!-- Tab 標籤 -->
-          <ul class="nav nav-tabs mt-3" role="tablist">
+          <ul class="nav nav-tabs mt-3" >
              <li class="nav-item">
-              <button
-                class="nav-link"
-                :class="{ active: activeTab === 'all' }"
-                @click="activeTab = 'all'"
-              >
-                全部訂單
-              </button>
+                <button class="nav-link" :class="{active: activeTab==='all'}"
+                    @click="changeTab('all')">
+                 全部
+                </button>
+              </li>
+             <li class="nav-item">
+                <button class="nav-link" :class="{active: activeTab==='未付款'}"
+                    @click="changeTab('未付款')">
+                 未付款
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" :class="{active: activeTab==='已付款'}"
+                    @click="changeTab('已付款')">
+                 已付款
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" :class="{active: activeTab==='已取消'}"
+                    @click="changeTab('已取消')">
+                 已取消
+                </button>
+              </li>
+          </ul>
+          <!-- 卡片列表 -->
+          <div class="list-group list-group-flush">
+            <OrderCard
+              v-for="o in orderStore.orders"
+              :key="o.fId"
+              :order="o"
+              class="list-group-item list-group-item-action p-3"
+            />
+            <div
+              v-if="orderStore.orders.length === 0"
+              class="list-group-item text-center text-muted"
+            >
+              目前沒有訂單
+            </div>
+          </div>
+          <!-- 分頁 -->
+           <nav aria-label="Page navigation" class="mt-3">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item" :class="{disabled: currentPage===1}">
+              <button class="page-link" @click="changePage(currentPage-1)">«</button>
             </li>
-            <li class="nav-item">
-              <button
-                class="nav-link"
-                :class="{ active: activeTab === 'unpaid' }"
-                @click="activeTab = 'unpaid'"
-              >
-                未付款
-              </button>
+            <li
+              class="page-item"
+              v-for="page in orderStore.totalPages"
+              :key="page"
+              :class="{active: currentPage===page}"
+            >
+              <button class="page-link" @click="changePage(page)">{{ page }}</button>
             </li>
-            <li class="nav-item">
-              <button
-                class="nav-link"
-                :class="{ active: activeTab === 'paid' }"
-                @click="activeTab = 'paid'"
-              >
-                已付款
-              </button>
-            </li>
-            <li class="nav-item">
-              <button
-                class="nav-link"
-                :class="{ active: activeTab === 'cancelled' }"
-                @click="activeTab = 'cancelled'"
-              >
-                已取消
-              </button>
+            <li
+              class="page-item"
+              :class="{disabled: currentPage===orderStore.totalPages}"
+            >
+              <button class="page-link" @click="changePage(currentPage+1)">»</button>
             </li>
           </ul>
-        </div>
-
-        <!-- 卡片列表 -->
-        <div class="mt-3">
-          <!-- 所有訂單 -->
-          <div v-if="activeTab === 'all'">
-            <OrderCard
-              v-for="o in filteredAll"
-              :key="o.fId"
-              :order="o"
-            />
-            <p v-if="filteredAll.length === 0" class="text-center my-4">
-              目前沒有任何訂單
-            </p>
-          </div>
-          <!-- 未付款 -->
-          <div v-if="activeTab === 'unpaid'">
-            <OrderCard
-              v-for="o in filteredUnpaid"
-              :key="o.fId"
-              :order="o"
-            />
-            <p v-if="filteredUnpaid.length === 0" class="text-center my-4">
-              目前沒有未付款訂單
-            </p>
-          </div>
-
-          <!-- 已付款 -->
-          <div v-if="activeTab === 'paid'">
-            <OrderCard
-              v-for="o in filteredPaid"
-              :key="o.fId"
-              :order="o"
-            />
-            <p v-if="filteredPaid.length === 0" class="text-center my-4">
-              目前沒有已付款訂單
-            </p>
-          </div>
-
-          <!-- 已取消 -->
-          <div v-if="activeTab === 'cancelled'">
-            <OrderCard
-              v-for="o in filteredCancelled"
-              :key="o.fId"
-              :order="o"
-            />
-            <p v-if="filteredCancelled.length === 0" class="text-center my-4">
-              目前沒有已取消訂單
-            </p>
-          </div>
+        </nav>
         </div>
       </div>
     </div>
@@ -119,70 +93,62 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import MemberSidebar from '@/components/MemberSidebar.vue'
-import OrderCard from '@/components/OrderCard.vue' // 下方範例元件
+import OrderCard from '@/components/cards/OrderCard.vue'
 import { useOrderStore } from '@/stores/order'
 import { useAuthStore } from '@/stores/authStore'
-
-const router = useRouter()
-const searchQuery = ref('')
-const activeTab = ref('unpaid')
-
 const orderStore = useOrderStore()
 const authStore = useAuthStore()
-
-// 三種狀態資料
-const unpaidOrders = computed(() =>
-  orderStore.filterByStatus('未付款')
-)
-const paidOrders = computed(() =>
-  orderStore.filterByStatus('已付款')
-)
-const cancelledOrders = computed(() =>
-  orderStore.filterByStatus('已取消')
-)
-// 全部訂單
-const allorders =computed(()=> orderStore.orders)
-
-// 搜尋過濾
-const filteredUnpaid = computed(() =>
-  unpaidOrders.value.filter(
-    o =>
-      String(o.fId).includes(searchQuery.value) ||
-      o.fCreatedAt.includes(searchQuery.value)
-  )
-)
-const filteredPaid = computed(() =>
-  paidOrders.value.filter(
-    o =>
-      String(o.fId).includes(searchQuery.value) ||
-      o.fCreatedAt.includes(searchQuery.value)
-  )
-)
-const filteredCancelled = computed(() =>
-  cancelledOrders.value.filter(
-    o =>
-      String(o.fId).includes(searchQuery.value) ||
-      o.fCreatedAt.includes(searchQuery.value)
-  )
-)
-const filteredAll = computed(() =>
-    allorders.value.filter(o=>
-        String(o.fId).includes(searchQuery.value)||
-        o.fCreated_at.includes(searchQuery.value)
-    )
-)
-const searchOrders = () => {
-  // 如果你想每次搜尋時重抓資料，可放在這裡：
-  // orderStore.fetchByMember(authStore.userId)
+function formatDate(date) {
+  return new Date(date).toLocaleDateString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
+const searchQuery = ref('')
+const activeTab = ref('all')
+const currentPage = ref(1)
+const pageSize = 10
+
+function loadOrders(){
+  orderStore.fetchOrders({
+      memberId: authStore.memberId,
+      keyword: searchQuery.value,
+      orderType: activeTab.value,
+      sortBy: 'date_desc',
+      page: currentPage.value,
+      pageSize,
+    })
+}
+
+// 切tab重新抓資料
+function changeTab(tab){
+  activeTab.value = tab
+  currentPage.value = 1
+  loadOrders()
+}
+
+//搜尋按鈕
+function searchOrders(){
+  currentPage = 1
+  loadOrders()
+}
+
+//換頁
+function changePage(page){
+  if(page<1 || page > orderStore.TotalPages) return
+  currentPage.value = page
+  loadOrders()
+}
+
+
 onMounted(() => {
-  if (authStore.memberId) {
-    orderStore.fetchByMember(authStore.memberId)
-  }
+  if (authStore.memberId) loadOrders()
 })
 </script>
 
