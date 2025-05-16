@@ -8,37 +8,35 @@
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h4 class="card-title fw-bold">{{ hotel.name }}</h4>
-                <div class="price-tag">600元起</div>
-                <div class="p-0">
+                <div class="d-flex">
+                <h4 class="card-title fw-bold m-0">{{ hotel.name }}</h4>
+                <div class="p-0 ps-2">
                     <img class="star" src="/Hotel/star_light.png">
                     <img class="star" src="/Hotel/star_light.png">
                     <img class="star" src="/Hotel/star_light.png">
                     <img class="star" src="/Hotel/star_light.png">
                     <img class="star" src="/Hotel/star_light.png">
-                </div>  
-                <div class="pt-2">
-                    <p class="card-text mb-4">
-                                        <i class="bi bi-check2 me-2"></i>24小時陪伴
-                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
-                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
-                                    </p>
+                </div></div>
+                <div class="price-tag">{{ Math.min(...hotel.roomDetail.map(room => room.price)) }}元起</div>
+                <div class="pt-1">
+                    <p class="card-text mb-1">
+                        <span v-for="item in hotel.items" :key="item.id" class="fw-bold me-2">
+                            <i class="bi bi-check2 me-2"></i>{{ item.name }}</span>
+                    </p>
                     <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{ hotel.address }}</p>
                     <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{ hotel.phone }}</p>
                     <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{ hotel.email }}</p>
                     <div style="width: 90%;">
-                        <!-- <table class="room-table card-text">
+                        <table class="room-table card-text mt-4">
                             <tbody>
-                                <tr v-for="(roomPair, pairIndex) in hotel.roomTypes.filter((_, i) => i % 2 === 0)" :key="pairIndex">
-                                    <td class="fw-bold">{{ hotel.roomTypes[pairIndex * 2]?.name }}</td>
-                                    <td class="qty">剩餘 10 間</td>
-                                    <td class="fw-bold" v-if="pairIndex * 2 + 1 < hotel.roomTypes.length"> 
-                                         hotel.roomTypes.length=3時 最後一筆pairIndex=2*2+1=5 >不會顯示 
-                                        {{ hotel.roomTypes[pairIndex * 2 + 1]?.name }}</td>
-                                    <td class="qty" v-if="pairIndex * 2 + 1 < hotel.roomTypes.length">剩餘 10 間</td>
-                                </tr>
+                                <tr v-for="(pair, index) in getRoomPairs(hotel)" :key="index">
+                        <td class="fw-bold">{{ pair[0]?.name }}</td>
+                        <td class="qty">剩餘 {{ getRoomQty(hotel, pair[0]?.name) }} 間</td>
+                        <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
+                        <td class="qty" v-if="pair[1]">剩餘 {{ getRoomQty(hotel, pair[1].name) }} 間</td>
+                      </tr>
                             </tbody>
-                        </table> -->
+                        </table>
                     </div>
                 </div>
             </div>
@@ -50,12 +48,47 @@
 </template>
     
 <script setup>
+    import { computed } from 'vue';
+// 取得 props
     const props = defineProps({
         hotels: {
             type: Array,
-            default: () => [],
+            default: () => []
         }
     });
+    const hotels = computed(() => props.hotels);
+
+
+    // 依據單一 hotel 拆分 roomTypes 為兩兩一組
+function getRoomPairs(hotel) {
+  const pairs = [];
+  for (let i = 0; i < hotel.roomTypes.length; i += 2) {
+    pairs.push([
+      hotel.roomTypes[i],
+      hotel.roomTypes[i + 1] || null
+    ]);
+  }
+  return pairs;
+}
+
+// 傳回房型對應的剩餘房間數
+function getRoomQty(hotel, roomName) {
+  const qty = hotel.qtyStatus?.[0];
+  if (!qty || !roomName) return null;
+  switch (roomName) {
+    case "小型犬房":
+      return qty.smallDogRoom;
+    case "中型犬房":
+      return qty.middleDogRoom;
+    case "大型犬房":
+      return qty.bigDogRoom;
+    case "貓咪房":
+      return qty.catRoom;
+    default:
+      return null;
+  }
+}
+
 </script>
     
 <style scoped>
@@ -110,7 +143,7 @@
         font-size: 20px;
         text-align: center;
         position: absolute;
-        top: 20px;
+        top: 15px;
         right: 20px;
         background-color: rgb(235, 207, 170);
         color: #5a3e00;
