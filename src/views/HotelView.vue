@@ -9,7 +9,7 @@
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-3"> 
-                    <label for="guests" class="me-2">毛孩數量:</label> 
+                    <span for="guests" class="me-2">毛孩數量:</span> 
                     <select name="guests" id="guests">
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -31,12 +31,8 @@
         <div class="col-2">
             <div class="card card_left"> 
                 <div class="card-body"> 
-                    <p class="card-text fw-bold">環境設施</p> <hr/> 
-                    <Checkbox :checkboxId="checkboxId3" :labelText="dynamicText3"></Checkbox> 
-                    <Checkbox :checkboxId="checkboxId4" :labelText="dynamicText4" ></Checkbox> 
-                    <hr/><p class="card-text fw-bold">照護需求</p> <hr/> 
-                    <Checkbox :checkboxId="checkboxId1" :labelText="dynamicText1"></Checkbox> 
-                    <Checkbox :checkboxId="checkboxId2" :labelText="dynamicText2" ></Checkbox> 
+                    <p class="card-text fw-bold">設施與服務</p> <hr/> 
+                    <Checkbox v-for="item in totalItems":key="item.id" :checkboxId="item.id" :labelText="item.name" class="mb-1"></Checkbox> 
                 </div> 
             </div> 
         </div> 
@@ -62,7 +58,6 @@
     const datePickerRef = ref(null);
     let fpInstance = null;
     onMounted(async () => {
-        
             fpInstance = flatpickr(datePickerRef.value, {
                 mode: "range",
                 minDate: "today",
@@ -83,39 +78,32 @@
                     } else if (selectedDates.length === 1) {
                         console.log('選取退房日期');
                     }
-        
                 }
             });
-        
     });
+
  //GET全部
     const hotels = ref([]);
+    const totalItems = ref([]);
     const loadHotels = async () => {
         const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel`;
         const response = await fetch(API_URL, {
             headers: {'Content-Type': 'application/json'}
         });
     const datas = await response.json();
-    hotels.value = datas;
+    hotels.value = datas.hotels;   //只存陣列
+    totalItems.value = datas.totalItems;
     console.log(hotels.value);
+    console.log("totalItems:", totalItems.value);
     };
     
     onMounted(() => {
         loadHotels();
-        
     })
 
 
 
-    //Checkbox測試 
-     const checkboxId1 = 'cbx-1' 
-     const checkboxId2 = 'cbx-2'
-     const dynamicText1 = '24小時照顧'
-     const dynamicText2 = '接送服務' 
-     const checkboxId3 = 'cbx-3' 
-     const checkboxId4 = 'cbx-4'
-     const dynamicText3 = '戶外奔跑區'
-     const dynamicText4 = '登頂小木屋' 
+
     
 
 
