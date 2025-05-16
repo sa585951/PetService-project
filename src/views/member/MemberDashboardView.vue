@@ -10,7 +10,7 @@
         <div v-if="activeTab === 'memberdashboard'" class="dashboard-content">
           <div class="row">
             <!-- 左側內容: 會員資料和寵物 -->
-            <div class="col-md-6 left-column">
+            <div class="col-6 left-column">
               <!-- 會員資料卡片 -->
               <div class="card member-card">
                 <div class="card-header d-flex align-items-center">
@@ -38,31 +38,37 @@
               <div class="card pet-section">
                 <div class="card-header d-flex align-items-center">
                   <span>我的寵物</span>
-                  <button class="secondary-btn" @click="activeTab = 'pet'"><i class="bi bi-gear"></i> 管理
+                  <button class="secondary-btn" @click="setActiveTab('pet')">
+                    <i class="bi bi-gear"></i> 管理
                   </button>
                 </div>
                 <div class="card-body pet-scrollable">
-                  <div class="row">
-                    <div v-for="pet in pets" :key="pet.id" class="col-md-6 col-xl-4">
-                      <div class="pet-card">
-                        <img :src="pet.image" class="pet-avatar" :alt="pet.name">
-                        <div class="pet-name">{{ pet.name }}</div>
-                        <div class="text-muted small">{{ pet.breed }}</div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 col-xl-4">
-                      <div class="add-pet-card" @click="activeTab = 'pet'">
-                        <i class="bi bi-plus-circle add-pet-icon"></i>
-                        <div>新增寵物</div>
-                      </div>
-                    </div>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            <div class="col" v-for="pet in pets" :key="pet.id">
+                                <div class="pet-card card h-100 position-relative shadow-sm">
+                                    <div class="pet-name-overlay  text-white text-center ">
+                                        <div class="pet-name-text" style="font-size: 1.25rem; font-weight: bold;">
+                                        {{ pet.petName }}
+                                       </div>
+                                    </div>
+                                    <img :src="getPetPhotoUrl(pet.petImagePath)" class="card-img-top pet-photo" :alt="pet.petName">
+                                    
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <i class="fas fa-paw"></i>
+                                             年紀: {{ pet.petAge !== null && pet.petAge !== undefined ? pet.petAge + '歲' : '未知' }}<br>
+                                            <i class="bi bi-cake2 me-1"></i>
+                                            生日: {{ formatBirthday(pet.petBirthday) }}<br>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                   </div>
-                </div>
+                 </div>
               </div>
             </div>
-            
-            <!-- 右側內容: 訂單資訊 -->
-            <div class="col-md-6 right-column">
+                          <!-- 右側內容: 訂單資訊 -->
+            <div class="col-6 right-column">
               <!-- 訂單資訊 -->
               <div class="card order-card">
                 <div class="card-header d-flex align-items-center">
@@ -92,11 +98,12 @@
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
-      </div>
     </div>
-  </div>
+      </div>
+
 </template>
 <template v-else>
       {/* 未登入狀態顯示 */}
@@ -117,6 +124,7 @@ import { storeToRefs } from 'pinia';
 import MemberSidebar from '@/components/MemberSidebar.vue';
 
 import defaultAvatarImage from '@/assets/picture/user-avatar.png';
+import defaultPetAvatarImage from '@/assets/picture/paws-avatar.png';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -140,6 +148,8 @@ const isLoggedIn = computed(() => authStore.isLoggedIn);
 
 const baseAddress = 'https://localhost:7089';
 const defaultAvatar = defaultAvatarImage;
+const defaultPetPhoto = defaultPetAvatarImage;
+const pets = ref([]);
 // 從orderStore取得訂單摘要
 // formatDate函數
 const formatDate = val => {
@@ -259,6 +269,63 @@ const getActiveTabFromPath = (path) => {
   }
   return 'memberdashboard'; // 預設值
 };
+// 載入寵物資料的函式
+const fetchPets = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert('您尚未登入，請先登入。');
+        router.push('/login');
+        return;
+    }
+    try {
+        const response = await axios.get(`${baseAddress}/api/Pet/GetPetData`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        pets.value = response.data || [];
+        console.log('寵物資料載入成功:', pets.value);
+    } catch (error) {
+        console.error('載入寵物資料失敗:', error);
+        if (error.response && error.response.status === 401) {
+            alert('登入狀態已過期，請重新登入。');
+            // authStore.logout(); // 如果有 logout action
+            router.push('/login');
+        } else {
+            alert('載入寵物資料失敗，請稍後再試。' + (error.response?.data?.message || error.message));
+        }
+    }
+};
+
+// 處理寵物圖片 URL
+const getPetPhotoUrl = (photoPath) => {
+    if (photoPath && (photoPath.startsWith('http://') || photoPath.startsWith('https://'))) {
+        return photoPath;
+    } else if (photoPath && photoPath.startsWith('/')) {
+        return `${baseAddress}${photoPath}`;
+    } else if (photoPath) {
+        return `${baseAddress}/${photoPath}`;
+    }
+    return defaultPetPhoto; // 否則回傳預設圖片
+};
+
+// 格式化生日為本地日期字串
+const formatBirthday = (birthday) => {
+    if (!birthday) return '未知';
+    try {
+        // 嘗試從各種格式創建 Date 物件
+        const date = new Date(birthday);
+        // 檢查是否是有效的日期
+        if (!isNaN(date.getTime())) {
+            // 使用 toLocaleDateString 格式化為本地日期字串
+            return date.toLocaleDateString();
+        } else {
+            return '格式錯誤';
+        }
+    } catch {
+        return '格式錯誤';
+    }
+};
 // 生命週期
 onMounted(() => {
   // 根據當前的路由路徑來判斷 activeTab
@@ -273,6 +340,7 @@ onMounted(() => {
   if(authStore.memberId){
     loadDashboardOrders();
   }
+  fetchPets();
 });
 // 監聽路由變化，保持 activeTab 與路由同步
 watch(() => route.path, (newPath) => {
@@ -317,6 +385,11 @@ body {
   overflow-y: auto;
   height: calc(100% - 56px); /* 減去卡片頭部高度 */
 }
+.pet-photo{
+  width: 100px;
+  height: 100px;
+  margin-top: 10px;
+}
 
 .order-card {
   height: 100%;
@@ -337,12 +410,6 @@ body {
   object-fit: cover;
 }
 
-.pet-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-}
 .left-column, .right-column {
   height: calc(100vh - 100px);
   display: flex;
@@ -448,11 +515,12 @@ body {
 
 .pet-card {
   text-align: center;
-  margin-bottom: 20px;
+  align-items: center;
+
 }
 
 .pet-name {
-  margin-top: 10px;
+  margin: 10px;
   font-weight: 600;
 }
 
@@ -480,7 +548,25 @@ body {
   color: #ACC572;
   margin-bottom: 10px;
 }
+.pet-name-text{
+  margin:5px
+}
+/* 假設你的樣式檔 */
+.pet-name-overlay {
+  /* 使用 RGBA 設定半透明黑色背景，0.6 表示 60% 不透明度 */
+  background-color: rgba(153, 151, 54, 0.6);
+  /* 確保疊加層在圖片上方 (如果圖片或其他元素有 z-index 設定，可能需要調整) */
+  /* 確保文字能正常換行，防止名字太長跑版 */
+  white-space: normal;
+  word-break: break-word; /* 或 overflow-wrap: break-word; */
+  border-radius: 80px;
+}
 
+/* 如果你使用了 div 內部 div 顯示名字，可以這樣控制字體大小和粗細 */
+.pet-name-overlay .pet-name-text {
+    font-size: 1.25rem; /* 或其他你想要的大小 */
+    font-weight: bold;
+}
 @media (max-width: 992px) {
   .left-column, .right-column {
     height: auto;
@@ -498,5 +584,6 @@ body {
     height: 800px; /* 等於會員卡片和寵物區域的總高度 */
     margin-bottom: 20px;
   }
+  
 }
 </style>

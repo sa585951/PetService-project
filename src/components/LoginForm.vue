@@ -26,8 +26,8 @@
         </div>
         
         <!-- 登入按鈕 -->
-        <button class="login-btn" @click="login" :disabled="isLoading">
-          <span v-if="isLoading" >{{ typingText }}</span>
+        <button class="login-btn" @click="login" :disabled="authStore.isLoggingIn">
+          <span v-if="authStore.isLoggingIn" >{{ authStore.loginStatusText }}</span>
           <span v-else>
           登入
           </span></button>
@@ -62,8 +62,9 @@ const baseAddress = 'https://localhost:7089';
 // === 登入處理函數 ===
 async function login() {
   error.value = null; // 清除之前的錯誤訊息
-  isLoading.value = true; // 設定載入狀態
-  typingText.value='';
+  authStore.startLoading();
+  //isLoading.value = true; // 設定載入狀態
+  //typingText.value='';
   let index = 0;
   interval = setInterval(() => {
     typingText.value += fullText[index]

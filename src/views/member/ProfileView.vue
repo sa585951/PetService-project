@@ -73,10 +73,13 @@
                                                <input 
                                                    type="tel" 
                                                    class="form-control" 
+                                                   @input="clearError('phone'); checkFormValidity;validateField('phone')"
+                                                  
                                                    id="phone" 
                                                    v-model="user.phone" placeholder="請輸入您的手機號碼"
                                                >
                                            </div>
+                                            <p v-if="errors.phone" class="text-red-500 text-sm">{{ errors.phone }}</p>
                                        </div>
                                    </div>
                                    <div class="col-md-6">
@@ -86,9 +89,12 @@
                                                <input 
                                                    type="text" 
                                                    class="form-control" 
+                                                   @input="clearError('address'); checkFormValidity"
+                                                   @blur="validateField('address')"
                                                    id="address" 
                                                    v-model="user.address" placeholder="請輸入您的地址"
                                                >
+                                               <p v-if="errors.address" class="text-red-500 text-sm">{{ errors.address }}</p>
                                            </div>
                                        </div>
                                    </div>
@@ -145,8 +151,7 @@ import Swal from 'sweetalert2';
 const authStore = useAuthStore()
 const router = useRouter()
 
-// === 修正點 1: 移除重複的 fileInput 宣告 ===
-// const fileInput = ref(null); // 移除這一行，下方已經宣告了
+const errors = reactive({});
 
 const formChanged = ref(false)
 const originalForm = ref({}) // 用於暫存原始表單資料
@@ -160,6 +165,7 @@ const previewUrl = ref(null); // 用於顯示新選擇的頭像預覽圖 (blob U
 const newAvatarFile = ref(null); // 用於儲存新選擇的頭像檔案
 // === 修正點 1: 確保 fileInput 只有一個宣告 ===
 const fileInput = ref(null); 
+const isFormInvalid = ref(false);
 
 const setActiveTab = (tabName) => {
     activeTab.value = tabName;
@@ -228,6 +234,68 @@ const handleAvatarChange = (event) => {
         // 但在目前的 watch 邏輯下，它會自動重新計算。
     }
 }
+
+// 驗證表單欄位
+const validateField = async (field) => {
+    switch (field) {
+        case 'phone':
+            const phonePattern = /^[0-9]{10}$/;
+            if (!user.phone.trim()) {
+                errors.phone = '❗手機是必填的';
+            } else if (!phonePattern.test(user.phone)) {
+                errors.phone = '❗手機必須是10位數字';
+            } else {
+                if(user.phone === originalForm.value.phone) {
+                    errors.phone = null;
+                }else{
+                   // 呼叫檢查 phone是否存在
+                try {
+                    const res = await axios.get(`${baseAddress}/api/Account/CheckPhoneExists`, {
+                        params: { phone: user.phone }
+                    });
+                    errors.phone = res.data.exists ? '❗此手機已被註冊' : null;
+                } catch (error) {
+                    console.error('檢查手機失敗:', error);
+                    // 如果檢查失敗，暫時允許繼續（可以根據需求調整）
+                    errors.phone = null;
+                } 
+                }
+            }
+            break;
+    
+        case 'address':
+            errors.address = !user.address.trim() ? '❗地址是必填的' : null;
+            break;
+    }
+
+    checkFormValidity();
+};
+const clearError = (field) => {
+    // 如果 errors 是 reactive 物件，直接修改屬性
+    if (errors && errors[field] !== undefined) { // 檢查屬性是否存在
+        errors[field] = null;
+    }
+};
+// 檢查表單有效性
+const checkFormValidity = () => {
+    // 檢查必填欄位是否為空
+    const requiredFields = ['phone', 'address'];
+    let hasEmptyFields = false;
+    let hasFieldErrors = false;
+
+    for (const field of requiredFields) {
+        if (!user[field] || !user[field].trim()) {
+            hasEmptyFields = true;
+            break;
+        }
+    }
+
+    // 檢查是否有錯誤訊息
+    hasFieldErrors = Object.values(errors).some(error => error !== null);
+
+    isFormInvalid.value = hasEmptyFields || hasFieldErrors;
+};
+
 
 // 載入使用者資料
 const fetchProfile = async () => {
@@ -307,10 +375,14 @@ watch([user, previewUrl], ([newUser, newPreviewUrl]) => {
     formChanged.value = changed;
 }, { deep: true });
 
+
+
 // 取消變更 (實現「取消」按鈕功能)
 const cancelChanges = () => {
     Object.assign(user, originalForm.value);
-
+    Object.keys(errors).forEach(key => {
+        errors[key] = null;
+    });
     if (previewUrl.value) {
         URL.revokeObjectURL(previewUrl.value); 
         previewUrl.value = null;
@@ -368,6 +440,18 @@ const uploadAvatar = async () => {
 
 // 儲存資料 (更新資料庫)
 const saveProfile = async () => {
+    await validateField('phone');
+    await validateField('address');
+
+    if(isFormInvalid.value) {
+        Swal.fire({
+            text: '請修正表單中的錯誤後再試',
+            icon: 'error',
+            confirmButtonColor: '#ACC572',
+        });
+        return;
+    }
+
     try {
         console.log('準備儲存的資料:', user);
 
