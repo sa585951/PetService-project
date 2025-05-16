@@ -19,7 +19,7 @@
                 </div>
                 <div class="col-3 p-2">
                     <div class="col-2 p-2 text-center"> 
-                        <SearchButton onclick="searchHotels()">搜尋</SearchButton> 
+                        <SearchButton @click="searchHotels" class="mt-2">搜尋</SearchButton>
                     </div>
                 </div>
             </div>
@@ -29,13 +29,27 @@
     <div class="row">
         <!-- 側邊欄 -->
         <div class="col-2">
-            <div class="card card_left"> 
-                <div class="card-body"> 
-                    <p class="card-text fw-bold">設施與服務</p> <hr/> 
-                    <Checkbox v-for="item in totalItems":key="item.id" :checkboxId="item.id" :labelText="item.name" class="mb-1"></Checkbox> 
-                </div> 
-            </div> 
-        </div> 
+  <div class="card card_left"> 
+    <div class="card-body"> 
+      <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
+      <hr class="mb-2"/> 
+        <Checkbox  v-for="item in totalItems"
+  :key="item.id"
+  :value="item.name"
+  :checkboxId="item.id"
+  :labelText="item.name"
+  :checked="selectedItems.includes(item.name)"
+  @change="toggleSelection(item.name)"
+  class="mb-2 d-flex justify-content-center"    ></Checkbox>
+
+      
+      <hr/>
+      <div class="d-flex justify-content-center">
+        <SearchButton @click="searchHotels" class="mt-2">搜尋</SearchButton>
+      </div>
+    </div> 
+  </div> 
+</div>
         <!-- 主要內容 -->
         <div class="col-10">
             <HotelCard :hotels="hotels"></HotelCard>
@@ -99,8 +113,33 @@
     
     onMounted(() => {
         loadHotels();
+        searchHotels();
     })
 
+//勾選服務項目
+const selectedItems = ref([])  // 存 item.name 陣列
+function searchHotels() {
+  console.log("選取項目名稱：", selectedItems.value)
+
+  // 假設你要傳到後端
+  fetch('你的後端API網址', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      services: selectedItems.value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("後端回傳：", data)
+    // hotels.value = data.hotels  // 假如要更新畫面
+  })
+  .catch(err => {
+    console.error("發送錯誤：", err)
+  })
+}
 
 
 
