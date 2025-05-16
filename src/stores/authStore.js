@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
     // 修改了方法名稱為 login，更符合語意
     // 如果你在登入頁面是呼叫 setLoginState，則那邊也需要同步修改
     login({ userName, token, memberId }) { // 接收一個包含 userName 和 token 的物件
-      console.log('Executing login action:', { userName, token }); // 添加 log
+      console.log('Executing login action:', { userName, token, memberId }); // 添加 log
       this.isLoggedIn = true;
       this.userName = userName;
       this.token = token;
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
       const memberId = localStorage.getItem('memberId');
 
       if (token && userName) {
-        console.log('Found state in localStorage:', { token, userName }); // 添加 log
+        console.log('Found state in localStorage:', { token, userName , memberId}); // 添加 log
         this.token = token;
         this.userName = userName;
         this.isLoggedIn = true;
