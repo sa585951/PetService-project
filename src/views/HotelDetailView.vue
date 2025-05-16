@@ -26,25 +26,25 @@
                                     <div class="d-flex align-items-center">
                                     <h4 class="card-title fw-bold m-0">毛茸茸旅館</h4>
                                     <div class="p-0 ps-2">
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_light.png" />
-                                        <img class="star" src="../assets/Hotel/star_gray.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img class="star" src="/Hotel/star_light.png" />
                                     </div>
                                     </div></div>
                                 <div class="pt-2 mb-3">
-                                    <p class="card-text">
-                                        <i class="bi bi-check2 me-2"></i>24小時陪伴
-                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
+                                    <p class="card-text fw-bold">
+                                        <i class="bi bi-check2 me-2"></i>室內放風區
+                                        <i class="bi bi-check2 ms-2 me-2"></i>登頂小木屋
                                         <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
                                     </p>
                                         
                                 </div>
                                 <div class="pt-2">
-                                    <p class="card-text">地址</p>
-                                    <p class="card-text">電話</p>
-                                    <p class="card-text">Email</p>
+                                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>高雄市前鎮區民權二路615號</p>
+                                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>073300313</p>
+                                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>monono613@gmail.com</p>
                                 <div>
                                     <div style="width: 95%;">
                                     <table class="room-table card-text">
@@ -61,12 +61,12 @@
                                         </tr>
                                         <tr>
                                             <td class="td-title fw-bold">大型犬房</td>
-                                            <td>剩餘 10 間</td>
+                                            <td>剩餘 4 間</td>
                                             <td>1200 元</td>
                                         </tr>
                                         <tr>
                                             <td class="td-title fw-bold">貓咪房</td>
-                                            <td>剩餘 10 間</td>
+                                            <td>剩餘 5 間</td>
                                             <td>650 元</td>
                                         </tr>
                                     </tbody>
@@ -86,16 +86,33 @@
         </div>
         <div class="d-flex">
             <div class="card m-3" style="width: 26rem;">
-                <img src="../assets/Hotel/hotel_1.jpg" class="card-img-top" alt="小型犬房">
+                <img src="/Hotel/room1-1.png" class="card-img-top" alt="小型犬房">
                 <div class="card-body d-flex justify-content-between">
                     <h5 class="card-title">小型犬房</h5>
                     <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
                 </div>
             </div>
             <div class="card m-3" style="width: 26rem;">
-                <img src="../assets/Hotel/hotel_1.jpg" class="card-img-top" alt="小型犬房">
+                <img src="/Hotel/room1-2.png" class="card-img-top" alt="小型犬房">
                 <div class="card-body d-flex justify-content-between">
-                    <h5 class="card-title">小型犬房</h5>
+                    <h5 class="card-title">中型犬房</h5>
+                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
+                </div>
+            </div>
+            <div class="card m-3" style="width: 26rem;">
+                <img src="/Hotel/room1-3.png" class="card-img-top" alt="小型犬房">
+                <div class="card-body d-flex justify-content-between">
+                    <h5 class="card-title">大型犬房</h5>
+                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex">
+            
+            <div class="card m-3" style="width: 26rem;">
+                <img src="/Hotel/room1-4.png" class="card-img-top" alt="小型犬房">
+                <div class="card-body d-flex justify-content-between">
+                    <h5 class="card-title">貓咪房</h5>
                     <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
                 </div>
             </div>
@@ -116,9 +133,9 @@
     import { ref } from 'vue';
 //圖片
     const imageList = [
-        new URL('../assets/Hotel/hotel_1.jpg', import.meta.url).href,
-        new URL('../assets/Hotel/hotel_2.jpg', import.meta.url).href,
-        new URL('../assets/Hotel/hotel_3.jpg', import.meta.url).href
+        new URL('/Hotel/hotel1-1.png', import.meta.url).href,
+        new URL('/Hotel/hotel1-2.png', import.meta.url).href,
+        new URL('/Hotel/hotel1-3.png', import.meta.url).href
     ];
 
     const selectedImage = ref(imageList[0]);
@@ -150,5 +167,8 @@
     .room-table td {
         padding: 5px;
         border-right: 1px dashed rgb(228, 187, 134);
-        }
+    }
+    i {
+        color: rgb(155, 97, 27);
+    }
 </style>
