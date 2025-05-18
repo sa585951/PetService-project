@@ -25,38 +25,30 @@
             </div>
         </div>
     </div>
-<div class="container">
+ <div class="container">
     <div class="row">
-        <!-- 側邊欄 -->
-        <div class="col-2">
-  <div class="card card_left"> 
-    <div class="card-body"> 
-      <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
-      <hr class="mb-2"/> 
-        <Checkbox  v-for="item in totalItems"
-  :key="item.id"
-  :value="item.name"
-  :checkboxId="item.id"
-  :labelText="item.name"
-  :checked="selectedItems.includes(item.name)"
-  @change="toggleSelection(item.name)"
-  class="mb-2 d-flex justify-content-center"    ></Checkbox>
-
-      
-      <hr/>
-      <div class="d-flex justify-content-center">
-        <SearchButton @click="searchHotels" class="mt-2">搜尋</SearchButton>
-      </div>
-    </div> 
-  </div> 
-</div>
-        <!-- 主要內容 -->
-        <div class="col-10">
-            <HotelCard :hotels="hotels"></HotelCard>
+      <div class="col-2">
+        <div class="card card_left">
+          <div class="card-body">
+            <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
+            <hr class="mb-2"/>
+            <Checkbox
+              v-for="item in totalItems"
+              :key="item.id"
+              :value="item.name"
+              :checkboxId="item.id.toString()"
+              :labelText="item.name"
+              class="mb-2 d-flex justify-content-start"
+              @change="handleCheckboxChange"
+            ></Checkbox>
+          </div>
         </div>
+      </div>
+      <div class="col-10">
+        <HotelCard :hotels="filteredHotels"></HotelCard>
+      </div>
     </div>
-    
-</div>
+  </div>
   
 </template>
 
@@ -65,7 +57,7 @@
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
-    import {onMounted, reactive, ref} from 'vue';  //匯入 onMounted 函式
+    import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
    import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
 //日期選擇器
@@ -113,39 +105,38 @@
     
     onMounted(() => {
         loadHotels();
-        searchHotels();
     })
 
 //勾選服務項目
-const selectedItems = ref([])  // 存 item.name 陣列
-function searchHotels() {
-  console.log("選取項目名稱：", selectedItems.value)
+    const selectedItemNames = ref(new Set()); // 使用 Set 來儲存選中的項目名稱
 
-  // 假設你要傳到後端
-  fetch('你的後端API網址', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      services: selectedItems.value
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("後端回傳：", data)
-    // hotels.value = data.hotels  // 假如要更新畫面
-  })
-  .catch(err => {
-    console.error("發送錯誤：", err)
-  })
-}
+    const handleCheckboxChange = (item) => {
+        if (item.checked) {
+            selectedItemNames.value.add(item.name);}
+        else {
+            selectedItemNames.value.delete(item.name);}
+        console.log("Selected item names:", Array.from(selectedItemNames.value));
+    };
 
+    // 計算篩選後的旅館列表
+    const filteredHotels = computed(() => {
+        if (selectedItemNames.value.size === 0) {
+            return hotels.value;
+        }
+        return hotels.value.filter(hotel => {
+            const hotelItemNames = new Set(hotel.items.map(item => item.name));
+            for (const selectedName of selectedItemNames.value) {
+                if (!hotelItemNames.has(selectedName)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    });
 
-
-    
-
-
+    onMounted(() => {
+        loadHotels();
+    });
 
 </script>
     

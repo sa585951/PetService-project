@@ -1,22 +1,38 @@
 <template>
-        <!-- From Uiverse.io by vishnupprajapat --> 
-<div class="checkbox-wrapper-46">
-  <input type="checkbox" :id="checkboxId" class="inp-cbx" />
-  <label :for="checkboxId" class="cbx"
-    ><span>
-      <svg viewBox="0 0 12 10" height="10px" width="12px">
-        <polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></span
-    ><span class="text">{{ labelText }}</span>
-  </label>
-</div>
-
+  <div class="checkbox-wrapper-46">
+    <input
+      type="checkbox"
+      :id="checkboxId"
+      class="inp-cbx"
+      :checked="modelValue"
+      @change="handleChange"
+    />
+    <label :for="checkboxId" class="cbx">
+      <span>
+        <svg viewBox="0 0 12 10" height="10px" width="12px">
+          <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+        </svg>
+      </span>
+      <span class="text">{{ labelText }}</span>
+    </label>
+  </div>
 </template>
-    
+
 <script setup>
-    defineProps({ 
-        checkboxId: String, // 動態的 id，可以從父層傳入 
-        labelText: String,
-    }) 
+import { defineProps, defineEmits } from 'vue';
+
+const props = defineProps({
+  checkboxId: [String, Number],
+  labelText: String,
+  modelValue: Boolean,
+});
+
+const emit = defineEmits(['update:modelValue', 'change']);
+
+const handleChange = (event) => {
+  emit('update:modelValue', event.target.checked);
+  emit('change', { id: props.checkboxId, name: props.labelText, checked: event.target.checked });
+};
 </script>
     
 <style scoped>
