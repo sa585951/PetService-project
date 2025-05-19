@@ -10,7 +10,7 @@
                 </div>
                 <div class="col-3"> 
                     <label for="PetCount" class="me-2">毛孩數量:</label>
-                    <select name="PetCount" id="PetCount" v-model="PetCount">
+                    <select name="PetCount" id="PetCount" v-model.number="PetCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -59,7 +59,7 @@
     import Checkbox from '@/components/HotelCheckbox.vue'; 
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
-   import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+    import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
 //日期選擇器
     const datePickerRef = ref(null);
     let fpInstance = null;
@@ -95,6 +95,7 @@
                 };
             }
         });
+        loadHotels();
     });
 
  //GET全部
@@ -105,11 +106,11 @@
         const response = await fetch(API_URL, {
             headers: {'Content-Type': 'application/json'}
         });
-    const datas = await response.json();
-    hotels.value = datas.hotels;   //只存陣列
-    totalItems.value = datas.totalItems;
-    console.log(hotels.value);
-    console.log("totalItems:", totalItems.value);
+        const datas = await response.json();
+        hotels.value = datas.hotels;   //只存陣列
+        totalItems.value = datas.totalItems;
+        console.log(hotels.value);
+        console.log("totalItems:", totalItems.value);
     };
     
 //勾選服務項目
@@ -123,46 +124,66 @@
         console.log("Selected item names:", Array.from(selectedItemNames.value));
     };
 
-    // 計算篩選後的旅館列表
-    const filteredHotels = computed(() => {
-        if (selectedItemNames.value.size === 0) {
-            return hotels.value;
-        }
-        return hotels.value.filter(hotel => {
-            const hotelItemNames = new Set(hotel.items.map(item => item.name));
-            for (const selectedName of selectedItemNames.value) {
-                if (!hotelItemNames.has(selectedName)) {
-                    return false;
-                }
-            }
-            return true;
-        });
-    });
+// 儲存搜尋結果的 hotelId
+    const matchedHotelIds = ref([]);
 
-//上方搜尋列搜尋房間有庫存的旅館
-    const PetCount = ref("1");
-    const requestData = {
-        "CheckInDate": checkInDate.value,
-        "CheckOutDate": checkOutDate.value,
-        "PetCount": parseInt(PetCount.value) // 確保傳的是 number
-        };
-        console.log(requestData);
+// 送出查詢，取得符合條件的旅館 ID 清單
     const searchHotels = async () => {
+        const searchDate = {
+            CheckInDate: checkInDate.value,
+            CheckOutDate: checkOutDate.value,
+            PetCount: PetCount.value
+        };
 
-    const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestData)
-    });
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(searchDate)
+        });
 
-    const data = await response.json();
-    console.log("搜尋結果:", data);
+        const result = await response.json();
+
+    // 更新 matchedHotelIds
+        matchedHotelIds.value = result.map(r => r.hotelId);
+        console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
+
+    // 將房型數量加入對應的 hotel 中
+        result.forEach(searchResult => {
+            const hotel = hotels.value.find(h => h.id === searchResult.hotelId);
+            if (hotel) {
+                hotel.qtyStatus[0].smallDogRoom = searchResult.smallDogRoom ?? hotel.qtyStatus[0].smallDogRoom;
+                hotel.qtyStatus[0].middleDogRoom = searchResult.middleDogRoom ?? hotel.qtyStatus[0].middleDogRoom;
+                hotel.qtyStatus[0].bigDogRoom = searchResult.bigDogRoom ?? hotel.qtyStatus[0].bigDogRoom;
+                hotel.qtyStatus[0].catRoom = searchResult.catRoom ?? hotel.qtyStatus[0].catRoom;
+            }
+        });
+        console.log("更新後的 hotels:", hotels.value);
     };
 
-    onMounted(() => {
-        loadHotels();
-        searchHotels();
+// 根據搜尋結果與勾選項目篩選旅館
+    const filteredHotels = computed(() => {
+        let filtered = hotels.value;
+
+    // 依照搜尋結果 hotelId 過濾
+        if (matchedHotelIds.value.length > 0) {
+            filtered = filtered.filter(h => matchedHotelIds.value.includes(h.id));
+        }
+
+    // 依照勾選設施項目再過濾一次
+        if (selectedItemNames.value.size > 0) {
+            filtered = filtered.filter(hotel => {
+                const hotelItemNames = new Set(hotel.items.map(item => item.name));
+                for (const selectedName of selectedItemNames.value) {
+                    if (!hotelItemNames.has(selectedName)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        return filtered;
     });
 
 </script>
