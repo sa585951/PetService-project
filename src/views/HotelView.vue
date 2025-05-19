@@ -9,8 +9,8 @@
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-3"> 
-                    <span for="guests" class="me-2">毛孩數量:</span> 
-                    <select name="guests" id="guests">
+                    <label for="PetCount" class="me-2">毛孩數量:</label>
+                    <select name="PetCount" id="PetCount" v-model="PetCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -19,7 +19,7 @@
                 </div>
                 <div class="col-3 p-2">
                     <div class="col-2 p-2 text-center"> 
-                        <SearchButton @click="searchHotels" class="mt-2">搜尋</SearchButton>
+                        <SearchButton @click="searchHotels()" class="mt-2">搜尋</SearchButton>
                     </div>
                 </div>
             </div>
@@ -63,29 +63,38 @@
 //日期選擇器
     const datePickerRef = ref(null);
     let fpInstance = null;
+    const checkInDate = ref();
+    const checkOutDate = ref();
     onMounted(async () => {
-            fpInstance = flatpickr(datePickerRef.value, {
-                mode: "range",
-                minDate: "today",
-                enableTime: false,
-                dateFormat: "Y-m-d",
-                defaultDate: new Date(),
-                locale: zh_tw || "zh_tw" ,
-                defaultDate: null,
-                onChange: (selectedDates, dateStr, instance) => {
-                    console.log(flatpickr.l10n);
-
-                    console.log('選取的日期物件:', selectedDates);
-                    if (selectedDates.length === 2) {
-                        const startDate = selectedDates[0]; // 開始日期的 Date 物件
-                        const endDate = selectedDates[1];   // 結束日期的 Date 物件
-                        console.log('開始日期:', startDate);
-                        console.log('結束日期:', endDate);
-                    } else if (selectedDates.length === 1) {
-                        console.log('選取退房日期');
-                    }
-                }
-            });
+        fpInstance = flatpickr(datePickerRef.value, {
+            mode: "range",
+            minDate: "today",
+            enableTime: false,
+            dateFormat: "Y / m / d",
+            defaultDate: new Date(),
+            locale: zh_tw || "zh_tw" ,
+            defaultDate: null,
+            onChange: (selectedDates, dateStr, instance) => {
+                console.log('選取的日期物件:', selectedDates);
+                if (selectedDates.length === 2) {
+                    const startDate = selectedDates[0];
+                    const endDate = selectedDates[1];
+                    const formatDateToYMD = (date) => {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                    };
+                    const formattedStartDate = formatDateToYMD(startDate);
+                    const formattedEndDate = formatDateToYMD(endDate);
+                    console.log('開始日期字串:', formattedStartDate);
+                    console.log('結束日期字串:', formattedEndDate);
+                    // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
+                    checkInDate.value = formattedStartDate;
+                    checkOutDate.value = formattedEndDate;
+                };
+            }
+        });
     });
 
  //GET全部
@@ -103,10 +112,6 @@
     console.log("totalItems:", totalItems.value);
     };
     
-    onMounted(() => {
-        loadHotels();
-    })
-
 //勾選服務項目
     const selectedItemNames = ref(new Set()); // 使用 Set 來儲存選中的項目名稱
 
@@ -134,8 +139,30 @@
         });
     });
 
+//上方搜尋列搜尋房間有庫存的旅館
+    const PetCount = ref("1");
+    const requestData = {
+        "CheckInDate": checkInDate.value,
+        "CheckOutDate": checkOutDate.value,
+        "PetCount": parseInt(PetCount.value) // 確保傳的是 number
+        };
+        console.log(requestData);
+    const searchHotels = async () => {
+
+    const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData)
+    });
+
+    const data = await response.json();
+    console.log("搜尋結果:", data);
+    };
+
     onMounted(() => {
         loadHotels();
+        searchHotels();
     });
 
 </script>

@@ -27,11 +27,11 @@
                         <table class="room-table card-text mt-4">
                             <tbody>
                                 <tr v-for="(pair, index) in getRoomPairs(hotel)" :key="index">
-                        <td class="fw-bold">{{ pair[0]?.name }}</td>
-                        <td class="qty">剩餘 {{ getRoomQty(hotel, pair[0]?.name) }} 間</td>
-                        <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
-                        <td class="qty" v-if="pair[1]">剩餘 {{ getRoomQty(hotel, pair[1].name) }} 間</td>
-                      </tr>
+                                    <td class="fw-bold">{{ pair[0]?.name }}</td>
+                                    <td class="qty">{{ getRoomQty(hotel, pair[0]?.name) }}</td>
+                                    <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
+                                    <td class="qty" v-if="pair[1]">{{ getRoomQty(hotel, pair[1].name) }}</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -70,18 +70,25 @@
     function getRoomQty(hotel, roomName) {
         const qty = hotel.qtyStatus?.[0];
         if (!qty || !roomName) return null;
+        let count = 0;
         switch (roomName) {
             case "小型犬房":
-                return qty.smallDogRoom;
+                count = qty.smallDogRoom;
+                break;
             case "中型犬房":
-                return qty.middleDogRoom;
+                count = qty.middleDogRoom;
+                break;
             case "大型犬房":
-                return qty.bigDogRoom;
+                count = qty.bigDogRoom;
+                break;
             case "貓咪房":
-                return qty.catRoom;
+                count = qty.catRoom;
+                break;
             default:
-                return null;
+                count = null;
+                break;
         }
+        return count === 0 ? "今日尚無空房" : `剩餘 ${count} 間`;
     }
 </script>
     
