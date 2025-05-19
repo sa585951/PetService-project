@@ -3,7 +3,7 @@
     <nav class="navbar navbar-expand-lg">
       <div class="container">
         <router-link to="/" class="navbar-brand">
-          <i class="fas fa-paw"></i> Pet Adoption & Care
+          <i class="fas fa-paw"></i> 毛孩管家
         </router-link>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
           <span class="navbar-toggler-icon"></span>
@@ -52,7 +52,7 @@
                     </router-link>
                   </li>
                   <li>
-                    <router-link to="/my-pets" class="dropdown-item">
+                    <router-link to="/orders" class="dropdown-item">
                       <i class="bi bi-bag-check-fill"></i> 我的訂單
                     </router-link>
                   </li>

@@ -101,7 +101,7 @@ const router = createRouter({
       component: ResetPasswordView,
     },
     {
-      path: "/member/orders",
+      path: "/orders",
       component: OrdersView,
       meta: { requiresAuth: true },
     },

@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axios from "axios"; // 使用自定義的 axios 實例
+import { useAuthStore } from "./authStore";
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
-    /** @type {TOrder[]} */
     orders: [],
     TotalPages:0,
     loading: false,
@@ -23,9 +23,15 @@ export const useOrderStore = defineStore('order', {
     async fetchOrders(params){
       this.loading = true
       this.error = null
+
+      const authStore = useAuthStore()
       try{
-        const res = await axios.get(`/api/Order/members/${params.memberId}`,{params}
-        )
+        const res = await axios.get(`/api/Order`,{params,
+          headers:{
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        });
+
         console.log('API 回傳:', res.data)
           //後端回傳的是OrderPagingDTO
           this.orders = res.data.ordersResult

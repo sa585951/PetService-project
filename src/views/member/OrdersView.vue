@@ -117,7 +117,6 @@ const pageSize = 10
 
 function loadOrders(){
   orderStore.fetchOrders({
-      memberId: authStore.memberId,
       keyword: searchQuery.value,
       orderType: activeTab.value,
       sortBy: 'date_desc',
