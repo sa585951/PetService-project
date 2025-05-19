@@ -1,40 +1,40 @@
 <template>
-<router-link :to="`/HotelDetail/${{ hotelId }}`" class="text-decoration-none" >
-<div class="card mb-3" style="max-width: 100%;" id="hotelId">
+<div v-for="hotel in hotels" :key="hotel.id">
+<router-link :to="`/HotelDetail/${hotel.id}`" class="text-decoration-none" >
+<div class="card mb-3" style="max-width: 100%;">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
-            <img src="../assets/Hotel/hotel_1.jpg" class="img-fluid rounded-start" alt="...">
+            <img :src="`/Hotel/${hotel.image_1}`" class="img-fluid rounded-start" alt="...">
         </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h4 class="card-title fw-bold">Card title</h4>
-                <div class="price-tag">600元起</div>
-                <div class="p-0">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_light.png">
-                    <img class="star" src="../assets/Hotel/star_gray.png">
-                </div>
-                <div class="pt-2">
-                    <p class="card-text">地址</p>
-                    <p class="card-text">電話</p>
-                    <p class="card-text">Email</p>
+                <div class="d-flex">
+                <h4 class="card-title fw-bold m-0">{{ hotel.name }}</h4>
+                <div class="p-0 ps-2">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                    <img class="star" src="/Hotel/star_light.png">
+                </div></div>
+                <div class="price-tag">{{ Math.min(...hotel.roomDetail.map(room => room.price)) }}元起</div>
+                <div class="pt-1">
+                    <p class="card-text mb-1">
+                        <span v-for="item in hotel.items" :key="item.id" class="fw-bold me-2">
+                            <i class="bi bi-check2 me-2"></i>{{ item.name }}</span>
+                    </p>
+                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{ hotel.address }}</p>
+                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{ hotel.phone }}</p>
+                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{ hotel.email }}</p>
                     <div style="width: 90%;">
-                        <table class="room-table card-text">
+                        <table class="room-table card-text mt-4">
                             <tbody>
-                                <tr>
-                                    <td class="fw-bold">小型犬房</td>
-                                    <td class="qty">剩餘 10 間</td>
-                                    <td class="fw-bold">中型犬房</td>
-                                    <td>剩餘 10 間</td> 
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">大型犬房</td>
-                                    <td class="qty">剩餘 10 間</td>
-                                    <td class="fw-bold">貓咪房</td>
-                                    <td>剩餘 10 間</td>
-                                </tr>
+                                <tr v-for="(pair, index) in getRoomPairs(hotel)" :key="index">
+                        <td class="fw-bold">{{ pair[0]?.name }}</td>
+                        <td class="qty">剩餘 {{ getRoomQty(hotel, pair[0]?.name) }} 間</td>
+                        <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
+                        <td class="qty" v-if="pair[1]">剩餘 {{ getRoomQty(hotel, pair[1].name) }} 間</td>
+                      </tr>
                             </tbody>
                         </table>
                     </div>
@@ -44,10 +44,51 @@
     </div>
 </div>
 </router-link>
+</div>
 </template>
     
 <script setup>
-    
+    import { computed } from 'vue';
+// 取得 props
+    const props = defineProps({
+        hotels: {
+            type: Array,
+            default: () => []
+        }
+    });
+    const hotels = computed(() => props.hotels);
+
+
+    // 依據單一 hotel 拆分 roomTypes 為兩兩一組
+function getRoomPairs(hotel) {
+  const pairs = [];
+  for (let i = 0; i < hotel.roomTypes.length; i += 2) {
+    pairs.push([
+      hotel.roomTypes[i],
+      hotel.roomTypes[i + 1] || null
+    ]);
+  }
+  return pairs;
+}
+
+// 傳回房型對應的剩餘房間數
+function getRoomQty(hotel, roomName) {
+  const qty = hotel.qtyStatus?.[0];
+  if (!qty || !roomName) return null;
+  switch (roomName) {
+    case "小型犬房":
+      return qty.smallDogRoom;
+    case "中型犬房":
+      return qty.middleDogRoom;
+    case "大型犬房":
+      return qty.bigDogRoom;
+    case "貓咪房":
+      return qty.catRoom;
+    default:
+      return null;
+  }
+}
+
 </script>
     
 <style scoped>
@@ -83,12 +124,16 @@
         border-bottom: 1px dashed rgb(228, 187, 134);
     }
     .room-table td {
+        width: 25%;
         padding: 5px;
         }
     .card-text {
         margin: 7px;
         font-size: 14px;
         font-size: 1rem;
+    }
+    i {
+        color: rgb(155, 97, 27);
     }
 
     /* 價錢標籤CSS開始 */
@@ -98,7 +143,7 @@
         font-size: 20px;
         text-align: center;
         position: absolute;
-        top: 20px;
+        top: 15px;
         right: 20px;
         background-color: rgb(235, 207, 170);
         color: #5a3e00;

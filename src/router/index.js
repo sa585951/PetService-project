@@ -19,6 +19,7 @@ import EditPetView from '@/views/member/EditPetView.vue'
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
+import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
 
 
 const router = createRouter({
@@ -104,6 +105,10 @@ const router = createRouter({
       path: "/member/orders",
       component: OrdersView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: "/googlesignupsupplement",
+      component: GoogleSignupSupplementView,
     },
   ],
 })

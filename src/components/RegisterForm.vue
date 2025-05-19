@@ -114,7 +114,7 @@
   <div class="col-6">  <button @click="handleClick" :disabled="countdown > 0" class="btn btn-secondary">{{ countdown>0 ? `${countdown} 秒後可重新發送` : `發送驗證碼`}}</button></div>
     <div class="col-1">
         <span v-if="verifyStatus === true" class="verified">✅</span>
-        <span v-else-if="verifyStatus === false" class="unverified">❌ 驗證失敗</span>
+        <span v-else-if="verifyStatus === false" class="unverified">❌</span>
     </div>
 </div>
       <!-- Recaptcha -->

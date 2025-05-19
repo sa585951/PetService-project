@@ -1,19 +1,15 @@
 <template>
     <div class="Header_div mb-3">
-        <img src="../assets/Hotel/hotelBackground.jpg" class="img_background">
+        <img src="../assets/Picture/hotelBackground.jpg" class="img_background">
         <div class="search_bar1"> 
             <div class="search_bar2"> 
-                <div class="col-4 d-flex justify-content-center align-items-center"> 
+                <div class="col-6 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                    <input type="date" id="Datepicker_start"> 
-                </div> 
-                <span><i class="bi bi-arrow-right"></i></span>
-                <div class="col-4 d-flex justify-content-center align-items-center"> 
-                    <!-- <i class="bi bi-calendar4"></i> -->
-                    <input type="date" id="checkout">
+                     <div class="w-75 d-flex justify-content-center">
+                    <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
-                <div class="col-2">
-                    <label for="guests" class="me-2">毛孩數量:</label> 
+                <div class="col-3"> 
+                    <span for="guests" class="me-2">毛孩數量:</span> 
                     <select name="guests" id="guests">
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -21,7 +17,7 @@
                         <option value="4">4</option>
                     </select>
                 </div>
-                <div class="col-2 p-2">
+                <div class="col-3 p-2">
                     <div class="col-2 p-2 text-center"> 
                         <SearchButton onclick="searchHotels()">搜尋</SearchButton> 
                     </div>
@@ -31,48 +27,83 @@
     </div>
 <div class="container">
     <div class="row">
+        <!-- 側邊欄 -->
         <div class="col-2">
             <div class="card card_left"> 
                 <div class="card-body"> 
-                    <p class="card-text fw-bold">環境設施</p> <hr/> 
-                    <Checkbox :checkboxId="checkboxId3" :labelText="dynamicText3"></Checkbox> 
-                    <Checkbox :checkboxId="checkboxId4" :labelText="dynamicText4" ></Checkbox> 
-                    <hr/><p class="card-text fw-bold">照護需求</p> <hr/> 
-                    <Checkbox :checkboxId="checkboxId1" :labelText="dynamicText1"></Checkbox> 
-                    <Checkbox :checkboxId="checkboxId2" :labelText="dynamicText2" ></Checkbox> 
+                    <p class="card-text fw-bold">設施與服務</p> <hr/> 
+                    <Checkbox v-for="item in totalItems":key="item.id" :checkboxId="item.id" :labelText="item.name" class="mb-1"></Checkbox> 
                 </div> 
             </div> 
         </div> 
-
-    
+        <!-- 主要內容 -->
         <div class="col-10">
-            <HotelCard></HotelCard>
-            <HotelCard></HotelCard>
-            <HotelCard></HotelCard>
+            <HotelCard :hotels="hotels"></HotelCard>
         </div>
     </div>
     
 </div>
-
-
-    
+  
 </template>
-
 
 <script setup>
     // new AirDatepicker('#Datepicker_start');
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
-    //Checkbox測試 
-     const checkboxId1 = 'cbx-1' 
-     const checkboxId2 = 'cbx-2'
-     const dynamicText1 = '24小時照顧'
-     const dynamicText2 = '接送服務' 
-     const checkboxId3 = 'cbx-3' 
-     const checkboxId4 = 'cbx-4'
-     const dynamicText3 = '戶外奔跑區'
-     const dynamicText4 = '登頂小木屋' 
+    import {onMounted, reactive, ref} from 'vue';  //匯入 onMounted 函式
+    import flatpickr from 'flatpickr';
+   import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+//日期選擇器
+    const datePickerRef = ref(null);
+    let fpInstance = null;
+    onMounted(async () => {
+            fpInstance = flatpickr(datePickerRef.value, {
+                mode: "range",
+                minDate: "today",
+                enableTime: false,
+                dateFormat: "Y-m-d",
+                defaultDate: new Date(),
+                locale: zh_tw || "zh_tw" ,
+                defaultDate: null,
+                onChange: (selectedDates, dateStr, instance) => {
+                    console.log(flatpickr.l10n);
+
+                    console.log('選取的日期物件:', selectedDates);
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0]; // 開始日期的 Date 物件
+                        const endDate = selectedDates[1];   // 結束日期的 Date 物件
+                        console.log('開始日期:', startDate);
+                        console.log('結束日期:', endDate);
+                    } else if (selectedDates.length === 1) {
+                        console.log('選取退房日期');
+                    }
+                }
+            });
+    });
+
+ //GET全部
+    const hotels = ref([]);
+    const totalItems = ref([]);
+    const loadHotels = async () => {
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel`;
+        const response = await fetch(API_URL, {
+            headers: {'Content-Type': 'application/json'}
+        });
+    const datas = await response.json();
+    hotels.value = datas.hotels;   //只存陣列
+    totalItems.value = datas.totalItems;
+    console.log(hotels.value);
+    console.log("totalItems:", totalItems.value);
+    };
+    
+    onMounted(() => {
+        loadHotels();
+    })
+
+
+
+
     
 
 
@@ -139,5 +170,10 @@
     .card_left { 
         background-color: rgb(255, 255, 255); 
     } 
-
+/* datepicker */
+    .datepicker{
+        border-bottom: 1px solid rgb(243, 221, 195);
+        border-radius: 0px;
+    }
+    
 </style>

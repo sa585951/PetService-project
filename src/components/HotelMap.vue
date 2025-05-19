@@ -5,7 +5,7 @@
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="mapModalLabel">地址</h5>
+            <h5 class="modal-title" id="mapModalLabel">地址: 高雄市前鎮區民權二路615號</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
           </div>
           <!-- 阻止點擊地圖時關閉 modal -->
