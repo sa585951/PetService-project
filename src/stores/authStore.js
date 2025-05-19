@@ -28,7 +28,8 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = true;
       this.userName = userName;
       this.token = token;
-      this.memberId = memberId
+      this.memberId = memberId;
+
       // 使用 localStorage 儲存個別項目
       localStorage.setItem('token', token);
       localStorage.setItem('userName', userName);
@@ -43,6 +44,7 @@ export const useAuthStore = defineStore('auth', {
       this.userName = null; // 登出時狀態改回 null 更符合「沒有值」的語意
       this.token = null; // 登出時狀態改回 null
       this.memberId = null;
+      
       // 從 localStorage 移除個別項目
       localStorage.removeItem('token');
       localStorage.removeItem('userName');
@@ -61,7 +63,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = token;
         this.userName = userName;
         this.isLoggedIn = true;
-        this.memberId = memberId
+        this.memberId = memberId;
         console.log('登入狀態還原成功');
       } else {
          console.log('No state found or state incomplete in localStorage'); // 添加 log
@@ -69,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = null;
         this.userName = null;
         this.isLoggedIn = false;
-        this.memberId = null
+        this.memberId = null;
         console.log('尚未登入或資料遺失，狀態已清空');
       }
     },
