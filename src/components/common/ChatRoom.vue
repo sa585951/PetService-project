@@ -172,8 +172,7 @@ export default {
           .withUrl(`https://localhost:7089/chathub?userId=${this.currentUserId}`)
           .withAutomaticReconnect()
           .build();
-        
-        
+         
         this.connection.on("ReceiveMessage", (fromUser, message) => {
           this.messages.push({
             id: Date.now(),
@@ -213,6 +212,23 @@ export default {
         // const sessionId = await res.json();
         // this.sessionId = sessionId;
 
+        const response = await fetch('/api/Chat/CreateOrGetSession', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            FMemberId: this.currentUserId,
+            FEmployeeId: this.targetUserId,
+            Role: this.userRole,
+          })
+        });
+        
+
+      const sessionId = await response.json();
+      this.sessionId = sessionId;
+
       } catch (err) {
         console.error("❌ SignalR 連線失敗：", err);
       }
@@ -248,14 +264,17 @@ export default {
         console.log("📤 targetUserId：", this.targetUserId);
         console.log("📤 messageText：", this.messageText);
         try {
-          // await this.connection.invoke(
-          //   "SendMessage",
-          //   this.sessionId,            // ✅ sessionId
-          //   this.currentUserId,        // ✅ senderId
-          //   receiver,                  // ✅ receiverId
-          //   this.userRole,             // ✅ senderRole
-          //   this.messageText           // ✅ messageText
-          // );
+          // const dto = {
+          //   FSessionId: this.sessionId,
+          //   FSenderId: this.currentUserId,
+          //   FSenderRole: this.userRole,
+          //   FMessageText: this.messageText,
+          //   FAttachmentUrl: "",
+          //   FMessageType: "text"
+          // };
+
+          // await this.connection.invoke("SendMessage", dto);
+          // this.messageText = "";
           await this.connection.invoke(
             "SendMessage",
             this.currentUserId,   // 自己
@@ -263,6 +282,23 @@ export default {
             this.messageText      // 訊息內容
           );
           console.log("📤 訊息已送出");
+          // ✅ Step2: 呼叫 API 儲存訊息（歷史）
+          await fetch("/api/Chat/SaveMessage", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+              FSessionId: this.sessionId,
+              FSenderId: this.currentUserId,
+              FSenderRole: this.userRole,
+              FMessageText: this.messageText,
+              FAttachmentUrl: "",
+              FMessageType: "text"
+            })
+          });
+          console.log("💾 訊息已儲存到資料庫");
         } catch (err) {
           console.error("❌ 傳送失敗：", err);
         }
