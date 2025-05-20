@@ -1,7 +1,7 @@
 <template>
 <div v-for="hotel in hotels" :key="hotel.id">
-<router-link :to="`/HotelDetail/${hotel.id}`" class="text-decoration-none" >
-<div class="card mb-3" style="max-width: 100%;">
+
+<div class="card mb-3" @click="goToDetail(hotel)" style="max-width: 100%;">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
             <img :src="`/Hotel/${hotel.image_1}`" class="img-fluid rounded-start" alt="...">
@@ -40,20 +40,49 @@
         </div>
     </div>
 </div>
-</router-link>
 </div>
 </template>
     
 <script setup>
     import { computed } from 'vue';
+    import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+
 // 取得 props
     const props = defineProps({
         hotels: {
+            hotels: {
             type: Array,
             default: () => []
+            },
+        },
+        checkInDate: {
+            type: String,
+            default: ''
+        },
+        checkOutDate: {
+            type: String,
+            default: ''
+        },
+        petCount: {
+            type: Number,
+            default: 1
         }
     });
     const hotels = computed(() => props.hotels);
+
+    function goToDetail(hotel) {
+        router.push({
+            path: `/HotelDetail/${hotel.id}`,
+            query: {
+                checkInDate: props.checkInDate,
+                checkOutDate: props.checkOutDate,
+                petCount: props.petCount
+            }
+        })
+    }
 // 依據單一 hotel 拆分 roomTypes 為兩兩一組
     function getRoomPairs(hotel) {
         const pairs = [];
