@@ -9,8 +9,8 @@
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-3"> 
-                    <label for="PetCount" class="me-2">毛孩數量:</label>
-                    <select name="PetCount" id="PetCount" v-model.number="PetCount">
+                    <label for="petCount" class="me-2">毛孩數量:</label>
+                    <select name="petCount" id="petCount" v-model.number="petCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="col-10">
-        <HotelCard :hotels="filteredHotels"></HotelCard>
+        <HotelCard :hotels="filteredHotels" :check-in-date="checkInDate" :check-out-date="checkOutDate" :pet-count="petCount"></HotelCard>
       </div>
     </div>
   </div>
@@ -65,6 +65,7 @@
     let fpInstance = null;
     const checkInDate = ref();
     const checkOutDate = ref();
+    const petCount = ref();
     onMounted(async () => {
         fpInstance = flatpickr(datePickerRef.value, {
             mode: "range",
@@ -132,10 +133,16 @@
         const searchDate = {
             CheckInDate: checkInDate.value,
             CheckOutDate: checkOutDate.value,
-            PetCount: PetCount.value
+            petCount: petCount.value
         };
 
-        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
+        if (!checkInDate.value || !checkOutDate.value) {
+            alert("請先選擇完整的入住、退房日期");
+            return; } // 停止函式執行
+        if (!petCount.value) {
+            alert("請選擇入住寵物數量");
+            return; } // 停止函式執行
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Search`;
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -182,7 +189,6 @@
                 return true;
             });
         }
-
         return filtered;
     });
 
