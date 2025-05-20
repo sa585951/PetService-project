@@ -76,7 +76,6 @@
             locale: zh_tw || "zh_tw" ,
             defaultDate: null,
             onChange: (selectedDates, dateStr, instance) => {
-                console.log('選取的日期物件:', selectedDates);
                 if (selectedDates.length === 2) {
                     const startDate = selectedDates[0];
                     const endDate = selectedDates[1];
@@ -88,8 +87,6 @@
                     };
                     const formattedStartDate = formatDateToYMD(startDate);
                     const formattedEndDate = formatDateToYMD(endDate);
-                    console.log('開始日期字串:', formattedStartDate);
-                    console.log('結束日期字串:', formattedEndDate);
                     // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
                     checkInDate.value = formattedStartDate;
                     checkOutDate.value = formattedEndDate;
@@ -110,8 +107,8 @@
         const datas = await response.json();
         hotels.value = datas.hotels;   //只存陣列
         totalItems.value = datas.totalItems;
-        console.log(hotels.value);
-        console.log("totalItems:", totalItems.value);
+        // console.log(hotels.value);
+        // console.log("totalItems:", totalItems.value);
     };
     
 //勾選服務項目
@@ -122,7 +119,7 @@
             selectedItemNames.value.add(item.name);}
         else {
             selectedItemNames.value.delete(item.name);}
-        console.log("Selected item names:", Array.from(selectedItemNames.value));
+        // console.log("Selected item names:", Array.from(selectedItemNames.value));
     };
 
 // 儲存搜尋結果的 hotelId
@@ -153,7 +150,7 @@
 
     // 更新 matchedHotelIds
         matchedHotelIds.value = result.map(r => r.hotelId);
-        console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
+        // console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
 
     // 將房型數量加入對應的 hotel 中
         result.forEach(searchResult => {
@@ -165,7 +162,7 @@
                 hotel.qtyStatus[0].catRoom = searchResult.catRoom ?? hotel.qtyStatus[0].catRoom;
             }
         });
-        console.log("更新後的 hotels:", hotels.value);
+        // console.log("更新後的 hotels:", hotels.value);
     };
 
 // 根據搜尋結果與勾選項目篩選旅館
