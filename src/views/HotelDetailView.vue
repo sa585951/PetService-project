@@ -1,7 +1,7 @@
 <template>
     <div class="container mt-5">
         <div class="row">
-            <div class="card ps-0 mb-3" style="max-width: 100%;" id="hotelId">
+            <div class="card ps-0 mb-3" style="max-width: 100%;">
                 <div class="row g-0 hotel_card">
                     <!-- 旅館照片 -->
                     <div class="col-md-7 p-3 pe-0">
@@ -131,6 +131,15 @@
     import GoButton from '@/components/HotelBookingButton.vue';
     import 'leaflet/dist/leaflet.css'
     import { ref } from 'vue';
+    import { useRoute } from 'vue-router'
+
+    const route = useRoute()
+    const hotelId = route.params.id
+    const checkInDate = route.query.checkInDate
+    const checkOutDate = route.query.checkOutDate
+    const petCount = route.query.petCount
+    console.log(hotelId,checkInDate,checkOutDate,petCount);
+
 //圖片
     const imageList = [
         new URL('/Hotel/hotel1-1.png', import.meta.url).href,
@@ -139,8 +148,8 @@
     ];
 
     const selectedImage = ref(imageList[0]);
+    // console.log(hotel.id);
 
-   
 
 </script>
     
