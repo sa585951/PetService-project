@@ -20,7 +20,9 @@ import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
 import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
-
+import CartView from '@/views/CartView.vue'
+import Payment from '@/views/Payment.vue'
+import OrderSuccess from '@/views/OrderSuccess.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -102,7 +104,7 @@ const router = createRouter({
       component: ResetPasswordView,
     },
     {
-      path: "/member/orders",
+      path: "/orders",
       component: OrdersView,
       meta: { requiresAuth: true },
     },
@@ -110,6 +112,34 @@ const router = createRouter({
       path: "/googlesignupsupplement",
       component: GoogleSignupSupplementView,
     },
+    {
+      path: "/cart",
+      component: CartView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/payment",
+      component: Payment,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/success/:id",
+      component: OrderSuccess,
+      props: route => ({
+      orderId: route.params.id,
+     orderType: route.query.type
+      }),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/:id",
+      name: 'OrderDetail',
+      component: () =>import('@/views/OrderDetailView.vue'),
+      props: route => ({
+        orderId: route.params.id,
+        orderType: route.query.type
+      })
+    }
   ],
 })
 

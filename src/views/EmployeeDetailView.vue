@@ -125,7 +125,9 @@ import { ref, computed ,onMounted} from 'vue'
 import { useRoute } from 'vue-router'
 import { employees } from '@/data';
 import { Carousel } from 'bootstrap'
+import { useCartStore } from '@/stores/cart'
 
+const cartStore = useCartStore()
 const carouselRef = ref(null)
 const bsCarousel = ref(null)
 
@@ -191,26 +193,51 @@ function isFormValid() {
   )
 }
 
-function addToCart() {
-  if (!isFormValid()) {
+// function addToCart() {
+//   if (!isFormValid()) {
+//     alert('請完整填寫寵物種類、數量與日期')
+//     return
+//   }
+//   const message = `
+//     已加入購物車：
+//     員工：${employee.name}
+//     寵物種類：${form.value.pet}
+//     數量：${form.value.quantity}
+//     預約日期：${form.value.date}
+//     預約時間：${form.value.time}
+//     備註：${form.value.notes || '無'}
+//     小計：${subtotal.value} 元
+//   `
+//   alert(message)
+//   formReset()
+// }
+function addToCart(){
+  if(!isFormValid()){
     alert('請完整填寫寵物種類、數量與日期')
     return
   }
-  const message = `
-    已加入購物車：
-    員工：${employee.name}
-    寵物種類：${form.value.pet}
-    數量：${form.value.quantity}
-    預約日期：${form.value.date}
-    預約時間：${form.value.time}
-    備註：${form.value.notes || '無'}
-    小計：${subtotal.value} 元
-  `
-  alert(message)
-  formReset()
+
+  const combineNotes = `寵物種類:${form.value.pet}，備註:${form.value.notes || '無'}`;
+
+  const walkStartTime = `${form.value.date}T${form.value.time}`;
+
+  const cartItem = {
+    employeeServiceId:employee.id,
+    walkStart: walkStartTime,
+    quantity: form.value.quantity,
+    note: combineNotes,
+    name: employee.name,
+    imageUrl:employee.employee_photo,
+    price: employee.price
+  };
+
+  const isValidDate = !isNaN(new Date(walkStartTime).getTime());
+  console.log('格式正確嗎?', isValidDate);
+  
+  cartStore.addItemToCart(cartItem);
+  alert('已加入購物車');
+  formReset();
 }
-
-
 
 function formReset() {
   form.value = {
@@ -224,7 +251,6 @@ function formReset() {
 }
 
 </script>
-
 
 <style scoped>
 textarea {

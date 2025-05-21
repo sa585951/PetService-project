@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axios from "axios"; // 使用自定義的 axios 實例
+import { useAuthStore } from "./authStore";
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
-    /** @type {TOrder[]} */
     orders: [],
     TotalPages:0,
     loading: false,
@@ -23,9 +23,15 @@ export const useOrderStore = defineStore('order', {
     async fetchOrders(params){
       this.loading = true
       this.error = null
+
+      const authStore = useAuthStore()
       try{
-        const res = await axios.get(`/api/Order/members/${params.memberId}`,{params}
-        )
+        const res = await axios.get(`/api/Order`,{params,
+          headers:{
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        });
+
         console.log('API 回傳:', res.data)
           //後端回傳的是OrderPagingDTO
           this.orders = res.data.ordersResult
@@ -39,24 +45,3 @@ export const useOrderStore = defineStore('order', {
       },
     },
   })
-//   getters: {
-//     filterByStatus: (state) => {
-//       return (status) => {
-//         if (!Array.isArray(state.orders)) {
-//           console.warn('orders 不是陣列！', state.orders)
-//           return []
-//         }
-//         return state.orders.filter(o => o.fOrderStatus === status)
-//       }
-//     },
-//     /**
-//      * 根據狀態過濾（例如「未付款」、「已付款」、「已取消」）
-//      * @return {(status: string) => Order[]}
-//      */
-//     filterByStatus: (state) => {
-//       return (status) => {
-//         return state.orders.filter(o => o.fOrderStatus === status)
-//       }
-//     }
-//   }
-// })

@@ -85,7 +85,7 @@
               <div class="card order-card">
                 <div class="card-header d-flex align-items-center">
                   <span>我的訂單</span>
-                  <button class="secondary-btn" @click="router.push(`/member/orders`)">
+                  <button class="secondary-btn" @click="router.push(`/orders`)">
                     查看所有訂單
                   </button>
                 </div>
@@ -104,6 +104,9 @@
                         </span>
                       </div>
                     </div>
+                    <div>
+                        <span class="fw-bold me-3">{{ o.fOrderType }}</span>
+                      </div>
                         <span class="fw-bold me-3">NT$ {{ o.fTotalAmount }}</span>
                         <small class="">{{ formatDate(o.fCreatedAt) }}</small>
                     </div>
@@ -229,7 +232,7 @@ const setActiveTab = (tabName) => {
   const routeMap = {
     'memberdashboard': '/memberdashboard',
     'profile': '/profile',
-    'orders': '/member/orders',
+    'orders': '/orders',
     'pet': '/pet'
   };
   
@@ -297,7 +300,7 @@ const getActiveTabFromPath = (path) => {
     return 'memberdashboard';
   } else if (path.includes('/profile')) {
     return 'profile';
-  } else if (path.includes('/member/orders')) {
+  } else if (path.includes('/orders')) {
     return 'orders';
   } else if (path.includes('/pet')) {
     return 'pet';

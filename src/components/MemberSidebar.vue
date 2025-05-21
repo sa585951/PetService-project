@@ -36,7 +36,7 @@ const setActiveTab = (tabName) => {
   const routeMap = {
     'memberdashboard': '/memberdashboard',
     'profile': '/profile',
-    'orders': '/member/orders',
+    'orders': '/orders',
     'pet': '/pet'
   };
   
