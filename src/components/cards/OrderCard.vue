@@ -39,8 +39,17 @@ const{order} = defineProps({
 const router = useRouter()
 
 const viewDetail = () => {
-  router.push(`/orders/${order.fId}`)
-}
+  router.push({
+    name: 'OrderDetail',
+    params: { id: order.fId },
+    query: { type: order.fOrderType }
+  });
+
+  console.log('前望訂單頁面',{
+        id:order.fId,
+        type:order.fOrderType
+    })
+};
 
 // 根據狀態套色，可自行調整
 const statusClass = computed(() => {

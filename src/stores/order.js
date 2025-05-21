@@ -45,24 +45,3 @@ export const useOrderStore = defineStore('order', {
       },
     },
   })
-//   getters: {
-//     filterByStatus: (state) => {
-//       return (status) => {
-//         if (!Array.isArray(state.orders)) {
-//           console.warn('orders 不是陣列！', state.orders)
-//           return []
-//         }
-//         return state.orders.filter(o => o.fOrderStatus === status)
-//       }
-//     },
-//     /**
-//      * 根據狀態過濾（例如「未付款」、「已付款」、「已取消」）
-//      * @return {(status: string) => Order[]}
-//      */
-//     filterByStatus: (state) => {
-//       return (status) => {
-//         return state.orders.filter(o => o.fOrderStatus === status)
-//       }
-//     }
-//   }
-// })

@@ -14,7 +14,7 @@ const authStore = useAuthStore()
 <template>
 <div id="app">
   <AppHeader></AppHeader>
-  <main><RouterView></RouterView></main>
+  <main><RouterView :key="$route.fullPath"></RouterView></main>
   <ChatRoom></ChatRoom>
   <AppFooter></AppFooter>
 </div>

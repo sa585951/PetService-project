@@ -19,7 +19,9 @@ import EditPetView from '@/views/member/EditPetView.vue'
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
-
+import CartView from '@/views/CartView.vue'
+import Payment from '@/views/Payment.vue'
+import OrderSuccess from '@/views/OrderSuccess.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,6 +107,34 @@ const router = createRouter({
       component: OrdersView,
       meta: { requiresAuth: true },
     },
+    {
+      path: "/cart",
+      component: CartView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/payment",
+      component: Payment,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/success/:id",
+      component: OrderSuccess,
+      props: route => ({
+      orderId: route.params.id,
+     orderType: route.query.type
+      }),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/:id",
+      name: 'OrderDetail',
+      component: () =>import('@/views/OrderDetailView.vue'),
+      props: route => ({
+        orderId: route.params.id,
+        orderType: route.query.type
+      })
+    }
   ],
 })
 
