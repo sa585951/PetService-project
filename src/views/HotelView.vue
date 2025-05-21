@@ -1,11 +1,18 @@
 <template>
+
+    <Notice ref="noticeModal">
+      <!-- 你也可以用 slot 自訂內容 -->
+      <p>請遵守使用規則，謝謝配合！</p>
+    </Notice>
+
+    <SearchButton @click="openNotice">查看使用者須知</SearchButton>
     <div class="Header_div mb-3">
         <img src="../assets/Picture/hotelBackground.jpg" class="img_background">
         <div class="search_bar1"> 
             <div class="search_bar2"> 
                 <div class="col-6 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                     <div class="w-75 d-flex justify-content-center">
+                    <div class="w-75 d-flex justify-content-center">
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-3"> 
@@ -43,6 +50,7 @@
             ></Checkbox>
           </div>
         </div>
+        <div class="p-2 pt-3"><SearchButton class="NoticeButton" @click="openNotice">查看使用者須知</SearchButton></div>
       </div>
       <div class="col-10">
         <HotelCard :hotels="filteredHotels" :check-in-date="checkInDate" :check-out-date="checkOutDate" :pet-count="petCount"></HotelCard>
@@ -57,9 +65,12 @@
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
+    import Notice from '../components/HotelNotice.vue';
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+//使用者須知
+    const noticeModal = ref(null)
 //日期選擇器
     const datePickerRef = ref(null);
     let fpInstance = null;
@@ -94,7 +105,12 @@
             }
         });
         loadHotels();
+        noticeModal.value?.show()
     });
+    //開啟使用者須知
+    function openNotice() {
+    noticeModal.value?.show()
+}
 
  //GET全部
     const hotels = ref([]);
@@ -251,6 +267,11 @@
     .card_left { 
         background-color: rgb(255, 255, 255); 
     } 
+
+    .NoticeButton{
+        width: 100%;
+    }
+
 /* datepicker */
     .datepicker{
         border-bottom: 1px solid rgb(243, 221, 195);

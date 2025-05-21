@@ -7,29 +7,29 @@
                     <!-- 旅館照片 -->
                     <div class="col-md-7 p-3 pe-0">
                         <!-- 圖片區域：水平排大圖與小圖欄 -->
-                        <div class="d-flex">
-                            <!-- 大圖 -->
-                            <div style="flex: 1;">
-                            <img :src="selectedImage" class="img-fluid rounded-start mb-2" alt="主要圖片"
-                            style="height: 100%; width: 100%; object-fit: cover;"/>
+                            <div class="d-flex">
+                                <!-- 大圖 -->
+                                <div style="flex: 1;">
+                                <img :src="selectedImage" class="img-fluid rounded-start mb-2" style="height: 100%; width: 100%; object-fit: cover;"/>
                             </div>
-                            <!-- 小圖：垂直排列 -->
-                            <div class="d-flex flex-column justify-content-between ps-2" style="width: 180px;">
-                            <img v-for="(img, index) in imageList" :key="index" :src="img" class="img-thumbnail mb-2"
-                            style="height: calc(100% / 3);  object-fit: cover; cursor: pointer;"
-                            @click="selectedImage = img"/>
+                                <!-- 小圖：垂直排列 -->
+                                <div class="d-flex flex-column justify-content-between ps-2" style="width: 180px;" v-if="hotels.length > 0">
+                                    <img :src="`/Hotel/${hotels[0].image_1}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_1}`"/>
+                                    <img :src="`/Hotel/${hotels[0].image_2}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_2}`"/>
+                                    <img :src="`/Hotel/${hotels[0].image_3}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_3}`"/>
+                                </div>
                             </div>
-                        </div>
                     </div>
                     <div class="col-md-5">
                             <div class="card-body ps-3">
-                                <div class="d-flex">
+                                <div class="d-flex mb-1">
                                     <div class="d-flex align-items-center">
                                     <h4 class="card-title fw-bold m-0">{{hotels[0].name}}</h4>
                                     <div class="p-0 ps-2">
                                         <img v-for="i in hotels[0].review?.[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
                                         <img v-for="i in 5 - (hotels[0].review?.[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
                                     </div>
+                                    <div class="ratingbox">{{getRating(hotels[0].rating)}}</div>
                                     </div></div>
                                 <div class="pt-2 mb-3">
                                     <p class="card-text fw-bold">
@@ -58,14 +58,14 @@
                                 
                                 </div>
                             <div class="pt-4 d-flex justify-content-end align-items-end pe-3">
-                                <!-- 開啟地圖 --><Map></Map>
+                                <!-- 開啟地圖 --><Map :latitude="hotels[0].latitude" :longitude="hotels[0].longitude" :address="hotels[0].address"></Map>
                             </div>
                             
                         </div>
                     </div>
                 </div>
                 </div>
-        
+        <!-- 房間卡片 -->
                 <div class="d-flex flex-wrap">
                     <div v-for="(roomDetail, index) in hotels[0].roomDetail" :key="roomDetail.id" class="card me-3 mb-3" style="width: 26rem; height: 100%;">
                         <img :src="`/Hotel/${roomDetail.image}`" class="card-img-top" />
@@ -77,11 +77,12 @@
                             </div>
                             <div>
                                 <p><div class="ms-3 text-danger fw-bold mb-3">{{ roomDetail.price }} 元</div></p>
-                                <p><GoButton>馬上預定</GoButton></p>
+                                <p><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name">馬上預定</BookingButton></p>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -90,6 +91,7 @@
 <script setup>
     import Map from '@/components/HotelMap.vue';
     import GoButton from '@/components/HotelBookingButton.vue';
+    import BookingButton from '@/components/HotelBookingForm.vue'
     import 'leaflet/dist/leaflet.css'
     import { ref, computed, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
@@ -120,7 +122,7 @@
 
     onMounted(async () => {
         await loadHotelDetail();
-        
+        noticeModal.value?.show()
     })
 
 //GET詳細
@@ -144,20 +146,11 @@
         hotels.value = datas.hotels;
         HotelDetailQty.value = datas.hotelDetailQty;
         console.log("1",hotels.value,"2", HotelDetailQty.value);
-        // 圖片初始化移到這裡，確保 hotels.value 有資料
-        if (hotels.value && hotels.value[0]) {
-            imageList.value = [
-                new URL(`/Hotel/${hotels.value[0].image_1}`, import.meta.url).href,
-                // 假設後面的圖片命名規則是 hotelId-2.png, hotelId-3.png
-                // 你可能需要根據實際的圖片命名規則來調整
-                new URL(`/Hotel/${hotels.value[0].image_2}`, import.meta.url).href, 
-                new URL(`/Hotel/hotel1-1.png`, import.meta.url).href
-            ];
-            selectedImage.value = imageList.value[0];
-        }
+        // 確保資料存再再初始化大圖
+    if (hotels.value.length > 0) {
+        selectedImage.value = `/Hotel/${hotels.value[0].image_1}`;
     }
-    
-//圖片
+    }
     
 function getRoomQty(hotel, roomName) {
   const qty = hotel.qtyStatus?.[0];
@@ -185,6 +178,20 @@ function getRoomQty(hotel, roomName) {
   return count === 0 ? "今日尚無空房" : `剩餘 ${count} 間`;
 }
 
+//評分文字
+    function getRating(rating) {
+        if (rating == null) return "無";
+        switch (rating) {
+            case 5:
+            return "很棒";
+            case 4:
+            return "很好";
+            case 3:
+            return "好";
+            default:
+            return "普通";
+        }
+    }
     
 </script>
     
@@ -214,5 +221,18 @@ function getRoomQty(hotel, roomName) {
     }
     i {
         color: rgb(155, 97, 27);
+    }
+    /* 評分標籤 */
+    .ratingbox{
+        margin-left: 10px;
+        /* background-color: rgb(155, 97, 27); */
+        background-color: #96b848;
+        width: 45px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        border-radius: 10px 10px 10px 0px;
     }
 </style>
