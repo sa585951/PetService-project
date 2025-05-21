@@ -9,8 +9,8 @@
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-3"> 
-                    <span for="guests" class="me-2">毛孩數量:</span> 
-                    <select name="guests" id="guests">
+                    <label for="PetCount" class="me-2">毛孩數量:</label>
+                    <select name="PetCount" id="PetCount" v-model.number="PetCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -19,30 +19,36 @@
                 </div>
                 <div class="col-3 p-2">
                     <div class="col-2 p-2 text-center"> 
-                        <SearchButton onclick="searchHotels()">搜尋</SearchButton> 
+                        <SearchButton @click="searchHotels()" class="mt-2">搜尋</SearchButton>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-<div class="container">
+ <div class="container">
     <div class="row">
-        <!-- 側邊欄 -->
-        <div class="col-2">
-            <div class="card card_left"> 
-                <div class="card-body"> 
-                    <p class="card-text fw-bold">設施與服務</p> <hr/> 
-                    <Checkbox v-for="item in totalItems":key="item.id" :checkboxId="item.id" :labelText="item.name" class="mb-1"></Checkbox> 
-                </div> 
-            </div> 
-        </div> 
-        <!-- 主要內容 -->
-        <div class="col-10">
-            <HotelCard :hotels="hotels"></HotelCard>
+      <div class="col-2">
+        <div class="card card_left">
+          <div class="card-body">
+            <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
+            <hr class="mb-2"/>
+            <Checkbox
+              v-for="item in totalItems"
+              :key="item.id"
+              :value="item.name"
+              :checkboxId="item.id.toString()"
+              :labelText="item.name"
+              class="mb-2 d-flex justify-content-start"
+              @change="handleCheckboxChange"
+            ></Checkbox>
+          </div>
         </div>
+      </div>
+      <div class="col-10">
+        <HotelCard :hotels="filteredHotels"></HotelCard>
+      </div>
     </div>
-    
-</div>
+  </div>
   
 </template>
 
@@ -51,35 +57,45 @@
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
-    import {onMounted, reactive, ref} from 'vue';  //匯入 onMounted 函式
+    import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
-   import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+    import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
 //日期選擇器
     const datePickerRef = ref(null);
     let fpInstance = null;
+    const checkInDate = ref();
+    const checkOutDate = ref();
     onMounted(async () => {
-            fpInstance = flatpickr(datePickerRef.value, {
-                mode: "range",
-                minDate: "today",
-                enableTime: false,
-                dateFormat: "Y-m-d",
-                defaultDate: new Date(),
-                locale: zh_tw || "zh_tw" ,
-                defaultDate: null,
-                onChange: (selectedDates, dateStr, instance) => {
-                    console.log(flatpickr.l10n);
-
-                    console.log('選取的日期物件:', selectedDates);
-                    if (selectedDates.length === 2) {
-                        const startDate = selectedDates[0]; // 開始日期的 Date 物件
-                        const endDate = selectedDates[1];   // 結束日期的 Date 物件
-                        console.log('開始日期:', startDate);
-                        console.log('結束日期:', endDate);
-                    } else if (selectedDates.length === 1) {
-                        console.log('選取退房日期');
-                    }
-                }
-            });
+        fpInstance = flatpickr(datePickerRef.value, {
+            mode: "range",
+            minDate: "today",
+            enableTime: false,
+            dateFormat: "Y / m / d",
+            defaultDate: new Date(),
+            locale: zh_tw || "zh_tw" ,
+            defaultDate: null,
+            onChange: (selectedDates, dateStr, instance) => {
+                console.log('選取的日期物件:', selectedDates);
+                if (selectedDates.length === 2) {
+                    const startDate = selectedDates[0];
+                    const endDate = selectedDates[1];
+                    const formatDateToYMD = (date) => {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                    };
+                    const formattedStartDate = formatDateToYMD(startDate);
+                    const formattedEndDate = formatDateToYMD(endDate);
+                    console.log('開始日期字串:', formattedStartDate);
+                    console.log('結束日期字串:', formattedEndDate);
+                    // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
+                    checkInDate.value = formattedStartDate;
+                    checkOutDate.value = formattedEndDate;
+                };
+            }
+        });
+        loadHotels();
     });
 
  //GET全部
@@ -90,23 +106,85 @@
         const response = await fetch(API_URL, {
             headers: {'Content-Type': 'application/json'}
         });
-    const datas = await response.json();
-    hotels.value = datas.hotels;   //只存陣列
-    totalItems.value = datas.totalItems;
-    console.log(hotels.value);
-    console.log("totalItems:", totalItems.value);
+        const datas = await response.json();
+        hotels.value = datas.hotels;   //只存陣列
+        totalItems.value = datas.totalItems;
+        console.log(hotels.value);
+        console.log("totalItems:", totalItems.value);
     };
     
-    onMounted(() => {
-        loadHotels();
-    })
+//勾選服務項目
+    const selectedItemNames = ref(new Set()); // 使用 Set 來儲存選中的項目名稱
 
+    const handleCheckboxChange = (item) => {
+        if (item.checked) {
+            selectedItemNames.value.add(item.name);}
+        else {
+            selectedItemNames.value.delete(item.name);}
+        console.log("Selected item names:", Array.from(selectedItemNames.value));
+    };
 
+// 儲存搜尋結果的 hotelId
+    const matchedHotelIds = ref([]);
 
+// 送出查詢，取得符合條件的旅館 ID 清單
+    const searchHotels = async () => {
+        const searchDate = {
+            CheckInDate: checkInDate.value,
+            CheckOutDate: checkOutDate.value,
+            PetCount: PetCount.value
+        };
 
-    
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(searchDate)
+        });
 
+        const result = await response.json();
 
+    // 更新 matchedHotelIds
+        matchedHotelIds.value = result.map(r => r.hotelId);
+        console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
+
+    // 將房型數量加入對應的 hotel 中
+        result.forEach(searchResult => {
+            const hotel = hotels.value.find(h => h.id === searchResult.hotelId);
+            if (hotel) {
+                hotel.qtyStatus[0].smallDogRoom = searchResult.smallDogRoom ?? hotel.qtyStatus[0].smallDogRoom;
+                hotel.qtyStatus[0].middleDogRoom = searchResult.middleDogRoom ?? hotel.qtyStatus[0].middleDogRoom;
+                hotel.qtyStatus[0].bigDogRoom = searchResult.bigDogRoom ?? hotel.qtyStatus[0].bigDogRoom;
+                hotel.qtyStatus[0].catRoom = searchResult.catRoom ?? hotel.qtyStatus[0].catRoom;
+            }
+        });
+        console.log("更新後的 hotels:", hotels.value);
+    };
+
+// 根據搜尋結果與勾選項目篩選旅館
+    const filteredHotels = computed(() => {
+        let filtered = hotels.value;
+
+    // 依照搜尋結果 hotelId 過濾
+        if (matchedHotelIds.value.length > 0) {
+            filtered = filtered.filter(h => matchedHotelIds.value.includes(h.id));
+        }
+
+    // 依照勾選設施項目再過濾一次
+        if (selectedItemNames.value.size > 0) {
+            filtered = filtered.filter(hotel => {
+                const hotelItemNames = new Set(hotel.items.map(item => item.name));
+                for (const selectedName of selectedItemNames.value) {
+                    if (!hotelItemNames.has(selectedName)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        return filtered;
+    });
 
 </script>
     

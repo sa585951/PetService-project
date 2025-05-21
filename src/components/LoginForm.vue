@@ -26,8 +26,8 @@
         </div>
         
         <!-- 登入按鈕 -->
-        <button class="login-btn" @click="login" :disabled="isLoading">
-          <span v-if="isLoading" >{{ typingText }}</span>
+        <button class="login-btn" @click="login" :disabled="authStore.isLoggingIn">
+          <span v-if="authStore.isLoggingIn" >{{ authStore.loginStatusText }}</span>
           <span v-else>
           登入
           </span></button>
@@ -41,6 +41,7 @@ import { ref } from 'vue'; // 引入 ref
 import { useRouter } from 'vue-router'; // 引入 useRouter
 import GoogleLogin from './GoogleLogin.vue'; // 引入 GoogleLogin (如果需要)
 import { useAuthStore } from '@/stores/authStore'; // 引入 authStore (確認 @/stores/authStore 路徑正確)
+import Swal from 'sweetalert2';
 
 // 在 <script setup> 頂層獲取 hooks 實例
 const router = useRouter();
@@ -62,24 +63,8 @@ const baseAddress = 'https://localhost:7089';
 // === 登入處理函數 ===
 async function login() {
   error.value = null; // 清除之前的錯誤訊息
-  isLoading.value = true; // 設定載入狀態
-  typingText.value='';
-  let index = 0;
-  interval = setInterval(() => {
-    typingText.value += fullText[index]
-    index++
-    if (index >= fullText.length) {
-      clearInterval(interval)
-    }
-  }, 150)
-
-  // 模擬登入流程（你可以改成實際 API 呼叫）
-  setTimeout(() => {
-    isLoading.value = false
-    clearInterval(interval)
-    typingText.value = ''
-    // 導向首頁或顯示錯誤等
-  }, 3000)
+   isLoading.value = true; // 設定載入狀態
+  authStore.startLoading();
 
   try {
     console.log('Attempting login for:', username.value); // 使用 .value 存取 ref 的值
@@ -109,12 +94,19 @@ async function login() {
 
     // === 呼叫 Pinia 的 login Action ===
     // 根據 authStore.js 中 login Action 的定義 (login({ userName, token }))
-    authStore.login({ userName: data.userName, token: data.token ,memberId:data.memberId}); // 傳遞一個物件
+    authStore.login({ userName: data.userName, token: data.token, memberId: data.memberId }); // 傳遞一個物件
     router.push({ name: 'MemberDashboard' });
 
   } catch (err) {
     console.error('Login error:', err);
     error.value = err.message; // 將錯誤訊息顯示在模板中
+    authStore.stopLoading();
+    Swal.fire({
+      icon: 'error',
+      title: '登入失敗',
+      text: '帳號或密碼錯誤',
+      confirmButtonColor: '#ACC572',
+    })
   } finally {
     isLoading.value = false; // 無論成功或失敗，都結束載入狀態
   }

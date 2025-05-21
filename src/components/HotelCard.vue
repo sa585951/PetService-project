@@ -11,11 +11,8 @@
                 <div class="d-flex">
                 <h4 class="card-title fw-bold m-0">{{ hotel.name }}</h4>
                 <div class="p-0 ps-2">
-                    <img class="star" src="/Hotel/star_light.png">
-                    <img class="star" src="/Hotel/star_light.png">
-                    <img class="star" src="/Hotel/star_light.png">
-                    <img class="star" src="/Hotel/star_light.png">
-                    <img class="star" src="/Hotel/star_light.png">
+                    <img v-for="i in hotel.review[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
+                    <img v-for="i in 5 - (hotel.review[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
                 </div></div>
                 <div class="price-tag">{{ Math.min(...hotel.roomDetail.map(room => room.price)) }}元起</div>
                 <div class="pt-1">
@@ -30,11 +27,11 @@
                         <table class="room-table card-text mt-4">
                             <tbody>
                                 <tr v-for="(pair, index) in getRoomPairs(hotel)" :key="index">
-                        <td class="fw-bold">{{ pair[0]?.name }}</td>
-                        <td class="qty">剩餘 {{ getRoomQty(hotel, pair[0]?.name) }} 間</td>
-                        <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
-                        <td class="qty" v-if="pair[1]">剩餘 {{ getRoomQty(hotel, pair[1].name) }} 間</td>
-                      </tr>
+                                    <td class="fw-bold">{{ pair[0]?.name }}</td>
+                                    <td class="qty">{{ getRoomQty(hotel, pair[0]?.name) }}</td>
+                                    <td class="fw-bold" v-if="pair[1]">{{ pair[1].name }}</td>
+                                    <td class="qty" v-if="pair[1]">{{ getRoomQty(hotel, pair[1].name) }}</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -57,38 +54,42 @@
         }
     });
     const hotels = computed(() => props.hotels);
-
-
-    // 依據單一 hotel 拆分 roomTypes 為兩兩一組
-function getRoomPairs(hotel) {
-  const pairs = [];
-  for (let i = 0; i < hotel.roomTypes.length; i += 2) {
-    pairs.push([
-      hotel.roomTypes[i],
-      hotel.roomTypes[i + 1] || null
-    ]);
-  }
-  return pairs;
-}
+// 依據單一 hotel 拆分 roomTypes 為兩兩一組
+    function getRoomPairs(hotel) {
+        const pairs = [];
+        for (let i = 0; i < hotel.roomTypes.length; i += 2) {
+            pairs.push([
+                hotel.roomTypes[i],
+                hotel.roomTypes[i + 1] || null
+            ]);
+        }
+        return pairs;
+    }
 
 // 傳回房型對應的剩餘房間數
-function getRoomQty(hotel, roomName) {
-  const qty = hotel.qtyStatus?.[0];
-  if (!qty || !roomName) return null;
-  switch (roomName) {
-    case "小型犬房":
-      return qty.smallDogRoom;
-    case "中型犬房":
-      return qty.middleDogRoom;
-    case "大型犬房":
-      return qty.bigDogRoom;
-    case "貓咪房":
-      return qty.catRoom;
-    default:
-      return null;
-  }
-}
-
+    function getRoomQty(hotel, roomName) {
+        const qty = hotel.qtyStatus?.[0];
+        if (!qty || !roomName) return null;
+        let count = 0;
+        switch (roomName) {
+            case "小型犬房":
+                count = qty.smallDogRoom;
+                break;
+            case "中型犬房":
+                count = qty.middleDogRoom;
+                break;
+            case "大型犬房":
+                count = qty.bigDogRoom;
+                break;
+            case "貓咪房":
+                count = qty.catRoom;
+                break;
+            default:
+                count = null;
+                break;
+        }
+        return count === 0 ? "今日尚無空房" : `剩餘 ${count} 間`;
+    }
 </script>
     
 <style scoped>
@@ -96,8 +97,8 @@ function getRoomQty(hotel, roomName) {
         position: relative
     }
     .star {
-        width: 30px;
-        height: 30px;
+        width: 25px;
+        height: 25px;
     }
     .hotel_card
     {

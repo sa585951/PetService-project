@@ -114,7 +114,7 @@
   <div class="col-6">  <button @click="handleClick" :disabled="countdown > 0" class="btn btn-secondary">{{ countdown>0 ? `${countdown} 秒後可重新發送` : `發送驗證碼`}}</button></div>
     <div class="col-1">
         <span v-if="verifyStatus === true" class="verified">✅</span>
-        <span v-else-if="verifyStatus === false" class="unverified">❌ 驗證失敗</span>
+        <span v-else-if="verifyStatus === false" class="unverified">❌</span>
     </div>
 </div>
       <!-- Recaptcha -->
@@ -139,6 +139,7 @@
 <script>
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import Swal from 'sweetalert2';
 var baseAddress = 'https://localhost:7089';
 export default {
   data() {
@@ -333,7 +334,12 @@ export default {
 
       // 檢查驗證結果
       if (this.isFormInvalid) {
-        console.log('有欄位驗證失敗，取消發送驗證碼');
+        //console.log('有欄位驗證失敗，取消發送驗證碼');
+        Swal.fire({
+            icon: 'warning',
+            text:"請檢查表單欄位",
+            confirmButtonColor: '#ACC572',
+        })
         return;
       }
       this.SendEmailVerificationCode();
@@ -390,8 +396,11 @@ export default {
       })
       .then(response => {
         console.log('驗證碼已發送', response.data);
-        alert('驗證碼已發送');
-        // 你可以在這裡加一個提示訊息顯示成功
+        //alert('驗證碼已發送');
+        Swal.fire({
+            text:"驗證碼已發送，請至信箱檢查",
+            confirmButtonColor: '#ACC572',
+        })
       })
       .catch(error => {
         console.error('發送驗證碼失敗', error);
