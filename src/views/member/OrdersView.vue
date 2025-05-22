@@ -21,6 +21,11 @@
                 </button>
               </div>
             </div>
+            <div class="btn-group mb-3">
+              <button class="btn btn-outline-primary" @click="setFilterType('all')">全部</button>
+              <button class="btn btn-outline-primary" @click="setFilterType('walk')">散步</button>
+               <button class="btn btn-outline-primary" @click="setFilterType('hotel')">住宿</button>
+              </div>
           </div>
           <!-- Tab 標籤 -->
           <ul class="nav nav-tabs mt-3" >
@@ -52,8 +57,8 @@
           <!-- 卡片列表 -->
           <div class="list-group list-group-flush">
             <OrderCard
-              v-for="o in orderStore.orders"
-              :key="o.fId"
+              v-for="o in filterOrders"
+              :key="o.id"
               :order="o"
               class="list-group-item list-group-item-action p-3"
             />
@@ -93,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import MemberSidebar from '@/components/MemberSidebar.vue'
 import OrderCard from '@/components/cards/OrderCard.vue'
 import { useOrderStore } from '@/stores/order'
@@ -114,21 +119,43 @@ const searchQuery = ref('')
 const activeTab = ref('all')
 const currentPage = ref(1)
 const pageSize = 10
+const filterType = ref('all')
+
+const filterOrders = computed(() =>{
+  if(filterType.value ==='all') return orderStore.orders;
+  return orderStore.orders.filter(o => o.orderTypeCode === filterType.value);
+});
 
 function loadOrders(){
   orderStore.fetchOrders({
       keyword: searchQuery.value,
-      orderType: activeTab.value,
+      orderType: filterType.value,
+      orderStatus: activeTab.value,
       sortBy: 'date_desc',
       page: currentPage.value,
       pageSize,
     })
+
+    console.log("Fetch Params:", {
+  keyword: searchQuery.value,
+  orderType: filterType.value,
+  orderStatus: activeTab.value,
+  sortBy: 'date_desc',
+  page: currentPage.value,
+  pageSize,
+})
 }
 
 // 切tab重新抓資料
 function changeTab(tab){
   activeTab.value = tab
   currentPage.value = 1
+  loadOrders()
+}
+
+//篩選訂單狀態
+function setFilterType(type) {
+  filterType.value = type
   loadOrders()
 }
 

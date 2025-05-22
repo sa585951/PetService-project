@@ -2,7 +2,7 @@
         <div class="container">
             <h3>訂單完成</h3>
             <Transition name="fade">
-            <OrderDetail :order-data="orderDetail" :order-type="orderDetail?.orderType || 'Walk'" v-if="!isLoading && orderDetail" />
+            <OrderDetail :order-data="orderDetail" :order-type="orderType" v-if="!isLoading && orderDetail" />
             </Transition>
         </div>
 </template>
@@ -18,7 +18,7 @@
     const authStore = useAuthStore();
     const route = useRoute();
     const orderId = route.params.id;
-    const orderType = route.query.type || 'Walk'; // 預設為 Walk
+    const orderType = computed(() => route.query.type || 'Walk'); // 預設為 Walk
 
     const orderDetail = ref(null);
     const isLoading = ref(true);
@@ -39,7 +39,8 @@
       didOpen: () => Swal.showLoading()
     });
 
-    const apiUrl = `/api/order/${orderType.toLowerCase()}/${orderId}`
+    const normalizedType = normalizeType(orderType.value);
+    const apiUrl = `/api/order/${normalizeType.toLowerCase()}/${orderId}`
     const res = await axios.get(apiUrl,{
         headers: {
             Authorization: `Bearer ${authStore.token}`

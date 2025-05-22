@@ -90,25 +90,32 @@
                   </button>
                 </div>
                 <div class="card-body order-scrollable p-0">
-                  <div v-for="o in orders" :key="o.fId" class="order-item d-flex align-items-center justify-content-between p-3 border-bottom">
+                  <div v-for="o in orders" :key="o.id" class="order-item d-flex align-items-center justify-content-between p-3 border-bottom">
                     <div class="d-flex align-items-center">
-                      <i class="bi bi-box fs-4 me-3"></i>
-                         <span class="fw-bold me-3">訂單 #{{ o.fId }}</span>
+                      <i
+                        class="fs-4 me-3"
+                        :class="{
+                          'bi bi-person-walking': o.orderType === '散步',
+                          'bi bi-house-door': o.orderType === '住宿',
+                          'bi bi-box': o.orderType !== '散步' && o.orderType !== '住宿'
+                        }"
+                      ></i>
+                         <span class="fw-bold me-3">訂單 #{{ o.id }}</span>
                       <div>
                         <span class="badge me-3" :class="{
-                          'bg-warning text-dark': o.fOrderStatus === '未付款',
-                          'bg-success text-white': o.fOrderStatus === '已付款',
-                          'bg-secondary text-white': o.fOrderStatus === '已取消'
+                          'bg-warning text-dark': o.orderStatus === '未付款',
+                          'bg-success text-white': o.orderStatus === '已付款',
+                          'bg-secondary text-white': o.orderStatus === '已取消'
                         }">
-                         {{ o.fOrderStatus }}
+                         {{ o.orderStatus }}
                         </span>
                       </div>
                     </div>
                     <div>
-                        <span class="fw-bold me-3">{{ o.fOrderType }}</span>
+                        <span class="fw-bold me-3">{{ o.orderType }}</span>
                       </div>
-                        <span class="fw-bold me-3">NT$ {{ o.fTotalAmount }}</span>
-                        <small class="">{{ formatDate(o.fCreatedAt) }}</small>
+                        <span class="fw-bold me-3">NT$ {{ o.totalAmount }}</span>
+                        <small class="">{{ formatDate(o.createdAt) }}</small>
                     </div>
                   </div>
                 </div>

@@ -1,19 +1,19 @@
 <template>
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <span>訂單 #100{{ order.fId }} • {{ order.fOrderType }}</span>
-      <span class="badge" :class="statusClass">{{ order.fOrderStatus }}</span>
+      <span>訂單 #100{{ order.id }} • {{ order.orderType }}</span>
+      <span class="badge" :class="statusClass">{{ order.orderStatus }}</span>
     </div>
     <div class="card-body">
       <div class="row">
         <div class="col-md-3">
-          <span class="fw-bold me-3">總金額: NT${{ order.fTotalAmount }}</span>
+          <span class="fw-bold me-3">總金額: NT${{ order.totalAmount }}</span>
         </div>
         <div class="col-md-4">
-           <small class="text-muted">建立時間: {{ formatDate(order.fCreatedAt) }}</small>
+           <small class="text-muted">建立時間: {{ formatDate(order.createdAt) }}</small>
         </div>
         <div class="col-md-4">
-           <small class="text-muted">更新時間: {{ formatDate(order.fUpdatedAt) }}</small>
+           <small class="text-muted">更新時間: {{ formatDate(order.updatedAt) }}</small>
         </div>
       </div>
       <div class="text-end">
@@ -41,19 +41,19 @@ const router = useRouter()
 const viewDetail = () => {
   router.push({
     name: 'OrderDetail',
-    params: { id: order.fId },
-    query: { type: order.fOrderType }
+    params: { id: order.id },
+    query: { type: order.orderTypeCode }
   });
 
   console.log('前望訂單頁面',{
-        id:order.fId,
-        type:order.fOrderType
+        id:order.id,
+        type:order.orderTypeCode
     })
 };
 
 // 根據狀態套色，可自行調整
 const statusClass = computed(() => {
-  switch (order.fOrderStatus) {
+  switch (order.orderStatus) {
     case '未付款':
       return 'bg-warning text-dark'
     case '已付款':
