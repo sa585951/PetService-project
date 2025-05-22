@@ -10,10 +10,10 @@
 
     <div class="pet-section pet-body-size">
       <h6 class="section-title">🐾 體型對照表</h6>
-      <ul>
-        <li>🔹 小型犬：<strong>9 公斤以下</strong></li>
-        <li>🔹 中型犬：<strong>9 ～ 25 公斤</strong></li>
-        <li>🔹 大型犬：<strong>25 公斤以上</strong></li>
+      <ul  class="custom-bullet">
+        <li>小型犬：<strong>9 公斤以下</strong></li>
+        <li>中型犬：<strong>9 ～ 25 公斤</strong></li>
+        <li>大型犬：<strong>25 公斤以上</strong></li>
       </ul>
     </div>
 
@@ -51,7 +51,7 @@
     </div>
 
     <div class="text-end mt-4">
-      <button type="button" class="btn btn-primary" data-bs-dismiss="modal">我知道了</button>
+      <button type="button" class="btn" data-bs-dismiss="modal">我知道了</button>
     </div>
   </div>
 </div>
@@ -99,7 +99,7 @@ defineExpose({ show })
 }
 
 .pet-title {
-  color: #0d6efd;
+  color: rgb(175, 115, 42);
   font-weight: 700;
   margin-bottom: 1.2rem;
 }
@@ -137,15 +137,15 @@ defineExpose({ show })
 }
 
 .room-small {
-  border-color: #0d6efd;
+  border-color: #aec970;
 }
 
 .room-medium {
-  border-color: #198754;
+  border-color: #d8be6a;
 }
 
 .room-large {
-  border-color: #dc3545;
+  border-color: rgb(218, 177, 123);
 }
 
 .room-block h6 {
@@ -154,14 +154,42 @@ defineExpose({ show })
 }
 
 .warning {
-  color: #c29100;
-  font-size: 0.875rem;
-  margin-top: 0.3rem;
+  color: rgb(156, 96, 21);
+  font-size: 1rem;
+  margin-top: 0.25rem;
 }
 
 .btn-primary {
   border-radius: 6px;
   padding: 0.5rem 1.2rem;
+}
+
+.custom-bullet {
+  list-style: none;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.custom-bullet li {
+  position: relative;
+  padding-left: 0.5rem;
+  margin-bottom: 0.3rem;
+  
+}
+
+.custom-bullet li::before {
+  content: '';
+  position: absolute;
+  left: 0.8rem;
+  top: 0.5em;
+  width: 0.4em;
+  height: 0.4em;
+  background-color: rgb(175, 115, 42);
+  transform: rotate(45deg); /* 正方形變菱形 */
+  border-radius: 1px;
+}
+.btn {
+  background-color: rgb(235, 207, 170);
 }
 
 </style>

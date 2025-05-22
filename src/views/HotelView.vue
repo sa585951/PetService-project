@@ -31,30 +31,36 @@
             </div>
         </div>
     </div>
- <div class="container">
-    <div class="row">
-      <div class="col-2">
-        <div class="card card_left">
-          <div class="card-body">
-            <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
-            <hr class="mb-2"/>
-            <Checkbox
-              v-for="item in totalItems"
-              :key="item.id"
-              :value="item.name"
-              :checkboxId="item.id.toString()"
-              :labelText="item.name"
-              class="mb-2 d-flex justify-content-start"
-              @change="handleCheckboxChange"
-            ></Checkbox>
-          </div>
+<!-- 左側:設施與服務 -->
+    <div class="container" v-if="showHotelSection">
+        <div class="row">
+        <div class="col-2">
+            <div class="card card_left">
+            <div class="card-body">
+                <p class="card-text fw-bold d-flex justify-content-center">設施與服務</p>
+                <hr class="mb-2"/>
+                <Checkbox
+                v-for="item in totalItems"
+                :key="item.id"
+                :value="item.name"
+                :checkboxId="item.id.toString()"
+                :labelText="item.name"
+                class="mb-2 d-flex justify-content-start"
+                @change="handleCheckboxChange"
+                ></Checkbox>
+            </div>
+            </div>
         </div>
-      </div>
-      <div class="col-10">
-        <HotelCard :hotels="filteredHotels" :check-in-date="checkInDate" :check-out-date="checkOutDate" :pet-count="petCount"></HotelCard>
-      </div>
+    <!-- 右側:旅館卡片 -->
+        <div class="col-10">
+            <HotelCard :hotels="filteredHotels" :check-in-date="checkInDate" :check-out-date="checkOutDate" :pet-count="petCount"></HotelCard>
+        </div>
+        </div>
     </div>
-  </div>
+    <!-- 尚未搜尋時顯示的圖片區塊 -->
+    <div v-else class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+        <img src="/Hotel/SearchHint.png" alt="請輸入搜尋條件" style="max-width: 500px; width: 100%;">
+    </div>
   
 </template>
 
@@ -77,6 +83,8 @@
     const petCount = ref();
     let startDate = null;
     let endDate = null;
+//預設顯示請搜尋圖片+不顯示hotelCard和服務區塊
+    const showHotelSection = ref(false);
     onMounted(async () => {
         fpInstance = flatpickr(datePickerRef.value, {
             mode: "range",
@@ -106,6 +114,10 @@
             }
         });
         loadHotels();
+
+        if (!checkInDate.value || !checkOutDate.value || !petCount.value) 
+            // alert("123");
+        // loadHotels();
         noticeModal.value?.show()
     });
     //開啟使用者須知
@@ -136,7 +148,7 @@
             selectedItemNames.value.add(item.name);}
         else {
             selectedItemNames.value.delete(item.name);}
-        // console.log("Selected item names:", Array.from(selectedItemNames.value));
+        console.log("Selected item names:", Array.from(selectedItemNames.value));
     };
 
     const matchedHotelIds = ref([]);  // 儲存搜尋結果的 hotelId
@@ -166,7 +178,7 @@
 
     // 更新 matchedHotelIds
         matchedHotelIds.value = result.map(r => r.hotelId);
-        // console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
+        console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
 
     // 將房型數量加入對應的 hotel 中
         result.forEach(searchResult => {
@@ -178,22 +190,11 @@
                 hotel.qtyStatus[0].catRoom = searchResult.catRoom ?? hotel.qtyStatus[0].catRoom;
             }
         });
-        // console.log("更新後的 hotels:", hotels.value);
+        console.log("更新後的 hotels:", hotels.value);
+    // 顯示旅館卡片 + 服務欄
+        showHotelSection.value = true;
+        console.log(showHotelSection.value);
     };
-
-//點旅館卡片判斷是否已篩選日期、數量
-    const InToHotelDetail = async () => {
-        // const searchDate = {
-        //     CheckInDate: checkInDate.value,
-        //     CheckOutDate: checkOutDate.value,
-        //     petCount: petCount.value
-        // };
-
-        if (!startDate|| !endDate || !petCount.value) {
-            alert("請先選擇完整的入住、退房日期以及入住寵物數量");
-            return; } // 停止函式執行
-    }
-
 
 // 根據搜尋結果與勾選項目篩選旅館
     const filteredHotels = computed(() => {
