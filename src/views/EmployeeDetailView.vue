@@ -1,4 +1,3 @@
-<!-- views/EmployeeDetailView.vue -->
 <template>
   <div class="container py-4">
     <!-- 載入與錯誤處理 -->
@@ -92,7 +91,7 @@
           </div>
         </div>
 
-        <!-- 右側：購物車填寫 + 按鈕 -->
+        <!-- 右側：購物車填寫 -->
         <div class="col-md-5">
           <div class="border rounded p-3 shadow-sm bg-white">
             <h5 class="mb-3">填寫訂單資訊</h5>
@@ -136,10 +135,10 @@
             <div class="mb-2">
               <label class="form-label">其他備註</label>
               <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
-              <div v-if="form.notesError" class="text-danger mt-1">請填寫寵物品種</div>
+              <div v-if="form.notesError" class="text-danger mt-1">請填寫寵物品種</div> 
             </div>
 
-            <!-- 小計顯示 -->
+          
             <div class="mt-3">
               <p>
                 <strong>單價：</strong>{{ employeeStore.employeeDetail.price }} 元/小時(單次計費)
@@ -154,7 +153,6 @@
         </div>
       </div>
 
-      <!-- 地圖區塊 -->
       <div class="row mt-4">
         <div class="col-12">
           <iframe
@@ -172,22 +170,40 @@
 </template>
 
 <script setup>
-import { ref, computed ,onMounted} from 'vue'
-import { useRoute } from 'vue-router'
-import { employees } from '@/data';
-import { Carousel } from 'bootstrap'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router'; //導入 useRouter
+import { Carousel } from 'bootstrap';
+import { useEmployeeStore } from '@/stores/employeeStore';
 
-const carouselRef = ref(null)
-const bsCarousel = ref(null)
+const employeeStore = useEmployeeStore();
+const route = useRoute();
+const router = useRouter(); // [新增] 實例化 router
+const employeeId = ref(null);
+
+// 錯誤處理 employeeId
+try {
+  const id = Number(route.params.id);
+  if (isNaN(id)) throw new Error('Invalid employee ID');
+  employeeId.value = id;
+} catch (error) {
+  console.error('Error parsing employeeId:', error);
+  employeeId.value = null;
+}
+
+//定義 carouselRef 和 bsCarousel 用於輪播初始化
+const carouselRef = ref(null);
+const bsCarousel = ref(null);
 
 //使用 async onMounted 確保 fetchEmployeeDetail 完成後初始化輪播
 onMounted(async () => {
-  await employeeStore.fetchEmployeeDetail(employeeId); //調用 API 獲取單個員工資料
-  if (carouselRef.value) {
-    bsCarousel.value = new Carousel(carouselRef.value, {
-      interval: 3000,
-      ride: 'carousel',
-    });
+  if (employeeId.value !== null) {
+    await employeeStore.fetchEmployeeDetail(employeeId.value); //調用 API 獲取單個員工資料
+    if (carouselRef.value) {
+      bsCarousel.value = new Carousel(carouselRef.value, {
+        interval: 3000,
+        ride: 'carousel',
+      });
+    }
   }
 });
 
@@ -198,7 +214,7 @@ function goToSlide(index) {
 }
 
 const form = ref({
-  employeeId: employeeId,
+  employeeId: employeeId.value,
   pet: '',
   quantity: 1,
   date: '',
@@ -207,14 +223,22 @@ const form = ref({
   notesError: false,
 });
 
-// 監聽 route.params.id 變化時更新 employeeId 並重新調用 API
+//監聽 route.params.id 變化時更新 employeeId 並重新調用 API
 watch(() => route.params.id, (newId) => {
-  form.value.employeeId = Number(newId);
-  employeeStore.fetchEmployeeDetail(form.value.employeeId);
+  try {
+    const id = Number(newId);
+    if (isNaN(id)) throw new Error('Invalid new employee ID');
+    employeeId.value = id;
+    form.value.employeeId = id;
+    employeeStore.fetchEmployeeDetail(employeeId.value);
+  } catch (error) {
+    console.error('Error parsing new employeeId:', error);
+    employeeId.value = null;
+  }
 });
 
 const baseImageUrl = import.meta.env.VITE_API_IMAGE_URL || 'https://localhost:7089/images/';
-// 計算 processedCarousel，使用後端提供的 carousel 資料並拼接圖片路徑
+//計算 processedCarousel，使用後端提供的 carousel 資料並拼接圖片路徑
 const processedCarousel = computed(() => {
   if (employeeStore.employeeDetail && employeeStore.employeeDetail.carousel) {
     return employeeStore.employeeDetail.carousel.map(img => `${baseImageUrl}${img}`);
@@ -223,7 +247,7 @@ const processedCarousel = computed(() => {
 });
 
 const onImageError = (event) => {
-  event.target.src = '/path/to/default-image.jpg'; // 圖片載入失敗時顯示預設圖片
+  event.target.src = '/path/to/default-image.jpg'; //圖片載入失敗時顯示預設圖片
 };
 
 const today = new Date();
@@ -264,28 +288,43 @@ function isFormValid() {
 
 function addToCart() {
   if (!isFormValid()) {
-    alert('請完整填寫寵物種類、數量與日期')
-    return
+    alert('請完整填寫寵物種類、數量、預約日期、預約時間和備註');
+    return;
   }
+  const cartItem = {
+    employeeId: form.value.employeeId,
+    employeeName: employeeStore.employeeDetail.name, // 包含員工姓名
+    pet: form.value.pet,
+    quantity: form.value.quantity,
+    walkStart: getWalkTimes.value.start,
+    walkEnd: getWalkTimes.value.end,
+    servicePrice: employeeStore.employeeDetail.price,
+    totalPrice: subtotal.value,
+    notes: form.value.notes,
+  };
+  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  cart.push(cartItem);
+  localStorage.setItem('cart', JSON.stringify(cart));
   const message = `
     已加入購物車：
-    員工：${employee.name}
+    員工：${employeeStore.employeeDetail.name}
     寵物種類：${form.value.pet}
     數量：${form.value.quantity}
     預約日期：${form.value.date}
     預約時間：${form.value.time}
     備註：${form.value.notes || '無'}
     小計：${subtotal.value} 元
-  `
-  alert(message)
-  formReset()
+  `;
+  const confirmed = confirm(message); // 使用 confirm 提供選擇
+  if (confirmed) {
+    router.push('/order'); // 導航到訂單頁面
+  }
+  formReset();
 }
-
-
 
 function formReset() {
   form.value = {
-    employeeId: employeeId,
+    employeeId: employeeId.value,
     pet: '',
     quantity: 1,
     date: '',
