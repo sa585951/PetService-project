@@ -63,7 +63,7 @@
     import { useAuthStore } from '@/stores/authStore';
     import { useRoute, useRouter } from 'vue-router';
     import Swal from 'sweetalert2';
-    import { ref,onMounted } from 'vue';
+    import { ref,onMounted,computed } from 'vue';
 
     const route = useRoute();
     const cartStore = useCartStore();
@@ -71,7 +71,7 @@
     const router = useRouter();
 
     const isSubmitting = ref(false);
-    const isWalkMode = computed(() => route.query.type || 'Walk');
+    const isWalkMode = computed (() => route.query.type || 'walk');
 
     const handleSubmitOrder = async() =>{
       const isEmpty = isWalkMode.value
@@ -104,8 +104,14 @@
 
     Swal.close(); // ✅ 關閉 loading
 
-    // 導向成功頁面
-    router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
+    Swal.fire({
+      icon:'success',
+      title:'訂單成立成功',
+      text:'已寄送訂單確認信至您的信箱，請查收📧！'
+    }).then(() =>{
+      // 導向成功頁面
+      router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
+    });
   } catch (error) {
     Swal.fire({
       icon: 'error',
