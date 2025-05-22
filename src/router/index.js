@@ -59,10 +59,12 @@ const router = createRouter({
     {
       path: "/hotel",
       component: Hotel,
+      meta: { requiresAuth: true },
     },
     {
       path: "/HotelDetail/:id",
       component: HotelDetail,
+      meta: { requiresAuth: true },
     },
     {
       path: "/walk",

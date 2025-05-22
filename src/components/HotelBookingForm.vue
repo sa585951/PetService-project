@@ -1,25 +1,35 @@
 <template>
   <div>
     <!-- 彈窗 -->
-    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true" ref="modal">
+    <div class="modal fade orderBox" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true" ref="modal">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="bookingModalLabel">預定 : {{ roomName }}</h5>
+            <h5 class="modal-title" id="bookingModalLabel">確認訂房資訊</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
           </div>
-          <div class="modal-body" @click.stop>
+          <div class="modal-body" >
+            
             <div>
-                <label></label>
-                <input/>
+                <label for="">姓名: {{props.userName}}</label>
+                <label for="">旅館名稱 : {{hotel.name}}</label>
+                <label for="">房型 : {{props.roomName}}</label>
+                <label for="">單價 : {{props.price}}</label>
+                <label for="">入住日期 : {{checkInDate}}</label>
+                <label for="">退房日期 : {{checkOutDate}}</label>
+                <label for="">房間數 : {{requiredRooms}}</label>
+                
+                <label>備註:</label>
+                <textarea v-model="AdditionlMessage" rows="4"></textarea>
+                <button @click="saveOrderInfo()">確認</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 按鈕 -->
-    <GoButton @click="openModal">
+    <!-- 按鈕   @click="orderInfo()" -->
+    <GoButton @click="openModal">  
       <slot></slot>
     </GoButton>
   </div>
@@ -33,6 +43,13 @@ import { Modal } from 'bootstrap'
 const props = defineProps({
   hotel: Object,
   roomName: String,
+  memberId : String,
+  userName: String,
+  checkInDate: String,
+  checkOutDate: String,
+  requiredRooms: Number,
+  price: Number,
+  roomtype_id: Number
 })
 
 const modal = ref(null)
@@ -42,6 +59,9 @@ onMounted(() => {
   if (modal.value) {
     bsModal = new Modal(modal.value)
   }
+  console.log("hotel", props.hotel);
+  console.log("房價", props.roomtype_id);
+  console.log("會員資料",props.userName,props.memberId);
 })
 
 function openModal() {
@@ -69,9 +89,43 @@ function openModal() {
     alert('沒有空房！')
   }
 }
+
+const checkInDate = ref(props.checkInDate);
+const checkOutDate = ref(props.checkOutDate);
+const requiredRooms = ref(props.requiredRooms);
+const hotelId = ref(props.hotel.id);
+const hotels = ref(props.hotel);
+const AdditionlMessage = ref('');
+
+function saveOrderInfo() {
+        const orderInfo = {
+            "HotelId" : hotelId.value,
+            "RoomDetailId" : props.roomtype_id,  //房型Id
+            "CheckIn" : checkInDate.value,
+            "CheckOut" : checkOutDate.value,
+            "RoomQty" : requiredRooms.value,  //房間數
+            "AdditionlMessage" : AdditionlMessage.value,//備註
+        }
+        // 讀出目前的資料（如果沒有就預設是空陣列）
+        const NewOrders = JSON.parse(localStorage.getItem('orderInfos') || '[]');
+
+        // 加入新的 orderInfo
+        NewOrders.push(orderInfo);
+
+        // 存回 localStorage
+        localStorage.setItem('orderInfos', JSON.stringify(NewOrders));
+
+        console.log(orderInfo);
+    }
 </script>
 
     
 <style scoped>
-    
+    .orderBox {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 300px;
+    }
 </style>

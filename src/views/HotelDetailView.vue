@@ -77,7 +77,9 @@
                             </div>
                             <div>
                                 <p><div class="ms-3 text-danger fw-bold mb-3">{{ roomDetail.price }} 元</div></p>
-                                <p><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name">馬上預定</BookingButton></p>
+                                <p v-if="memberId && userName && hotels[0] && roomDetail.roomtype_id && roomDetail.price"><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name"
+                                    :userName="userName" :memberId="memberId" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id"
+                                    :checkInDate="checkInDate" :checkOutDate="checkOutDate" :requiredRooms="requiredRooms">加入購物車</BookingButton></p>
                             </div>
                         </div>
                     </div>
@@ -92,9 +94,11 @@
     import Map from '@/components/HotelMap.vue';
     import GoButton from '@/components/HotelBookingButton.vue';
     import BookingButton from '@/components/HotelBookingForm.vue'
+    import { useAuthStore } from '@/stores/authStore';
     import 'leaflet/dist/leaflet.css'
     import { ref, computed, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
+
 
     const today = ref(new Date()); // 預設為今天
     const tomorrow = ref(new Date());
@@ -120,15 +124,23 @@
     const petCount = route.query.petCount
     console.log(hotelId,checkInDate,checkOutDate,petCount);
 
+    const memberId = ref('')   //要傳子元件的會員資料
+    const userName = ref('')
+    const authStore = useAuthStore();
     onMounted(async () => {
         await loadHotelDetail();
-        noticeModal.value?.show()
+//會員資料
+    if (authStore.isLoggedIn) {
+        memberId.value = authStore.memberId;
+        userName.value = authStore.userName;
+        console.log('memberId', memberId.value, 'userName', userName.value);
+    }
     })
 
 //GET詳細
     const hotels = ref({});
     const HotelDetailQty = ref({});
-    const imageList = ref([]);
+    const requiredRooms = ref();
     const selectedImage = ref(null); // 保持為響應式引用，預設為null
     const loadHotelDetail = async () => {
         const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Hoteldetail`;
@@ -145,7 +157,8 @@
         const datas = await response.json();
         hotels.value = datas.hotels;
         HotelDetailQty.value = datas.hotelDetailQty;
-        console.log("1",hotels.value,"2", HotelDetailQty.value);
+        requiredRooms.value = datas.hotelDetailQty[0].requiredRooms;
+        console.log("1",hotels.value,"2", HotelDetailQty.value,"3", requiredRooms.value);
         // 確保資料存再再初始化大圖
     if (hotels.value.length > 0) {
         selectedImage.value = `/Hotel/${hotels.value[0].image_1}`;
@@ -192,6 +205,8 @@ function getRoomQty(hotel, roomName) {
             return "普通";
         }
     }
+
+    
     
 </script>
     
