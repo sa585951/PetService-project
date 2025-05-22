@@ -8,7 +8,7 @@
 </template>
     
 <script setup >
-    import { onMounted,ref } from 'vue';
+    import { onMounted,ref,computed } from 'vue';
     import { useRoute } from 'vue-router';
     import axios from 'axios';
     import Swal from 'sweetalert2';
@@ -40,7 +40,7 @@
     });
 
     const normalizedType = normalizeType(orderType.value);
-    const apiUrl = `/api/order/${normalizeType.toLowerCase()}/${orderId}`
+    const apiUrl = `/api/order/${normalizedType}/${orderId}`
     const res = await axios.get(apiUrl,{
         headers: {
             Authorization: `Bearer ${authStore.token}`

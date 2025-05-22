@@ -84,7 +84,7 @@ export const useCartStore = defineStore('cart',{
                     }
                 });
                 
-                this.clearWalkCart()
+                this.clearCart()
                 return response.data.orderId
             }catch(error){
                 console.error('送出訂單失敗',error)
