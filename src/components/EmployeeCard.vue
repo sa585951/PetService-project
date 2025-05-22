@@ -7,13 +7,13 @@
         </div>
             <div class="row align-items-center">
                 <div class="col-4">
-                    <img :src="`src/assets/walkservicesimages/${employee.employee_photo}`" :alt="employee.name"
+                    <img :src="`${baseImageUrl}${employee.employee_photo}`" :alt="employee.name"
                         class="img-fluid rounded" />
                 </div>
                 <div class="col-8">
                     <h5 class="fs-3 fw-bold">{{ employee.name }}</h5>
                     <p class="mb-1"><strong>服務地區：</strong>{{ employee.district }}</p>
-                    <p><strong>可接寵物類型：</strong>{{ employee.petType.join(', ') }}</p>
+                    <p><strong>可接寵物類型：</strong>{{ employee.petTypes.join(', ') }}</p>
                 </div>
             </div>
         </div>
@@ -21,9 +21,13 @@
 </template>
 
 <script setup>
+import { defineProps } from 'vue';
+
 defineProps({
     employee: Object
 })
+
+const baseImageUrl = import.meta.env.VITE_API_IMAGE_URL || 'https://localhost:7089/images/';
 </script>
 
 <style scoped>
