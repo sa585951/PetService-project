@@ -1,7 +1,7 @@
 <template>
 <div v-for="hotel in hotels" :key="hotel.id">
-<router-link :to="`/HotelDetail/${hotel.id}`" class="text-decoration-none" >
-<div class="card mb-3" style="max-width: 100%;">
+
+<div class="card mb-3" @click="goToDetail(hotel)" style="max-width: 100%;">
     <div class="row g-0 hotel_card">
         <div class="col-md-4 p-3 pe-0">
             <img :src="`/Hotel/${hotel.image_1}`" class="img-fluid rounded-start" alt="...">
@@ -9,11 +9,14 @@
         <div class="col-md-8">
             <div class="card-body">
                 <div class="d-flex">
-                <h4 class="card-title fw-bold m-0">{{ hotel.name }}</h4>
-                <div class="p-0 ps-2">
-                    <img v-for="i in hotel.review[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
-                    <img v-for="i in 5 - (hotel.review[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
-                </div></div>
+                    <h4 class="card-title fw-bold m-0">{{ hotel.name }}</h4>
+                    <div class="p-0 ps-2">
+                        <img v-for="i in hotel?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
+                        <img v-for="i in 5 - (hotel?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
+                    </div>
+                    <div class="ratingbox">{{getRating(hotel.rating)}}</div>
+                    <!-- <div class="p-0 ps-2 d-flex align-items-center fw-bold">{{getRating(hotel.rating)}}</div> -->
+                </div>
                 <div class="price-tag">{{ Math.min(...hotel.roomDetail.map(room => room.price)) }}元起</div>
                 <div class="pt-1">
                     <p class="card-text mb-1">
@@ -40,20 +43,49 @@
         </div>
     </div>
 </div>
-</router-link>
 </div>
 </template>
     
 <script setup>
-    import { computed } from 'vue';
+    import { computed, ref } from 'vue';
+    import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+
 // 取得 props
     const props = defineProps({
         hotels: {
+            hotels: {
             type: Array,
             default: () => []
+            },
+        },
+        checkInDate: {
+            type: String,
+            default: ''
+        },
+        checkOutDate: {
+            type: String,
+            default: ''
+        },
+        petCount: {
+            type: Number,
+            default: 1
         }
     });
     const hotels = computed(() => props.hotels);
+
+    function goToDetail(hotel) {
+        router.push({
+            path: `/HotelDetail/${hotel.id}`,
+            query: {
+                checkInDate: props.checkInDate,
+                checkOutDate: props.checkOutDate,
+                petCount: props.petCount
+            }
+        })
+    }
 // 依據單一 hotel 拆分 roomTypes 為兩兩一組
     function getRoomPairs(hotel) {
         const pairs = [];
@@ -90,6 +122,22 @@
         }
         return count === 0 ? "今日尚無空房" : `剩餘 ${count} 間`;
     }
+
+//評分文字
+    function getRating(rating) {
+        if (rating == null) return "無";
+        switch (rating) {
+            case 5:
+            return "很棒";
+            case 4:
+            return "很好";
+            case 3:
+            return "好";
+            default:
+            return "普通";
+        }
+    }
+    
 </script>
     
 <style scoped>
@@ -135,6 +183,20 @@
     }
     i {
         color: rgb(155, 97, 27);
+    }
+
+/* 評分標籤 */
+    .ratingbox{
+        margin-left: 10px;
+        /* background-color: rgb(155, 97, 27); */
+        background-color: #96b848;
+        width: 45px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        border-radius: 10px 10px 10px 0px;
     }
 
     /* 價錢標籤CSS開始 */

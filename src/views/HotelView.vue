@@ -1,25 +1,31 @@
 <template>
+    <Notice ref="noticeModal"></Notice>
     <div class="Header_div mb-3">
         <img src="../assets/Picture/hotelBackground.jpg" class="img_background">
         <div class="search_bar1"> 
             <div class="search_bar2"> 
-                <div class="col-6 d-flex justify-content-center align-items-center"> 
+                <div class="col-5 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                     <div class="w-75 d-flex justify-content-center">
+                    <div class="w-75 d-flex justify-content-center">
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
-                <div class="col-3"> 
-                    <label for="PetCount" class="me-2">毛孩數量:</label>
-                    <select name="PetCount" id="PetCount" v-model.number="PetCount">
+                <div class="col-3 d-flex justify-content-center align-items-center"> 
+                    <label for="petCount" class="me-2">毛孩數量:</label>
+                    <select name="petCount" id="petCount" v-model.number="petCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
                         <option value="4">4</option>
                     </select>
                 </div>
-                <div class="col-3 p-2">
-                    <div class="col-2 p-2 text-center"> 
-                        <SearchButton @click="searchHotels()" class="mt-2">搜尋</SearchButton>
+                <div class="col-3 p-2 d-flex justify-content-center align-items-center">
+                    <div class=" p-2 text-center"> 
+                        <SearchButton @click="searchHotels()">搜尋</SearchButton>
+                    </div>
+                </div>
+                <div class="col-1 p-2 d-flex justify-content-center align-items-center">
+                    <div class=" p-2 text-center"> 
+                        <i class="bi bi-exclamation-square-fill NoticeIcon" @click="openNotice"></i>
                     </div>
                 </div>
             </div>
@@ -45,7 +51,7 @@
         </div>
       </div>
       <div class="col-10">
-        <HotelCard :hotels="filteredHotels"></HotelCard>
+        <HotelCard :hotels="filteredHotels" :check-in-date="checkInDate" :check-out-date="checkOutDate" :pet-count="petCount"></HotelCard>
       </div>
     </div>
   </div>
@@ -57,14 +63,20 @@
     import HotelCard from '@/components/HotelCard.vue';
     import SearchButton from '../components/HotelSearchButton.vue';
     import Checkbox from '@/components/HotelCheckbox.vue'; 
+    import Notice from '../components/HotelNotice.vue';
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+//使用者須知
+    const noticeModal = ref(null)
 //日期選擇器
     const datePickerRef = ref(null);
     let fpInstance = null;
     const checkInDate = ref();
     const checkOutDate = ref();
+    const petCount = ref();
+    let startDate = null;
+    let endDate = null;
     onMounted(async () => {
         fpInstance = flatpickr(datePickerRef.value, {
             mode: "range",
@@ -75,10 +87,10 @@
             locale: zh_tw || "zh_tw" ,
             defaultDate: null,
             onChange: (selectedDates, dateStr, instance) => {
-                console.log('選取的日期物件:', selectedDates);
                 if (selectedDates.length === 2) {
-                    const startDate = selectedDates[0];
-                    const endDate = selectedDates[1];
+                    startDate = selectedDates[0];
+                    endDate = selectedDates[1];
+                    console.log("1.", startDate, endDate);
                     const formatDateToYMD = (date) => {
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -87,8 +99,6 @@
                     };
                     const formattedStartDate = formatDateToYMD(startDate);
                     const formattedEndDate = formatDateToYMD(endDate);
-                    console.log('開始日期字串:', formattedStartDate);
-                    console.log('結束日期字串:', formattedEndDate);
                     // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
                     checkInDate.value = formattedStartDate;
                     checkOutDate.value = formattedEndDate;
@@ -96,7 +106,12 @@
             }
         });
         loadHotels();
+        noticeModal.value?.show()
     });
+    //開啟使用者須知
+    function openNotice() {
+    noticeModal.value?.show()
+}
 
  //GET全部
     const hotels = ref([]);
@@ -109,8 +124,8 @@
         const datas = await response.json();
         hotels.value = datas.hotels;   //只存陣列
         totalItems.value = datas.totalItems;
-        console.log(hotels.value);
-        console.log("totalItems:", totalItems.value);
+        // console.log(hotels.value);
+        // console.log("totalItems:", totalItems.value);
     };
     
 //勾選服務項目
@@ -121,21 +136,26 @@
             selectedItemNames.value.add(item.name);}
         else {
             selectedItemNames.value.delete(item.name);}
-        console.log("Selected item names:", Array.from(selectedItemNames.value));
+        // console.log("Selected item names:", Array.from(selectedItemNames.value));
     };
 
-// 儲存搜尋結果的 hotelId
-    const matchedHotelIds = ref([]);
+    const matchedHotelIds = ref([]);  // 儲存搜尋結果的 hotelId
 
-// 送出查詢，取得符合條件的旅館 ID 清單
+// 查詢按鈕，取得符合條件的旅館 ID 清單
     const searchHotels = async () => {
         const searchDate = {
             CheckInDate: checkInDate.value,
             CheckOutDate: checkOutDate.value,
-            PetCount: PetCount.value
+            petCount: petCount.value
         };
 
-        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/search`;
+        if (!checkInDate.value || !checkOutDate.value) {
+            alert("請先選擇完整的入住、退房日期");
+            return; } // 停止函式執行
+        if (!petCount.value) {
+            alert("請選擇入住寵物數量");
+            return; } // 停止函式執行
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Search`;
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -146,7 +166,7 @@
 
     // 更新 matchedHotelIds
         matchedHotelIds.value = result.map(r => r.hotelId);
-        console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
+        // console.log("搜尋結果 hotelIds:", matchedHotelIds.value);
 
     // 將房型數量加入對應的 hotel 中
         result.forEach(searchResult => {
@@ -158,8 +178,22 @@
                 hotel.qtyStatus[0].catRoom = searchResult.catRoom ?? hotel.qtyStatus[0].catRoom;
             }
         });
-        console.log("更新後的 hotels:", hotels.value);
+        // console.log("更新後的 hotels:", hotels.value);
     };
+
+//點旅館卡片判斷是否已篩選日期、數量
+    const InToHotelDetail = async () => {
+        // const searchDate = {
+        //     CheckInDate: checkInDate.value,
+        //     CheckOutDate: checkOutDate.value,
+        //     petCount: petCount.value
+        // };
+
+        if (!startDate|| !endDate || !petCount.value) {
+            alert("請先選擇完整的入住、退房日期以及入住寵物數量");
+            return; } // 停止函式執行
+    }
+
 
 // 根據搜尋結果與勾選項目篩選旅館
     const filteredHotels = computed(() => {
@@ -182,7 +216,6 @@
                 return true;
             });
         }
-
         return filtered;
     });
 
@@ -248,6 +281,18 @@
     .card_left { 
         background-color: rgb(255, 255, 255); 
     } 
+/* 通知icon */
+    .NoticeIcon{
+        font-size: 26px;
+        display: inline-block;
+        transition: transform 0.1s ease;
+    }
+    .NoticeIcon:hover{
+        color: rgb(221, 176, 117);
+        cursor: pointer; /*鼠標指標*/
+        /* transform: translateY(-1px); */
+    }
+
 /* datepicker */
     .datepicker{
         border-bottom: 1px solid rgb(243, 221, 195);
