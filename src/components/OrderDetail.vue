@@ -8,6 +8,7 @@
 
     <hr />
     <h5>訂單明細</h5>
+    <div v-if="orderType?.toLowerCase() === 'walk'">
     <ul>
       <li v-for="(item, index) in orderDetail.items" :key="index">
         <p>遛狗員：{{ item.employeeName }}</p>
@@ -18,6 +19,19 @@
         <p>備註：{{ item.note }}</p>
       </li>
     </ul>
+    </div>
+    <div v-if="orderType?.toLowerCase() === 'hotel'">
+    <ul>
+      <li v-for="(item, index) in orderDetail.items" :key="index">
+        <p>飯店名稱：{{ item.hotelName }}</p>
+        <p>入住時間：{{ formatDate(item.checkIn) }}</p>
+        <p>退房時間：{{ formatDate(item.checkOut) }}</p>
+        <p>房間數量：{{ item.qty }}</p>
+        <p>每間房價：NT${{ item.pricePerRoom }}，小計：NT${{ item.totalPrice }}</p>
+        <p>備註：{{ item.note }}</p>
+      </li>
+    </ul>
+    </div>
   </div>     
 </template>
     
@@ -39,20 +53,20 @@
     const isLoading = ref(!props.orderData);
 
     function normalizeOrderType(type){
-        if(type ==='Walk' || type ==='散步')return 'Walk';
-        if(type ==='Hotel' || type ==='住宿')return 'Hotel';
+        if (type?.toLowerCase() === 'walk' || type === '散步') return 'walk';
+        if (type?.toLowerCase() === 'hotel' || type === '住宿') return 'hotel';
         return '';
     }
 
     function getApiPath () {
-        const type = normalizeOrderType(props.orderType || orderDetail.value?.orderType ||'Walk');
+        const type = normalizeOrderType(props.orderType || orderDetail.value?.orderType ||'walk');
         const id = props.orderData?.orderId || props.orderId;
         if(!id)return '';
         switch(type){
-            case  'Walk':
-                return `/api/order/walk/${props.orderId}`
-            case 'Hotel':
-                return `/api/order/hotel/${props.orderId}`
+            case  'walk':
+                return `/api/order/walk/${id}`
+            case 'hotel':
+                return `/api/order/hotel/${id}`
                 default:
                     return''
         }

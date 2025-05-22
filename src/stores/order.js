@@ -34,7 +34,15 @@ export const useOrderStore = defineStore('order', {
 
         console.log('API 回傳:', res.data)
           //後端回傳的是OrderPagingDTO
-          this.orders = res.data.ordersResult
+          this.orders = res.data.ordersResult.map(order =>({
+            orderType:order.orderType,
+            orderTypeCode: order.orderTypeCode,
+            orderStatus: order.orderStatus,
+            id:order.id,
+            totalAmount:order.totalAmount,
+            createdAt: order.createdAt,
+            updatedAt:order.updatedAt
+          }))
           this.TotalPages = res.data.totalPages
         }catch(err){
           this.error = err

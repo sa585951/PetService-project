@@ -15,14 +15,29 @@
             <div v-if="cartStore.walkcartitems.length === 0">
                 <p>目前沒有選擇服務,請先回購物車選擇服務</p>
             </div>
+             <!-- 左側:明細 -->
             <div v-else class="payment-left">
-                <!-- 左側:明細 -->
+                <!-- 散步服務明細 -->
+                <div v-if="isWalkMode">
                   <div class="order-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
                     <div class="item-title">{{ item.name }}</div>
                     <div class="item-detail">時間：{{ formatDateTime(item.walkStart) }}</div>
                     <div class="item-detail">數量：{{ item.quantity }} 隻</div>
                     <div class="item-detail">單價：NT${{ item.price }}</div>
                     <div class="item-subtotal">小計：NT${{ item.price * item.quantity }}</div>
+                  </div>
+                 </div>
+
+                <!-- 住宿服務明細 -->
+                 <div v-else>
+                  <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="item.roomDetailId + item.checkIn">
+                    <div class="item-title">{{ item.name }}</div>
+                    <div class="item-detail">入住：{{ formatDateTime(item.checkIn) }}</div>
+                    <div class="item-detail">退房：{{ formatDateTime(item.checkOut) }}</div>
+                    <div class="item-detail">數量：{{ item.quantity }} 隻</div>
+                    <div class="item-detail">單價：NT${{ item.price }}</div>
+                    <div class="item-subtotal">小計：NT${{ item.price * item.quantity }}</div>
+                  </div>
                  </div>
             </div>
         </div>
@@ -31,8 +46,8 @@
                   <div class="col-md-4">
                 <div class="payment-right">
                     <div class="card-box">
-                    <div class="summary-line">共 {{ cartStore.cartTotalItems }} 件服務</div>
-                    <div class="summary-total">總金額：NT${{ cartStore.cartTotalPrice }}</div>
+                    <div class="summary-line">共 {{ isWalkMode ? cartStore.cartTotalItems : cartStore.cartTotalItems }} 件服務</div>
+                    <div class="summary-total">總金額：NT${{ isWalkMode ? cartStore.cartTotalPrice : cartStore.cartTotalPrice }}</div>
                     <button class="btn-submit" @click="handleSubmitOrder" :disabled="isSubmitting">
                     {{ isSubmitting ? '送出中...' : '送出訂單' }}
                     </button>
@@ -46,21 +61,27 @@
 <script setup >
     import { useCartStore } from '@/stores/cart';
     import { useAuthStore } from '@/stores/authStore';
-    import { useRouter } from 'vue-router';
+    import { useRoute, useRouter } from 'vue-router';
     import Swal from 'sweetalert2';
     import { ref,onMounted } from 'vue';
 
+    const route = useRoute();
     const cartStore = useCartStore();
     const authStore = useAuthStore();
     const router = useRouter();
 
     const isSubmitting = ref(false);
+    const isWalkMode = computed(() => route.query.type || 'Walk');
 
     const handleSubmitOrder = async() =>{
-        if (cartStore.walkcartitems.length === 0) {
-    alert('購物車是空的,請先選擇服務');
-    return;
-  }
+      const isEmpty = isWalkMode.value
+      ? cartStore.walkcartitems.length ===0
+      : cartStore.hotelcartitems.length ===0;
+
+      if (isEmpty) {
+        alert('購物車是空的,請先選擇服務');
+        return;
+      }
 
   isSubmitting.value = true;
 
@@ -77,12 +98,14 @@
   });
 
   try {
-    const orderId = await cartStore.submitWalkOrder();
+    const orderId = isWalkMode.value
+      ? await cartStore.submitWalkOrder()
+      : await cartStore.submitHotelOrder()
 
     Swal.close(); // ✅ 關閉 loading
 
     // 導向成功頁面
-    router.push(`/orders/success/${orderId}?type=Walk`);
+    router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
   } catch (error) {
     Swal.fire({
       icon: 'error',

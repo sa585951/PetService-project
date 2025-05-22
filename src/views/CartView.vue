@@ -11,44 +11,83 @@
     <div class="shopping-cart">
     <h3>購物車</h3>
     <hr>
-    <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
-        <input type="checkbox" class="checkbox" :value="getItemKey(item)" v-model="selectedItems">
-        <img :src="item.imageUrl" alt="">
-      <div class="item-info">
-        <div class="item-name">{{ item.name }}</div>
-        <div class="item-walktime">{{item.walkStart}}</div>
-        <div class="item-quantity">
-        隻 x
-        <input type="number" :value="item.quantity" @input="(e) =>updateQuantity(item, e)" min="1" max="5" />
-      </div>
-      </div>
-      <div class="item-price">NT${{ item.price }}</div>
-      <div class="item-actions">
-        <button class="remove-btn" @click="removeItem(item)">🗑</button>
-      </div>
-    </div>
+     <!-- Walk 購物車 -->
+      <div v-if="cartStore.walkcartitems.length > 0 && cartStore.hotelcartitems.length === 0">
+        <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="getWalkItemKey(item)">
+          <input type="checkbox" class="checkbox" :value="getWalkItemKey(item)" v-model="selectedWalkItems" />
+          <img :src="item.imageUrl" alt="walk" />
+          <div class="item-info">
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-walktime">{{ item.walkStart }}</div>
+            <div class="item-quantity">
+              隻 x
+              <input type="number" :value="item.quantity" @input="e => updateWalkQuantity(item, e)" min="1" max="5" />
+            </div>
+          </div>
+          <div class="item-price">NT${{ item.price }}</div>
+          <div class="item-actions">
+            <button class="remove-btn" @click="removeWalkItem(item)">🗑</button>
+          </div>
+        </div>
 
- 
-    <div class="cart-summary" ref="cart">
-      <div class="select-all">
-        <input type="checkbox" v-model="isAllSelected" @change="toggleSelectAll">
-        <label>全選 ({{ selectedItems.length }})</label>
-        <span>|</span>
-        <button @click="removeSelectedItems" :disabled="selectedItems.length === 0">刪除已選項目</button>
+        <!-- 控制區 (Walk) -->
+        <div class="select-all">
+          <input type="checkbox" v-model="isAllWalkSelected" @change="toggleSelectAllWalk" />
+          <label>全選 ({{ selectedWalkItems.length }})</label>
+          <span>|</span>
+          <button @click="removeSelectedWalkItems" :disabled="selectedWalkItems.length === 0">刪除已選項目</button>
+        </div>
       </div>
-        <div class="checkout">
+
+      <!-- Hotel 購物車 -->
+      <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
+        <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item)">
+          <input type="checkbox" class="checkbox" :value="getHotelItemKey(item)" v-model="selectedHotelItems" />
+          <img :src="item.imageUrl" alt="hotel" />
+          <div class="item-info">
+            <div class="item-name">{{ item.hotelName }}</div>
+            <div class="item-walktime">入住：{{ item.checkIn }}，退房：{{ item.checkOut }}</div>
+            <div class="item-quantity">房間數量：{{ item.qty }}</div>
+          </div>
+          <div class="item-price">NT${{ item.pricePerRoom }}</div>
+          <div class="item-actions">
+            <button class="remove-btn" @click="removeHotelItem(item)">🗑</button>
+          </div>
+        </div>
+
+        <!-- 控制區 (Hotel) -->
+        <div class="select-all">
+          <input type="checkbox" v-model="isAllHotelSelected" @change="toggleSelectAllHotel" />
+          <label>全選 ({{ selectedHotelItems.length }})</label>
+          <span>|</span>
+          <button @click="removeSelectedHotelItems" :disabled="selectedHotelItems.length === 0">刪除已選項目</button>
+        </div>
+      </div>
+
+      <!-- 混合狀態警告 -->
+      <div v-if="cartStore.walkcartitems.length > 0 && cartStore.hotelcartitems.length > 0">
+        <p class="text-danger">❗目前兩種服務同時存在，請先清空其中一項再進行結帳。</p>
+        <button @click="cartStore.clearCart()">清空購物車</button>
+      </div>
+
+      <!-- 空購物車 -->
+      <div v-if="cartStore.walkcartitems.length === 0 && cartStore.hotelcartitems.length === 0">
+        <p class="text-muted">購物車是空的，請先選擇服務</p>
+      </div>
+
+      <!-- 結帳 -->
+      <div class="cart-summary">
         <div class="cart-footer">
           <div>
-        <span class="text-grey-light text-xs">{{ cartStore.cartTotalItems }} 件服務合計</span>
-        <span class="text-dark">
-          <div>NT${{ cartStore.cartTotalPrice }}</div>
-        </span>
-           </div>       
+            <span class="text-grey-light text-xs">{{ cartStore.cartTotalItems }} 件服務合計</span>
+            <span class="text-dark">
+              <div>NT${{ cartStore.cartTotalPrice }}</div>
+            </span>
+          </div>      
         <RouterLink to="/payment"><button>前往結帳</button></RouterLink>
       </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
     
@@ -63,32 +102,45 @@
     const authStore = useAuthStore();
     const router = useRouter();
 
-    const getItemKey = (item) =>`${item.employeeServiceId}-${item.walkStart}`;
+    const getWalkItemKey = (item) =>`${item.employeeServiceId}-${item.walkStart}`;
+    const getHotelItemKey = (item) =>`${item.hotelId}-${item.checkIn}-${item.checkOut}`;
 
-    const selectedItems = ref(cartStore.walkcartitems .map(getItemKey))
-    const isAllSelected = ref(false);
+    const selectedWalkItems = ref(cartStore.walkcartitems .map(getWalkItemKey))
+    const isAllWalkSelected = ref(false);
 
-    const toggleSelectAll =() =>{
-        if(isAllSelected.value){
-            selectedItems.value = []
+    const selectedHotelItems = ref(cartStore.hotelcartitems.map(getHotelItemKey));
+    const isAllHotelSelected = ref(false);
+
+    const toggleSelectAllWalk =() =>{
+        if(isAllWalkSelected.value){
+            selectedWalkItems.value = []
         }else{
-            selectedItems.value = cartStore.walkcartitems.map(getItemKey)
+            selectedWalkItems.value = cartStore.walkcartitems.map(getWalkItemKey)
         }
-        isAllSelected.value = selectedItems.value.length === cartStore.walkcartitems.length;
+        isAllWalkSelected.value = selectedWalkItems.value.length === cartStore.walkcartitems.length;
     };
 
-    const removeItem = (item) =>{
-        cartStore.removeItemByKey(getItemKey(item));
-        selectedItems.value = selectedItems.value.filter(key => key !== getItemKey(item));
-        isAllSelected.value = selectedItems.value.length === cartStore.walkcartitems.length;
+    const toggleSelectAllHotel =() => {
+      if(isAllHotelSelected.value){
+        selectedHotelItems.value = [];
+      }else{
+        selectedHotelItems.value = cart.hotelcartitems.map(getHotelItemKey);
+      }
+      isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
+    }
+
+    const removeWalkItem = (item) =>{
+        cartStore.removeWalkItemByKey(getWalkItemKey(item));
+        selectedWalkItems.value = selectedWalkItems.value.filter(key => key !== getWalkItemKey(item));
+        isAllWalkSelected.value = selectedWalkItems.value.length === cartStore.walkcartitems.length;
     };
 
-    const removeSelectedItems = () => {
-        selectedItems.value.forEach(key => {
-          cartStore.removeItemByKey(key);
+    const removeselectedWalkItems = () => {
+        selectedWalkItems.value.forEach(key => {
+          cartStore.removeWalkItemByKey(key);
         });
-        selectedItems.value = [];
-        isAllSelected.value = false;
+        selectedWalkItems.value = [];
+        isAllWalkSelected.value = false;
     };
 
     const updateQuantity = (item,event) => {
@@ -96,6 +148,20 @@
         if(!isNaN(quantity) && quantity > 0){
             cartStore.updateItemQuantity(item.employeeServiceId, item.walkStart , quantity);
         }
+    }
+
+    const removeHotelItem = (item) =>{
+      cartStore.removeHotelItemByKey(getHotelItemKey(item));
+      selectedHotelItems.value = selectedHotelItems.value.filter(k =>k !== getHotelItemKey(item));
+      isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
+    }
+
+    const removeSelectedHotelItems = () => {
+      selectedHotelItems.value.forEach(k =>{
+        cartStore.removeHotelItemByKey(k);
+      });
+      selectedHotelItems.value = [];
+      isAllHotelSelected.value = false;
     }
 
     onMounted(() => {
@@ -108,7 +174,8 @@
             router.push('/login')
         })
         };
-        isAllSelected.value = selectedItems.value.length === cartStore.walkcartitems.length;
+        isAllWalkSelected.value = selectedWalkItems.value.length === cartStore.walkcartitems.length;
+        isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     });
 </script>
     
