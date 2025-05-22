@@ -15,13 +15,14 @@
                 <label for="">旅館名稱 : {{hotel.name}}</label>
                 <label for="">房型 : {{props.roomName}}</label>
                 <label for="">單價 : {{props.price}}</label>
-                <label for="">入住日期 : {{checkInDate}}</label>
-                <label for="">退房日期 : {{checkOutDate}}</label>
+                <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
                 <label for="">房間數 : {{requiredRooms}}</label>
                 
                 <label>備註:</label>
+
                 <textarea v-model="AdditionalMessage" rows="4"></textarea>
                 <button @click="saveOrderInfo()">確認</button>
+
             </div>
           </div>
         </div>
@@ -131,5 +132,16 @@ function saveOrderInfo() {
         left: 50%;
         transform: translate(-50%, -50%);
         width: 300px;
+        height: 500px;
+    }
+
+    label {
+      display: block;
+    }
+
+    .btn {
+      background-color: rgb(235, 207, 170);
+      display: block; 
+      justify-content: center;
     }
 </style>

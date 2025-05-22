@@ -69,14 +69,19 @@
                 <div class="d-flex flex-wrap">
                     <div v-for="(roomDetail, index) in hotels[0].roomDetail" :key="roomDetail.id" class="card me-3 mb-3" style="width: 26rem; height: 100%;">
                         <img :src="`/Hotel/${roomDetail.image}`" class="card-img-top" />
-                        <h5 class="card-title fw-bold mt-3 ms-3">{{ hotels[0].roomTypes[index].name }}</h5>
-                        <div class="ms-3 d-flex justify-content-between align-items-center px-3">
-                            <div>
-                                <p class="mb-0">房間大小： {{ roomDetail.roomsize }}</p>
-                                <div class="ms-3 text-muted mb-2">{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="card-title fw-bold mt-3 ms-3">{{ hotels[0].roomTypes[index].name }}</h5>
+                            <h6 class="text-danger card-title fw-bold m-3">{{ roomDetail.price }} 元</h6>
+                        </div>
+                        <div class="ms-3 d-flex justify-content-between align-items-center">
+                            <div class="d-flex">
+                                <p class="mb-0">{{ roomDetail.roomsize }} (公分)</p>
+                                
                             </div>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between">
+                            <div class="text-muted mb-2 ms-3">{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</div>
                             <div>
-                                <p><div class="ms-3 text-danger fw-bold mb-3">{{ roomDetail.price }} 元</div></p>
                                 <p v-if="memberId && userName && hotels[0] && roomDetail.roomtype_id && roomDetail.price"><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name"
                                     :userName="userName" :memberId="memberId" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id"
                                     :checkInDate="checkInDate" :checkOutDate="checkOutDate" :requiredRooms="requiredRooms">加入購物車</BookingButton></p>
