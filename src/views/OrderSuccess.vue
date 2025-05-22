@@ -39,7 +39,7 @@
       didOpen: () => Swal.showLoading()
     });
 
-    const normalizedType = normalizeType(orderType.value);
+    const normalizedType = normalizeType(orderType.value).toLowerCase();
     const apiUrl = `/api/order/${normalizedType}/${orderId}`
     const res = await axios.get(apiUrl,{
         headers: {

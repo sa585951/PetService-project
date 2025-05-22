@@ -7,7 +7,7 @@ function getItemKeyWalk(item){
 }
 
 function getItemKeyHotel(item){
-    return `${item.hotelId}-${item.checkin}-${item.checkOut}`;
+    return `${item.hotelId}-${item.checkIn}-${item.checkOut}`;
 }
 
 export const useCartStore = defineStore('cart',{
@@ -20,12 +20,12 @@ export const useCartStore = defineStore('cart',{
     getters:{
         cartTotalItems:(state)=>
             state.walkcartitems.reduce((total,item) => total + item.quantity,0)+
-            state.hotelcartitems.reduce((t,i)=>t+i.qty,0),
+            state.hotelcartitems.reduce((t,i)=>t+i.backenedItem.roomQty,0),
 
 
         cartTotalPrice:(state)=>
             state.walkcartitems.reduce((total,item) => total + item.quantity * item.price, 0)+
-            state.hotelcartitems.reduce((t,i) => t+ i.qty *i.pricePerRoom,0),
+            state.hotelcartitems.reduce((t,i) => t+ i.backenedItem.roomQty *i.pricePerRoom,0),
 
         walkCartItems: (state) => state.walkcartitems,
 
@@ -93,9 +93,9 @@ export const useCartStore = defineStore('cart',{
         },
 
         addItemToHotelCart(item){
-            const existingItem = this.hotelcartitems.filter(item => getItemKeyHotel(i) === getItemKeyHotel(item));
+            const existingItem = this.hotelcartitems.find(i => getItemKeyHotel(i.backenedItem) === getItemKeyHotel(item.backenedItem));
             if(existingItem){
-                existingItem.qty += item.qty;
+                existingItem.backenedItem.roomQty += item.backenedItem.roomQty;
             }else{
                 this.hotelcartitems.push(item);
             }
@@ -108,11 +108,12 @@ export const useCartStore = defineStore('cart',{
         prepareHotelOrderPayload(){
             return{
                 cartItems:this.hotelcartitems.map(item =>({
-                    hotelId: item.hotelId,
-                    roomDetailId: item.roomDetailId,
-                    checkIn: item.checkIn,
-                    checkOut: item.checkOut,
-                    note: item.note
+                    hotelId: item.backenedItem.hotelId,
+                    roomDetailId: item.backenedItem.roomDetailId,
+                    checkIn: item.backenedItem.checkIn,
+                    checkOut: item.backenedItem.checkOut,
+                    roomQty:item.backenedItem.roomQty,
+                    additionalMessage: item.backenedItem.additionalMessage
                 }))
             };
         },

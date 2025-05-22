@@ -217,7 +217,7 @@ function addToCart(){
     return
   }
 
-  const combineNotes = `寵物種類:${form.value.pet}，備註:${form.value.notes || '無'}`;
+  const combineNotes = `寵物種類:${form.value.pet}，${form.value.notes || '無'}`;
 
   const walkStartTime = `${form.value.date}T${form.value.time}`;
 
@@ -234,7 +234,7 @@ function addToCart(){
   const isValidDate = !isNaN(new Date(walkStartTime).getTime());
   console.log('格式正確嗎?', isValidDate);
   
-  cartStore.addItemToCart(cartItem);
+  cartStore.addItemToWalkCart(cartItem);
   alert('已加入購物車');
   formReset();
 }
