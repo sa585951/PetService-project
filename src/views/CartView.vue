@@ -46,8 +46,8 @@
           <img :src="item.imageUrl" alt="hotel" />
           <div class="item-info">
             <div class="item-name">{{ item.hotelName }}</div>
-            <div class="item-walktime">入住：{{ item.checkIn }}，退房：{{ item.checkOut }}</div>
-            <div class="item-quantity">房間數量：{{ item.qty }}</div>
+            <div class="item-walktime">入住：{{ item.backenedItem.checkIn }}，退房：{{ item.backenedItem.checkOut }}</div>
+            <div class="item-quantity">房間數量：{{ item.backenedItem.roomQty }}</div>
           </div>
           <div class="item-price">NT${{ item.pricePerRoom }}</div>
           <div class="item-actions">
@@ -103,7 +103,7 @@
     const router = useRouter();
 
     const getWalkItemKey = (item) =>`${item.employeeServiceId}-${item.walkStart}`;
-    const getHotelItemKey = (item) =>`${item.hotelId}-${item.checkIn}-${item.checkOut}`;
+    const getHotelItemKey = (item) =>`${item.backenedItem.hotelId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`;
 
     const selectedWalkItems = ref(cartStore.walkcartitems .map(getWalkItemKey))
     const isAllWalkSelected = ref(false);
@@ -124,7 +124,7 @@
       if(isAllHotelSelected.value){
         selectedHotelItems.value = [];
       }else{
-        selectedHotelItems.value = cart.hotelcartitems.map(getHotelItemKey);
+        selectedHotelItems.value = cartStore.hotelcartitems.map(getHotelItemKey);
       }
       isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     }

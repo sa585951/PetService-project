@@ -12,8 +12,11 @@
         <div class="payment-box">
             <h3>訂單確認</h3>
             <hr>
-            <div v-if="cartStore.walkcartitems.length === 0">
+            <div v-if="isWalkMode && cartStore.walkcartitems.length === 0">
                 <p>目前沒有選擇服務,請先回購物車選擇服務</p>
+            </div>
+            <div v-else-if="!isWalkMode && cartStore.hotelcartitems.length === 0">
+                
             </div>
              <!-- 左側:明細 -->
             <div v-else class="payment-left">
@@ -30,13 +33,13 @@
 
                 <!-- 住宿服務明細 -->
                  <div v-else>
-                  <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="item.roomDetailId + item.checkIn">
+                  <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="item.backenedItem.roomDetailId + item.backenedItem.checkIn">
                     <div class="item-title">{{ item.name }}</div>
-                    <div class="item-detail">入住：{{ formatDateTime(item.checkIn) }}</div>
-                    <div class="item-detail">退房：{{ formatDateTime(item.checkOut) }}</div>
-                    <div class="item-detail">數量：{{ item.quantity }} 隻</div>
-                    <div class="item-detail">單價：NT${{ item.price }}</div>
-                    <div class="item-subtotal">小計：NT${{ item.price * item.quantity }}</div>
+                    <div class="item-detail">入住：{{ formatDateTime(item.backenedItem.checkIn) }}</div>
+                    <div class="item-detail">退房：{{ formatDateTime(item.backenedItem.checkOut) }}</div>
+                    <div class="item-detail">數量：{{ item.backenedItem.roomQty }} 隻</div>
+                    <div class="item-detail">單價：NT${{ item.pricePerRoom }}</div>
+                    <div class="item-subtotal">小計：NT${{ item.pricePerRoom * item.backenedItem.roomQty }}</div>
                   </div>
                  </div>
             </div>
@@ -63,7 +66,7 @@
     import { useAuthStore } from '@/stores/authStore';
     import { useRoute, useRouter } from 'vue-router';
     import Swal from 'sweetalert2';
-    import { ref,onMounted } from 'vue';
+    import { ref,onMounted,computed } from 'vue';
 
     const route = useRoute();
     const cartStore = useCartStore();
@@ -71,7 +74,7 @@
     const router = useRouter();
 
     const isSubmitting = ref(false);
-    const isWalkMode = computed(() => route.query.type || 'Walk');
+    const isWalkMode = computed (() => route.query.type || 'walk').toString().toLowerCase() === 'walk';
 
     const handleSubmitOrder = async() =>{
       const isEmpty = isWalkMode.value
@@ -104,8 +107,14 @@
 
     Swal.close(); // ✅ 關閉 loading
 
-    // 導向成功頁面
-    router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
+    Swal.fire({
+      icon:'success',
+      title:'訂單成立成功',
+      text:'已寄送訂單確認信至您的信箱，請查收📧！'
+    }).then(() =>{
+      // 導向成功頁面
+      router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
+    });
   } catch (error) {
     Swal.fire({
       icon: 'error',
