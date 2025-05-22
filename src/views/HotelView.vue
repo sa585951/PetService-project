@@ -20,7 +20,7 @@
                 </div>
                 <div class="col-3 p-2 d-flex justify-content-center align-items-center">
                     <div class=" p-2 text-center"> 
-                        <SearchButton @click="searchHotels()">搜尋</SearchButton>
+                        <SearchButton @click="searchHotels()" class="fw-bold">搜尋</SearchButton>
                     </div>
                 </div>
                 <div class="col-1 p-2 d-flex justify-content-center align-items-center">
