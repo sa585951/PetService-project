@@ -1,3 +1,4 @@
+<!-- views/EmployeeDetailView.vue -->
 <template>
   <div class="container py-4">
     <!-- 載入與錯誤處理 -->
@@ -91,7 +92,7 @@
           </div>
         </div>
 
-        <!-- 右側：購物車填寫 -->
+        <!-- 右側：購物車填寫-->
         <div class="col-md-5">
           <div class="border rounded p-3 shadow-sm bg-white">
             <h5 class="mb-3">填寫訂單資訊</h5>
@@ -135,10 +136,10 @@
             <div class="mb-2">
               <label class="form-label">其他備註</label>
               <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
-              <div v-if="form.notesError" class="text-danger mt-1">請填寫寵物品種</div> 
+              <div v-if="form.notesError" class="text-danger mt-1">請填寫寵物品種</div> <!-- 應修正為 "請填寫備註" -->
             </div>
 
-          
+            <!-- 小計顯示 -->
             <div class="mt-3">
               <p>
                 <strong>單價：</strong>{{ employeeStore.employeeDetail.price }} 元/小時(單次計費)
@@ -153,6 +154,7 @@
         </div>
       </div>
 
+      <!-- 地圖區塊 -->
       <div class="row mt-4">
         <div class="col-12">
           <iframe
@@ -177,7 +179,7 @@ import { useEmployeeStore } from '@/stores/employeeStore';
 
 const employeeStore = useEmployeeStore();
 const route = useRoute();
-const router = useRouter(); // [新增] 實例化 router
+const router = useRouter(); //實例化 router
 const employeeId = ref(null);
 
 // 錯誤處理 employeeId
