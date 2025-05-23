@@ -26,6 +26,7 @@ import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementVie
 import CartView from '@/views/CartView.vue'
 import Payment from '@/views/Payment.vue'
 import OrderSuccess from '@/views/OrderSuccess.vue'
+import MemberSourceChart from '@/views/MemberSourceChart.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -158,7 +159,11 @@ const router = createRouter({
         orderId: route.params.id,
         orderType: route.query.type
       })
-    }
+    },
+    {
+      path: "/membersourcechart",
+      component: MemberSourceChart,
+    },
   ],
 })
 
