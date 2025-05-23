@@ -306,9 +306,12 @@ function addToCart() {
     walkEnd: getWalkTimes.value.end,
     servicePrice: employeeStore.employeeDetail.price,
     totalPrice: subtotal.value,
-    notes: form.value.notes,
+    note: combineNotes,
+    name: employee.name,
+    imageUrl:employee.employee_photo,
+    price: employee.price
   };
-  
+
   let cart = JSON.parse(localStorage.getItem('cart') || '[]');
   cart.push(cartItem);
   localStorage.setItem('cart', JSON.stringify(cart));
@@ -322,11 +325,12 @@ function addToCart() {
     備註：${form.value.notes || '無'}
     小計：${subtotal.value} 元
   `;
+  
   const confirmed = confirm(message); // 使用 confirm 提供選擇
   if (confirmed) {
     router.push('/order'); // 導航到訂單頁面
   }
-
+  
   const isValidDate = !isNaN(new Date(walkStartTime).getTime());
   console.log('格式正確嗎?', isValidDate);
   
