@@ -135,7 +135,7 @@ export default {
   name: "ChatRoom",
   data() {
     return {
-      userRole: "employee",
+      userRole: 'employee', // 可切換為 'employee' member
       showChat: false,
       messageText: "",
       messages: [],
