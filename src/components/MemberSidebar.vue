@@ -36,7 +36,7 @@ const setActiveTab = (tabName) => {
   const routeMap = {
     'memberdashboard': '/memberdashboard',
     'profile': '/profile',
-    'orders': '/member/orders',
+    'orders': '/orders',
     'pet': '/pet'
   };
   
@@ -69,7 +69,8 @@ watch(() => route.path, (newPath) => {
 
 <style scoped>
 .sidebar {
-  height: 100vh;
+  /* height: 100vh; */
+  min-height: 200px;
   border-right: 1px solid #e5e5e5;
   overflow-y: auto;
 }
@@ -86,6 +87,8 @@ watch(() => route.path, (newPath) => {
 
 .sidebar-link:hover, .sidebar-link.active {
   background-color: #f5f5f5;
+  outline: #ACC572 solid 3px;
+  border-radius: 20ch;
   color: #ACC572;
 }
 

@@ -18,12 +18,12 @@
                         <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                             <div class="col" v-for="pet in pets" :key="pet.id">
                                 <div class="pet-card card h-100 align-items-center shadow-sm">
-                                    <img :src="getPetPhotoUrl(pet.petImagePath)" class="card-img-top pet-photo" :alt="pet.petName">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ pet.petName }}</h5>
+                                    <div class="pet-image-wrapper">
+                                        <img :src="getPetPhotoUrl(pet.petImagePath)" class="card-img-top pet-photo" :alt="pet.petName">             
+                                    </div>
+                                    <div class="card-body d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title me-4">{{ pet.petName }}</h5>
                                         <p class="card-text">
-                                            <i class="fas fa-paw"></i>
-                                             年紀: {{ pet.petAge !== null && pet.petAge !== undefined ? pet.petAge + '歲' : '未知' }}<br>
                                             <i class="bi bi-cake2 me-1"></i>
                                             生日: {{ formatBirthday(pet.petBirthday) }}<br>
                                             <i class="bi bi-record2"></i> 體重: {{ pet.petWeight !== null && pet.petWeight !== undefined ? pet.petWeight + '公斤' : '未知' }}<br>
@@ -46,7 +46,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content align-items-center">
                 <div class="modal-header">
-                    <h5 class="modal-title title" id="addPetModalLabel">
+                    <h5 class="modal-title title mb-0" id="addPetModalLabel">
                         新增寵物資料
                     </h5>
                 </div>
@@ -72,26 +72,12 @@
                             </div>
                         </div>
 
-                        <!-- 年紀和生日並列 -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-row">
-                                    <label for="petAge" class="form-label">
-                                        年紀 (大約)
-                                    </label>
-                                    <div class="input-icon">                                        
-                                        <input type="number" class="form-control" id="petAge" v-model="newPet.petAge" placeholder="幾歲呢？">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-row">
-                                    <label for="petBirthday" class="form-label">
-                                        生日
-                                    </label>
-                                    <input type="date" class="form-control" id="petBirthday" v-model="newPet.petBirthday">
-                                </div>
-                            </div>
+                        <!-- 生日 -->
+                        <div class="form-row">
+                            <label for="petBirthday" class="form-label">
+                                生日
+                            </label>
+                            <input type="date" :max="maxDate" class="form-control" id="petBirthday" v-model="newPet.petBirthday">
                         </div>
 
                         <!-- 體重 -->
@@ -151,7 +137,7 @@
        <div class="modal-dialog modal-lg">
             <div class="modal-content align-items-center">
                 <div class="modal-header">
-                    <h5 class="modal-title title" id="editPetModalLabel">
+                    <h5 class="modal-title title mb-0" id="editPetModalLabel">
                         編輯寵物資料
                     </h5>                    
                 </div>
@@ -178,27 +164,12 @@
                             </div>
                         </div>
 
-                        <!-- 年紀和生日並列 -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-row">
-                                    <label for="editPetAge" class="form-label">
-                                        年紀 (大約)
-                                    </label>
-                                    <div class="input-icon">
-                                        
-                                        <input type="number" class="form-control" id="editPetAge" v-model="editingPet.petAge" placeholder="幾歲呢？">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-row">
-                                    <label for="editPetBirthday" class="form-label">
-                                        生日
-                                    </label>
-                                    <input type="date" class="form-control" id="editPetBirthday" v-model="editingPet.petBirthday">
-                                </div>
-                            </div>
+                        <!-- 生日 -->
+                        <div class="form-row">
+                            <label for="editPetBirthday" class="form-label">
+                                生日
+                            </label>
+                            <input type="date" :max="maxDate" class="form-control" id="editPetBirthday" v-model="editingPet.petBirthday">
                         </div>
 
                         <!-- 體重 -->
@@ -238,13 +209,22 @@
                             </div>
                         </div>
                         <!-- 按鈕區域 -->
-                        <div class="d-flex justify-content-end mt-4 gap-2">
-                            <button type="button" class="btn btn-secondary" @click="closeEditPetModal">
-                                <i class="bi bi-x-lg me-1"></i>取消
+                        <div class="d-flex justify-content-between align-items-center mt-4 gap-2">
+                            <div>
+                                <button type="button" class="btn btn-delete" @click="deletePet(editingPet.id)">
+                                <i class="bi bi-trash3"></i>
                             </button>
-                            <button type="button" @click="submitEditPet" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i>儲存變更
-                            </button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-secondary" @click="closeEditPetModal">
+                                    <i class="bi bi-x-lg me-1"></i>取消
+                                </button>
+                                <button type="button" @click="submitEditPet" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>儲存變更
+                                </button>
+                        </div>
+
+
                         </div>
                     </form>
                 </div>
@@ -257,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick,watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import MemberSidebar from '@/components/MemberSidebar.vue';
@@ -273,13 +253,15 @@ const baseAddress = 'https://localhost:7089';
 const defaultPetPhoto = defaultPetAvatarImage;
 
 const pets = ref([]);
-
+const maxDate = computed(() => {
+  const today = new Date()
+  return today.toISOString().split('T')[0] // 'YYYY-MM-DD'
+})
 // 新增寵物 Modal 狀態和數據
 const isAddPetModalOpen = ref(false);
 const newPet = ref({
     petId:null,
     petName: '',
-    petAge: null,
     petBirthday: '', // YYYY-MM-DD 字串
     petWeight: null,
     petDe: 2, // int 狀態 (0:否, 1:是, 2:未知)
@@ -293,7 +275,6 @@ const isEditPetModalOpen = ref(false);
 const editingPet = ref(null); // 或 ref({})
 const editingPetPhotoFile = ref(null);
 const editingPetPhotoPreview = ref(null);
-
 
 // 載入寵物資料的函式
 const fetchPets = async () => {
@@ -341,12 +322,9 @@ const getPetPhotoUrl = (photoPath) => {
 const formatBirthday = (birthday) => {
     if (!birthday) return '未知';
     try {
-        // 嘗試從各種格式創建 Date 物件
         const date = new Date(birthday);
-        // 檢查是否是有效的日期
         if (!isNaN(date.getTime())) {
-            // 使用 toLocaleDateString 格式化為本地日期字串
-            return date.toLocaleDateString();
+            return `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
         } else {
             return '格式錯誤';
         }
@@ -372,7 +350,6 @@ const addNewPet = () => {
     // 重置表單數據
     newPet.value = {
         petName: '',
-        petAge: null,
         petBirthday: '', // YYYY-MM-DD 字串
         petWeight: null,
         petDe: 2, // 預設未知
@@ -480,7 +457,6 @@ const submitNewPet = async () => {
     // 2. 準備新增寵物的數據 DTO
     const petDataForAdd = {
         petName: newPet.value.petName,
-        petAge: newPet.value.petAge ?? null,
         petBirthday: newPet.value.petBirthday.trim() === '' ? null : newPet.value.petBirthday,
         petWeight: Number(newPet.value.petWeight),
         petDe: newPet.value.petDe ?? null,
@@ -627,6 +603,87 @@ const handleEditPhotoChange = (event) => {
          editingPetPhotoPreview.value = getPetPhotoUrl(editingPet.value?.petImagePath);
      }
 };
+watch(() => editingPet.value?.petBirthday, (newValue, oldValue) => {
+    console.log('petBirthday 數據變動:', '從', oldValue, '變成', newValue);
+    // 在這裡觀察當您選擇日期時，newValue 會變成什麼
+});
+
+ const deletePet = async (petIdToDelete) => {
+       // 確保 petIdToDelete 是有效的數字
+        if (petIdToDelete === undefined || petIdToDelete === null || typeof petIdToDelete !== 'number') {
+            console.error('Delete Pet Error: 無效的寵物 ID', petIdToDelete);
+            Swal.fire({
+                text: "發生錯誤，請稍後嘗試。",
+                confirmButtonColor: '#ACC572',
+            });
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            Swal.fire({
+                text: '您尚未登入，請先登入。',
+                confirmButtonColor: '#ACC572',
+            }).then(() => {
+                router.push('/login');
+            });
+            return;
+        }
+        // 1. 顯示確認刪除的 SweetAlert
+            const result = await Swal.fire({
+                title: "確定刪除嗎？", // Are you sure?
+                text: "刪除後將無法復原！", // You won't be able to revert this!
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#ACC572",
+                confirmButtonText: "是的，刪除！", // Yes, delete it!
+                cancelButtonText: "取消", // Cancel
+            });
+
+            // 2. 如果使用者確認刪除
+            if (result.isConfirmed) {
+                try {
+                    // 3. 呼叫後端 API 執行軟刪除
+                    // 使用 DELETE 方法，將 ID 放在 URL 中
+                    const deleteResponse = await axios.delete(`${baseAddress}/api/Pet/DeletePet/${petIdToDelete}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                        // DELETE 請求通常不需要 Content-Type: application/json header 如果沒有請求體
+                    });
+
+                    console.log('寵物刪除成功:', deleteResponse.data);
+
+                    // 4. 顯示刪除成功的 SweetAlert
+                    Swal.fire({
+                        title: "已刪除！", // Deleted!
+                        text: "寵物資料已成功刪除。", // Your pet data has been deleted.
+                        icon: "success",
+                        confirmButtonColor: '#ACC572',
+                    });
+
+                    // 5. 關閉可能的編輯 Modal (如果刪除按鈕在編輯 Modal 中)
+                    // 如果刪除按鈕在列表項上，則不需要關閉編輯 Modal
+                     closeEditPetModal(); // 根據你的 UI 結構決定是否需要這行
+
+                    // 6. 重新載入寵物列表以反映變更 (後端會過濾掉軟刪除的記錄)
+                    fetchPets();
+
+                } catch (error) {
+                    // 處理刪除失敗的情況
+                    console.error('刪除寵物失敗:', error);
+                    Swal.fire({
+                        title: "刪除失敗！", // Delete failed!
+                        text: '刪除寵物失敗，請稍後再試。' + (error.response?.data?.message || error.message),
+                        icon: "error",
+                        confirmButtonColor: '#ACC572',
+                    });
+                }
+            } else {
+                // 如果使用者取消刪除，可以選擇顯示一個提示或不做任何事
+                console.log('使用者取消刪除');
+                // Swal.fire("已取消", "您的寵物資料是安全的 :)", "info"); // 可選：顯示取消提示
+            }
+};
 
 // 提交編輯寵物表單
 const submitEditPet = async () => {
@@ -670,19 +727,45 @@ const submitEditPet = async () => {
         }
     }
 
+    const formatDateForApi = (dateValue) => {
+
+        if (!dateValue){
+            console.log('路徑: Input 是 falsy，返回 null');
+        console.log('--- formatDateForApi 結束 ---');
+        return null;
+        };
+        
+        try{
+            const data = new Date(dateValue);
+
+        if(!isNaN(data.getTime())){
+             const formatted = data.toISOString().split('T')[0];
+             return formatted;
+        }
+
+            if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+            return dateValue;
+        }
+            return null;
+        }catch{
+            return null;
+        }
+    };
+
+    console.log('從 v-model 讀取到的原始 petBirthday 值:', editingPet.value.petBirthday);
+    console.log('-> submitEditPet 執行時，editingPet.value.petBirthday 的值是:', editingPet.value.petBirthday);
     // 2. 準備更新寵物的數據 DTO
     // 確保屬性名稱與後端 PetUpdateRequestDTO 匹配 (假設是 camelCase)
     const petDataForUpdate = {
         petName: editingPet.value.petName,
-        petAge: editingPet.value.petAge,
-        petBirthday: editingPet.value.petBirthday, // YYYY-MM-DD 字串
+        petBirthday: formatDateForApi(editingPet.value.petBirthday), // YYYY-MM-DD 字串
         petWeight: editingPet.value.petWeight,
         petDe: editingPet.value.petDe, // int 值
         // 只有在 photoUrlForUpdate 非 null 時才包含 petAvatarUrl 屬性
         ...(photoUrlForUpdate !== null && { petAvatarUrl: photoUrlForUpdate })
     };
     
-
+    console.log('發送到服務器的數據 (經過格式化):', JSON.stringify(petDataForUpdate, null, 2));
     const petName = editingPet.value.petName;
     const petWeight = editingPet.value.petWeight;
      if (!petName || petName.trim() === '') {
@@ -770,6 +853,11 @@ onMounted(() => {
     overflow: hidden; /* 確保浮層不會超出 */
 }
 
+.card-title{
+    background-color: goldenrod;
+    border-radius: 30ch;
+    padding: 5px 10px;
+}
 .pet-edit-overlay {
     position: absolute;
     top: 0;
@@ -787,6 +875,20 @@ onMounted(() => {
 
 .pet-card:hover .pet-edit-overlay {
     opacity: 1; /* 滑鼠懸停時顯示 */
+}
+
+.pet-image-wrapper{
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+
+}
+.pet-image-wrapper img{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
 }
 
 .edit-icon {
@@ -836,7 +938,6 @@ onMounted(() => {
     font-size: 1.8rem;
     font-weight: 700;
     color: #3d5a80;
-    margin-bottom: 30px;
     text-align: center;
     justify-content: center;
 }
@@ -866,6 +967,9 @@ onMounted(() => {
 .modal-body {
     padding: 30px 25px;
     background-color: #fafafa;
+    margin-bottom:20px;
+    border-radius: 3ch;
+    width: 70%
 }
 
 .form-label {
@@ -892,6 +996,7 @@ onMounted(() => {
     position: relative;
     display: inline-block;
 }
+
 
 .pet-photo-preview {
     width: 120px;
@@ -957,11 +1062,25 @@ onMounted(() => {
     border-radius: 25px;
     padding: 10px 25px;
     font-weight: 600;
+    margin-right: 3px;
 }
 
 .btn-secondary:hover {
     background-color: #7f8c8d;
     border-color: #7f8c8d;
+}
+
+.btn-delete {
+    background-color: #c42059;
+    border-color: #a12752;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+}
+
+.btn-delete:hover {
+    background-color: #d94579;
+    border-color: #a12752;
 }
 
 .btn-primary {

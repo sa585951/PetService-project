@@ -3,7 +3,7 @@
     <nav class="navbar navbar-expand-lg">
       <div class="container">
         <router-link to="/" class="navbar-brand">
-          <i class="fas fa-paw"></i> Pet Adoption & Care
+          <i class="fas fa-paw"></i> 毛孩管家
         </router-link>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
           <span class="navbar-toggler-icon"></span>
@@ -15,26 +15,41 @@
                 <i class="fa fa-home"></i> 首頁
               </router-link>
             </li>
-            <li class="nav-item">
-              <router-link to="/walk" class="nav-link">
-                <i class="fa fa-dog"></i> 寵物散步
-              </router-link>
+
+            <li class="nav-item dropdown" @click="toggleDropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="fa fa-paw"></i> 服務項目
+              </a>
+              <ul class="dropdown-menu" :class="{show: dropdownOpen}">
+                <li>
+                  <router-link to="/walk" class="dropdown-item">
+                  <i class="fa fa-dog"></i> 寵物散步
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/hotel" class="dropdown-item">
+                  <i class="fa fa-building"></i> 寵物住宿
+                  </router-link>
+                </li>
+              </ul>
             </li>
-            <li class="nav-item">
-              <router-link to="/hotel" class="nav-link">
-                <i class="fa fa-building"></i> 寵物住宿
-              </router-link>
-            </li>
+
             <li class="nav-item">
               <router-link to="/about" class="nav-link">
                 <i class="fa fa-info-circle"></i> 關於我們
               </router-link>
             </li>
+
             <li class="nav-item">
               <router-link to="/contact" class="nav-link">
                 <i class="fa fa-phone"></i> 聯繫我們
               </router-link>
             </li>
+
+            <li class="nav-item">
+            <CartDropdown />  
+            </li>
+            
             <template v-if="isLoggedIn">
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -52,7 +67,7 @@
                     </router-link>
                   </li>
                   <li>
-                    <router-link to="/my-pets" class="dropdown-item">
+                    <router-link to="/orders" class="dropdown-item">
                       <i class="bi bi-bag-check-fill"></i> 我的訂單
                     </router-link>
                   </li>
@@ -91,61 +106,33 @@
   </header>
 </template>
 
-<script>
-import { useAuthStore } from '../../stores/authStore';
-import{computed} from 'vue';
-import { useRouter } from 'vue-router';
+<script setup>
+import { useAuthStore } from '@/stores/authStore'
+import { useCartStore } from '@/stores/cart'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import CartDropdown from '../CartDropdown.vue'
 
-export default {
-  name: 'AppHeader',
-  setup() {
-    const router = useRouter();
-    const authStore = useAuthStore();
-
-    // Pinia store中的登入狀態
-    const isLoggedIn = computed(() => authStore.isLoggedIn);
-    const username = computed(() => authStore.userName);
-
-    // 登出處理
-    const logout = () => {
-      authStore.logout();  // 這裡假設你在authStore裡實現了logout方法
-      router.push('/login');
-    };
-  
-
-  return{
-    isLoggedIn,
-    username,
-    logout
-  };
-
-
-  
-  // data() {
-  //   return {
-  //     // 暫時使用靜態數據，實際應該從store獲取
-  //     isLoggedIn: false,
-  //     username: '用戶名'
-  //   }
-  // },
-  // methods: {
-  //   logout() {
-  //     // 實際應該呼叫store的logout方法
-  //     this.isLoggedIn = false;
-  //     this.$router.push('/login');
-  //   }
-  // },
-  // // 實際應用時應該使用store管理登入狀態
-  // mounted() {
-  //   // 檢查本地存儲中是否有用戶信息
-  //   const userData = localStorage.getItem('user');
-  //   if (userData) {
-  //     const user = JSON.parse(userData);
-  //     this.isLoggedIn = true;
-  //     this.username = user.name;
-  //   }
-  // }
+const dropdownOpen = ref(false)
+const toggleDropdown =() => {
+  dropdownOpen.value = !dropdownOpen.value
 }
+// router
+const router = useRouter()
+
+// pinia stores
+const authStore = useAuthStore()
+const cartStore = useCartStore()
+
+// computed state
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+const username = computed(() => authStore.userName)
+
+// logout method
+const logout = () => {
+  authStore.logout()
+  router.push('/login')
 }
 </script>
 

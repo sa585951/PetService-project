@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Walk from '../views/WalkView.vue'
 import EmployeeDetail from '../views/EmployeeDetailView.vue'
 import Home from '../views/HomeView.vue'
+import News from '../views/NewsView.vue'
+import NewsDtail from '../views/NewsDetailView.vue'
+import QA from '../views/QAView.vue'
 import About from '../views/AboutView.vue'
 import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
@@ -20,7 +23,10 @@ import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
 import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
-
+import CartView from '@/views/CartView.vue'
+import Payment from '@/views/Payment.vue'
+import OrderSuccess from '@/views/OrderSuccess.vue'
+import MemberSourceChart from '@/views/MemberSourceChart.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +34,20 @@ const router = createRouter({
     {
       path: "/",
       component: Home,
+    },
+    {
+      path: "/news",
+      name: 'News',
+      component: News,
+    },
+    {
+      path: "/newsdetail/:id",
+      name: 'NewsDetail',
+      component: NewsDtail,
+    },
+    {
+      path: "/qa",
+      component: QA,
     },
     {
       path: "/about",
@@ -40,10 +60,12 @@ const router = createRouter({
     {
       path: "/hotel",
       component: Hotel,
+      meta: { requiresAuth: true },
     },
     {
       path: "/HotelDetail/:id",
       component: HotelDetail,
+      meta: { requiresAuth: true },
     },
     {
       path: "/walk",
@@ -102,13 +124,45 @@ const router = createRouter({
       component: ResetPasswordView,
     },
     {
-      path: "/member/orders",
+      path: "/orders",
       component: OrdersView,
       meta: { requiresAuth: true },
     },
     {
       path: "/googlesignupsupplement",
       component: GoogleSignupSupplementView,
+    },
+    {
+      path: "/cart",
+      component: CartView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/payment",
+      component: Payment,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/success/:id",
+      component: OrderSuccess,
+      props: route => ({
+      orderId: route.params.id,
+     orderType: route.query.type
+      }),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/orders/:id",
+      name: 'OrderDetail',
+      component: () =>import('@/views/OrderDetailView.vue'),
+      props: route => ({
+        orderId: route.params.id,
+        orderType: route.query.type
+      })
+    },
+    {
+      path: "/membersourcechart",
+      component: MemberSourceChart,
     },
   ],
 })

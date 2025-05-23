@@ -1,147 +1,218 @@
 <template>
-    <div class="container mt-5">
+    <div class="container mt-5 p-0">
         <div class="row">
-            <div class="card ps-0 mb-3" style="max-width: 100%;" id="hotelId">
+            <div v-if="hotels[0]">
+                <div class="card ps-0 mb-3" style="max-width: 100%;" :key="hotels[0].id">
                 <div class="row g-0 hotel_card">
                     <!-- 旅館照片 -->
                     <div class="col-md-7 p-3 pe-0">
                         <!-- 圖片區域：水平排大圖與小圖欄 -->
-                        <div class="d-flex">
-                            <!-- 大圖 -->
-                            <div style="flex: 1;">
-                            <img :src="selectedImage" class="img-fluid rounded-start mb-2" alt="主要圖片"
-                            style="height: 100%; width: 100%; object-fit: cover;"/>
+                            <div class="d-flex">
+                                <!-- 大圖 -->
+                                <div style="flex: 1;">
+                                <img :src="selectedImage" class="img-fluid rounded-start mb-2" style="height: 100%; width: 100%; object-fit: cover;"/>
                             </div>
-                            <!-- 小圖：垂直排列 -->
-                            <div class="d-flex flex-column justify-content-between ps-2" style="width: 180px;">
-                            <img v-for="(img, index) in imageList" :key="index" :src="img" class="img-thumbnail mb-2"
-                            style="height: calc(100% / 3);  object-fit: cover; cursor: pointer;"
-                            @click="selectedImage = img"/>
+                                <!-- 小圖：垂直排列 -->
+                                <div class="d-flex flex-column justify-content-between ps-2" style="width: 180px;" v-if="hotels.length > 0">
+                                    <img :src="`/Hotel/${hotels[0].image_1}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_1}`"/>
+                                    <img :src="`/Hotel/${hotels[0].image_2}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_2}`"/>
+                                    <img :src="`/Hotel/${hotels[0].image_3}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_3}`"/>
+                                </div>
                             </div>
-                        </div>
                     </div>
                     <div class="col-md-5">
                             <div class="card-body ps-3">
-                                <div class="d-flex">
+                                <div class="d-flex mb-1">
                                     <div class="d-flex align-items-center">
-                                    <h4 class="card-title fw-bold m-0">毛茸茸旅館</h4>
+                                    <h4 class="card-title fw-bold m-0">{{hotels[0].name}}</h4>
                                     <div class="p-0 ps-2">
-                                        <img class="star" src="/Hotel/star_light.png" />
-                                        <img class="star" src="/Hotel/star_light.png" />
-                                        <img class="star" src="/Hotel/star_light.png" />
-                                        <img class="star" src="/Hotel/star_light.png" />
-                                        <img class="star" src="/Hotel/star_light.png" />
+                                        <img v-for="i in hotels[0].review?.[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
+                                        <img v-for="i in 5 - (hotels[0].review?.[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
                                     </div>
+                                    <div class="ratingbox">{{getRating(hotels[0].rating)}}</div>
                                     </div></div>
                                 <div class="pt-2 mb-3">
                                     <p class="card-text fw-bold">
-                                        <i class="bi bi-check2 me-2"></i>室內放風區
-                                        <i class="bi bi-check2 ms-2 me-2"></i>登頂小木屋
-                                        <i class="bi bi-check2 ms-2 me-2"></i>24小時陪伴
-                                    </p>
-                                        
+                                        <span v-for="item in hotels[0].items" :key="item.id" class="fw-bold me-2">
+                                            <i class="bi bi-check2 me-2"></i>{{ item.name }}
+                                        </span>
+                                    </p> 
                                 </div>
                                 <div class="pt-2">
-                                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>高雄市前鎮區民權二路615號</p>
-                                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>073300313</p>
-                                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>monono613@gmail.com</p>
+                                    <p class="card-text"><i class="bi bi-geo-alt-fill me-2"></i>{{hotels[0].address}}</p>
+                                    <p class="card-text"><i class="bi bi-telephone-fill me-2"></i>{{hotels[0].phone}}</p>
+                                    <p class="card-text"><i class="bi bi-envelope-fill me-2"></i>{{hotels[0].email}}</p>
                                 <div>
                                     <div style="width: 95%;">
                                     <table class="room-table card-text">
-                                    <tbody>
-                                        <tr>
-                                            <td class="td-title fw-bold">小型犬房</td>
-                                            <td>剩餘 10 間</td>
-                                            <td>600 元</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="td-title fw-bold">中型犬房</td>
-                                            <td>剩餘 10 間</td>
-                                            <td>900 元</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="td-title fw-bold">大型犬房</td>
-                                            <td>剩餘 4 間</td>
-                                            <td>1200 元</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="td-title fw-bold">貓咪房</td>
-                                            <td>剩餘 5 間</td>
-                                            <td>650 元</td>
-                                        </tr>
-                                    </tbody>
+                                        <tbody>
+                                            <tr v-for="(roomDetail, index) in hotels[0].roomDetail" :key="roomDetail.id">
+                                                <td class="td-title fw-bold">{{ hotels[0].roomTypes[index].name }}</td>
+                                                <td>{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</td>
+                                                <td>{{ roomDetail.price }} 元</td>
+                                            </tr>
+                                        </tbody>
                                     </table>
                                     </div>
                                 </div>
                                 
                                 </div>
                             <div class="pt-4 d-flex justify-content-end align-items-end pe-3">
-                                <!-- 開啟地圖 --><Map></Map>
+                                <!-- 開啟地圖 --><Map :latitude="hotels[0].latitude" :longitude="hotels[0].longitude" :address="hotels[0].address"></Map>
                             </div>
                             
                         </div>
                     </div>
                 </div>
+                </div>
+        <!-- 房間卡片 -->
+                <div class="d-flex flex-wrap">
+                    <div v-for="(roomDetail, index) in hotels[0].roomDetail" :key="roomDetail.id" class="card me-3 mb-3" style="width: 26rem; height: 100%;">
+                        <img :src="`/Hotel/${roomDetail.image}`" class="card-img-top" />
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5 class="card-title fw-bold mt-3 ms-3">{{ hotels[0].roomTypes[index].name }}</h5>
+                            <h6 class="text-danger card-title fw-bold m-3">{{ roomDetail.price }} 元</h6>
+                        </div>
+                        <div class="ms-3 d-flex justify-content-between align-items-center">
+                            <div class="d-flex">
+                                <p class="mb-0">{{ roomDetail.roomsize }} (公分)</p>
+                                
+                            </div>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between">
+                            <div class="text-muted mb-2 ms-3">{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</div>
+                            <div>
+                                <p v-if="memberId && userName && hotels[0] && roomDetail.roomtype_id && roomDetail.price"><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name"
+                                    :userName="userName" :memberId="memberId" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id"
+                                    :checkInDate="checkInDate" :checkOutDate="checkOutDate" :requiredRooms="requiredRooms">加入購物車</BookingButton></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-        <div class="d-flex">
-            <div class="card m-3" style="width: 26rem;">
-                <img src="/Hotel/room1-1.png" class="card-img-top" alt="小型犬房">
-                <div class="card-body d-flex justify-content-between">
-                    <h5 class="card-title">小型犬房</h5>
-                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
-                </div>
-            </div>
-            <div class="card m-3" style="width: 26rem;">
-                <img src="/Hotel/room1-2.png" class="card-img-top" alt="小型犬房">
-                <div class="card-body d-flex justify-content-between">
-                    <h5 class="card-title">中型犬房</h5>
-                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
-                </div>
-            </div>
-            <div class="card m-3" style="width: 26rem;">
-                <img src="/Hotel/room1-3.png" class="card-img-top" alt="小型犬房">
-                <div class="card-body d-flex justify-content-between">
-                    <h5 class="card-title">大型犬房</h5>
-                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
-                </div>
-            </div>
-        </div>
-        <div class="d-flex">
-            
-            <div class="card m-3" style="width: 26rem;">
-                <img src="/Hotel/room1-4.png" class="card-img-top" alt="小型犬房">
-                <div class="card-body d-flex justify-content-between">
-                    <h5 class="card-title">貓咪房</h5>
-                    <p><span class="d-flex justify-content-end" ><GoButton>馬上預定</GoButton></span></p>
-                </div>
-            </div>
-
-        </div>
-        
-
-
-        
-
-</div>
+    </div>
 </template>
     
 <script setup>
     import Map from '@/components/HotelMap.vue';
     import GoButton from '@/components/HotelBookingButton.vue';
+    import BookingButton from '@/components/HotelBookingForm.vue'
+    import { useAuthStore } from '@/stores/authStore';
     import 'leaflet/dist/leaflet.css'
-    import { ref } from 'vue';
-//圖片
-    const imageList = [
-        new URL('/Hotel/hotel1-1.png', import.meta.url).href,
-        new URL('/Hotel/hotel1-2.png', import.meta.url).href,
-        new URL('/Hotel/hotel1-3.png', import.meta.url).href
-    ];
+    import { ref, computed, onMounted, watch } from 'vue';
+    import { useRoute } from 'vue-router'
 
-    const selectedImage = ref(imageList[0]);
 
-   
+    const today = ref(new Date()); // 預設為今天
+    const tomorrow = ref(new Date());
+    tomorrow.value.setDate(today.value.getDate() + 1); // 設定為明天
+    
+    const toDateString = (d) =>
+        d.toLocaleDateString('sv-SE'); // 方法:格式為 yyyy-mm-dd，瑞典地區語系
 
+    const formattedCheckIn = ref(toDateString(today.value));
+    const formattedCheckOut = ref(toDateString(tomorrow.value));
+    // console.log(formattedCheckIn,formattedCheckOut);
+//接收資料
+    const route = useRoute()
+    const hotelId = route.params.id
+    let checkInDate = formattedCheckIn.value;
+    let checkOutDate = formattedCheckOut.value;
+    if (route.query.checkInDate) { 
+        checkInDate = route.query.checkInDate}
+    if (route.query.checkOutDate) { 
+        checkOutDate = route.query.checkOutDate}
+    // let checkInDate = route.query.checkInDate
+    // let checkOutDate = route.query.checkOutDate
+    const petCount = route.query.petCount
+    console.log(hotelId,checkInDate,checkOutDate,petCount);
+
+    const memberId = ref('')   //要傳子元件的會員資料
+    const userName = ref('')
+    const authStore = useAuthStore();
+    onMounted(async () => {
+        await loadHotelDetail();
+//會員資料
+    if (authStore.isLoggedIn) {
+        memberId.value = authStore.memberId;
+        userName.value = authStore.userName;
+        console.log('memberId', memberId.value, 'userName', userName.value);
+    }
+    })
+
+//GET詳細
+    const hotels = ref({});
+    const HotelDetailQty = ref({});
+    const requiredRooms = ref();
+    const selectedImage = ref(null); // 保持為響應式引用，預設為null
+    const loadHotelDetail = async () => {
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Hoteldetail`;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({
+                "HotelId" : Number(hotelId),
+                "CheckInDate" : checkInDate,
+                "CheckOutDate" : checkOutDate,
+                "PetCount" : Number(petCount)
+            })
+        });
+        const datas = await response.json();
+        hotels.value = datas.hotels;
+        HotelDetailQty.value = datas.hotelDetailQty;
+        requiredRooms.value = datas.hotelDetailQty[0].requiredRooms;
+        console.log("1",hotels.value,"2", HotelDetailQty.value,"3", requiredRooms.value);
+        // 確保資料存再再初始化大圖
+    if (hotels.value.length > 0) {
+        selectedImage.value = `/Hotel/${hotels.value[0].image_1}`;
+    }
+    }
+    
+function getRoomQty(hotel, roomName) {
+  const qty = hotel.qtyStatus?.[0];
+  if (!qty || !roomName) return null;
+
+  let count = 0;
+  switch (roomName) {
+    case "小型犬房":
+      count = qty.smallDogRoom;
+      break;
+    case "中型犬房":
+      count = qty.middleDogRoom;
+      break;
+    case "大型犬房":
+      count = qty.bigDogRoom;
+      break;
+    case "貓咪房":
+      count = qty.catRoom;
+      break;
+    default:
+      count = null;
+      break;
+  }
+
+  return count === 0 ? "今日尚無空房" : `剩餘 ${count} 間`;
+}
+
+//評分文字
+    function getRating(rating) {
+        if (rating == null) return "無";
+        switch (rating) {
+            case 5:
+            return "很棒";
+            case 4:
+            return "很好";
+            case 3:
+            return "好";
+            default:
+            return "普通";
+        }
+    }
+
+    
+    
 </script>
     
 <style scoped>
@@ -170,5 +241,18 @@
     }
     i {
         color: rgb(155, 97, 27);
+    }
+    /* 評分標籤 */
+    .ratingbox{
+        margin-left: 10px;
+        /* background-color: rgb(155, 97, 27); */
+        background-color: #96b848;
+        width: 45px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        border-radius: 10px 10px 10px 0px;
     }
 </style>
