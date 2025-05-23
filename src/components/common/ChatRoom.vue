@@ -21,8 +21,8 @@
                 <div class="messages-box"  v-if="showActiveList">
                   <div class="list-group rounded-0">
                     <a
-                      v-for="user in filteredUsers"
-                      :key="user.id"
+                      v-for="user in filteredActiveUsers"
+                      :key="'active-' + user.sessionId"
                       @click="selectUser(user)"
                       class="list-group-item list-group-item-action border-0"
                     >
@@ -50,8 +50,8 @@
                 <div class="messages-box" v-if="showEndedList">
                   <div class="list-group rounded-0">
                     <a
-                      v-for="user in endedUsers"
-                      :key="'ended-' + user.id"
+                      v-for="user in filteredEndedUsers"
+                      :key="'ended-' + user.sessionId"
                       @click="selectUser(user)"
                       class="list-group-item list-group-item-action border-0 text-muted"
                     >
@@ -170,7 +170,19 @@ export default {
 
   computed: {
     filteredUsers() {
+      const allUsers = [...this.users, ...this.endedUsers]; // 合併兩邊
+      return allUsers.filter(u =>
+        !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+  
+    filteredActiveUsers() {
       return this.users.filter(u =>
+        !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+    filteredEndedUsers() {
+      return this.endedUsers.filter(u =>
         !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
