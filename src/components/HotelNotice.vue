@@ -141,7 +141,7 @@ defineExpose({ show })
 }
 
 .room-medium {
-  border-color: #d8be6a;
+  border-color: #d8c76a;
 }
 
 .room-large {

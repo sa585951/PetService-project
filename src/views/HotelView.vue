@@ -6,11 +6,11 @@
             <div class="search_bar2"> 
                 <div class="col-5 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                    <div class="w-75 d-flex justify-content-center">
+                    <div class="datePickerRef d-flex justify-content-center">
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
-                <div class="col-3 d-flex justify-content-center align-items-center"> 
-                    <label for="petCount" class="me-2">毛孩數量:</label>
+                <div class="col-4 d-flex justify-content-center align-items-center"> 
+                    <label for="petCount" class="me-2">房間需求數量:</label>
                     <select name="petCount" id="petCount" v-model.number="petCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -18,7 +18,7 @@
                         <option value="4">4</option>
                     </select>
                 </div>
-                <div class="col-3 p-2 d-flex justify-content-center align-items-center">
+                <div class="col-2 p-2 d-flex justify-content-center align-items-center">
                     <div class=" p-2 text-center"> 
                         <SearchButton @click="searchHotels()" class="fw-bold">搜尋</SearchButton>
                     </div>
@@ -73,6 +73,7 @@
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+    import Swal from 'sweetalert2';
 //使用者須知
     const noticeModal = ref(null)
 //日期選擇器
@@ -161,12 +162,15 @@
             petCount: petCount.value
         };
 
-        if (!checkInDate.value || !checkOutDate.value) {
-            alert("請先選擇完整的入住、退房日期");
-            return; } // 停止函式執行
-        if (!petCount.value) {
-            alert("請選擇入住寵物數量");
-            return; } // 停止函式執行
+        if (!checkInDate.value || !checkOutDate.value || !petCount.value) {
+            Swal.fire({
+                icon: 'warning',
+                html: '請先選擇入住、退房日期<br>與入住寵物數量！',
+                showConfirmButton: true,
+                confirmButtonColor: '#ACC572',
+            })
+            return;  // 停止函式執行
+            }
         const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Search`;
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -257,6 +261,10 @@
         justify-content: center; /* 水平置中 */ 
         align-items: center; /* 垂直置中 */ 
     } 
+
+    .datePickerRef {
+        width: 90%;
+    }
 
     input { 
         width: 80%; 
