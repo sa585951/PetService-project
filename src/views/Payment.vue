@@ -16,12 +16,12 @@
                 <p>目前沒有選擇服務,請先回購物車選擇服務</p>
             </div>
             <div v-else-if="!isWalkMode && cartStore.hotelcartitems.length === 0">
-                
+                <!-- <p>目前沒有選擇服務,請先回購物車選擇服務</p> -->
             </div>
              <!-- 左側:明細 -->
             <div v-else class="payment-left">
-                <!-- 散步服務明細 -->
                 <div v-if="isWalkMode">
+                  <!-- 散步服務明細 -->
                   <div class="order-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
                     <div class="item-title">{{ item.name }}</div>
                     <div class="item-detail">時間：{{ formatDateTime(item.walkStart) }}</div>
@@ -30,14 +30,14 @@
                     <div class="item-subtotal">小計：NT${{ item.price * item.quantity }}</div>
                   </div>
                  </div>
-
-                <!-- 住宿服務明細 -->
                  <div v-else>
-                  <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="item.backenedItem.roomDetailId + item.backenedItem.checkIn">
-                    <div class="item-title">{{ item.name }}</div>
+                  <!-- 住宿服務明細 -->
+                  <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item)">
+                    <div class="item-title">{{ item.hotelName }}</div>
+                    <div class="item-detail">房型：{{item.backenedItem.roomDetailId}}</div>
                     <div class="item-detail">入住：{{ formatDateTime(item.backenedItem.checkIn) }}</div>
                     <div class="item-detail">退房：{{ formatDateTime(item.backenedItem.checkOut) }}</div>
-                    <div class="item-detail">數量：{{ item.backenedItem.roomQty }} 隻</div>
+                    <div class="item-detail">數量：{{ item.backenedItem.roomQty }} 間</div>
                     <div class="item-detail">單價：NT${{ item.pricePerRoom }}</div>
                     <div class="item-subtotal">小計：NT${{ item.pricePerRoom * item.backenedItem.roomQty }}</div>
                   </div>
@@ -74,7 +74,12 @@
     const router = useRouter();
 
     const isSubmitting = ref(false);
-    const isWalkMode = computed (() => route.query.type || 'walk').toString().toLowerCase() === 'walk';
+
+    const getHotelItemKey = (item) =>
+    `${item.backenedItem.hotelId}-${item.backenedItem.roomDetailId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`
+
+    const isWalkMode = computed (() =>
+     route.query.type === 'walk');
 
     const handleSubmitOrder = async() =>{
       const isEmpty = isWalkMode.value
