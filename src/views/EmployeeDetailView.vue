@@ -92,24 +92,32 @@
           </div>
         </div>
 
-      <!-- 右側：購物車填寫 + 按鈕 -->
-      <div class="col-md-5">
-        <div class="border rounded p-3 shadow-sm bg-white">
-          <h5 class="mb-3">填寫訂單資訊</h5>
+        <!-- 右側：購物車填寫-->
+        <div class="col-md-5">
+          <div class="border rounded p-3 shadow-sm bg-white">
+            <h5 class="mb-3">填寫訂單資訊</h5>
 
-          
-          <div class="mb-2">
-            <label class="form-label">寵物種類</label>
-            <select v-model="form.pet" class="form-select">
-              <option value="">請選擇</option>
-              <option v-for="t in employee.petType" :key="t" :value="t">{{ t }}</option>
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">寵物數量</label>
-      <input v-model.number="form.quantity" type="number" class="form-control" min="1" max="5"  @input="checkQuantity"/>
-      <div v-if="quantityError" class="text-danger mt-1">最多只能選擇 5 隻寵物</div>
-          </div>
+            <div class="mb-2">
+              <label class="form-label">寵物種類</label>
+              <select v-model="form.pet" class="form-select">
+                <option value="">請選擇</option>
+                <option v-for="t in employeeStore.employeeDetail.petTypes" :key="t" :value="t">
+                  {{ t }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">寵物數量</label>
+              <input
+                v-model.number="form.quantity"
+                type="number"
+                class="form-control"
+                min="1"
+                max="5"
+                @input="checkQuantity"
+              />
+              <div v-if="quantityError" class="text-danger mt-1">最多只能選擇 5 隻寵物</div>
+            </div>
 
             <div class="mb-2">
               <label class="form-label">預約日期</label>
@@ -125,17 +133,18 @@
               </select>
             </div>
 
-          <div class="mb-2">
-            <label class="form-label">其他備註</label>
-            <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
-            <div class="text-danger mt-1">請填寫寵物品種</div>
+            <div class="mb-2">
+              <label class="form-label">其他備註</label>
+              <textarea v-model="form.notes" class="form-control" rows="2"></textarea>
+              <div v-if="form.notesError" class="text-danger mt-1">請填寫寵物品種</div>             </div>
 
-          </div>
-             <!-- 小計顯示 -->
-          <div class="mt-3">
-            <p><strong>單價：</strong>{{ employee.price }} 元/小時(單次計費)</p>
-            <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
-          </div>
+            <!-- 小計顯示 -->
+            <div class="mt-3">
+              <p>
+                <strong>單價：</strong>{{ employeeStore.employeeDetail.price }} 元/小時(單次計費)
+              </p>
+              <p><strong>價格小計：</strong>{{ subtotal }} 元</p>
+            </div>
 
             <div class="d-flex gap-2 mt-3">
               <button class="btn btn-outline-primary" @click="addToCart">加入購物車</button>
@@ -162,21 +171,40 @@
 </template>
 
 <script setup>
-import { ref, computed ,onMounted} from 'vue'
-import { useRoute } from 'vue-router'
-import { employees } from '@/data';
-import { Carousel } from 'bootstrap'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router'; //導入 useRouter
+import { Carousel } from 'bootstrap';
+import { useEmployeeStore } from '@/stores/employeeStore';
 
-const carouselRef = ref(null)
-const bsCarousel = ref(null)
+const employeeStore = useEmployeeStore();
+const route = useRoute();
+const router = useRouter(); //實例化 router
+const employeeId = ref(null);
 
-//及時輪播
-onMounted(() => {
-  if (carouselRef.value) {
-    bsCarousel.value = new Carousel(carouselRef.value, {
-      interval: 3000,
-      ride: 'carousel'
-    })
+// 錯誤處理 employeeId
+try {
+  const id = Number(route.params.id);
+  if (isNaN(id)) throw new Error('Invalid employee ID');
+  employeeId.value = id;
+} catch (error) {
+  console.error('Error parsing employeeId:', error);
+  employeeId.value = null;
+}
+
+//定義 carouselRef 和 bsCarousel 用於輪播初始化
+const carouselRef = ref(null);
+const bsCarousel = ref(null);
+
+//使用 async onMounted 確保 fetchEmployeeDetail 完成後初始化輪播
+onMounted(async () => {
+  if (employeeId.value !== null) {
+    await employeeStore.fetchEmployeeDetail(employeeId.value); //調用 API 獲取單個員工資料
+    if (carouselRef.value) {
+      bsCarousel.value = new Carousel(carouselRef.value, {
+        interval: 3000,
+        ride: 'carousel',
+      });
+    }
   }
 });
 
@@ -187,14 +215,31 @@ function goToSlide(index) {
 }
 
 const form = ref({
+  employeeId: employeeId.value,
   pet: '',
   quantity: 1,
   date: '',
   time: '',
-  notes: ''
-})
-// 計算處理後的輪播圖片 URL 陣列
-//所以上面的 :src 直接綁定到 'img' 就好
+  notes: '',
+  notesError: false,
+});
+
+//監聽 route.params.id 變化時更新 employeeId 並重新調用 API
+watch(() => route.params.id, (newId) => {
+  try {
+    const id = Number(newId);
+    if (isNaN(id)) throw new Error('Invalid new employee ID');
+    employeeId.value = id;
+    form.value.employeeId = id;
+    employeeStore.fetchEmployeeDetail(employeeId.value);
+  } catch (error) {
+    console.error('Error parsing new employeeId:', error);
+    employeeId.value = null;
+  }
+});
+
+const baseImageUrl = import.meta.env.VITE_API_IMAGE_URL || 'https://localhost:7089/images/';
+//計算 processedCarousel，使用後端提供的 carousel 資料並拼接圖片路徑
 const processedCarousel = computed(() => {
   if (employeeStore.employeeDetail && employeeStore.employeeDetail.carousel) {
     return employeeStore.employeeDetail.carousel.map(img => `${baseImageUrl}${img}`);
@@ -202,12 +247,15 @@ const processedCarousel = computed(() => {
   return [];
 });
 
-//預約限制1個月內
-const today = new Date()
-const minDate = today.toISOString().split('T')[0]
-const max = new Date()
-max.setMonth(max.getMonth() + 1)
-const maxDate = max.toISOString().split('T')[0]
+const onImageError = (event) => {
+  event.target.src = '/path/to/default-image.jpg'; //圖片載入失敗時顯示預設圖片
+};
+
+const today = new Date();
+const minDate = today.toISOString().split('T')[0];
+const max = new Date();
+max.setMonth(max.getMonth() + 1);
+const maxDate = max.toISOString().split('T')[0];
 
 const quantityError = ref(false);
 function checkQuantity() {
@@ -241,9 +289,23 @@ function isFormValid() {
 
 function addToCart() {
   if (!isFormValid()) {
-    alert('請完整填寫寵物種類、數量與日期')
-    return
+    alert('請完整填寫寵物種類、數量、預約日期、預約時間和備註');
+    return;
   }
+  const cartItem = {
+    employeeId: form.value.employeeId,
+    employeeName: employeeStore.employeeDetail.name, // 包含員工姓名
+    pet: form.value.pet,
+    quantity: form.value.quantity,
+    walkStart: getWalkTimes.value.start,
+    walkEnd: getWalkTimes.value.end,
+    servicePrice: employeeStore.employeeDetail.price,
+    totalPrice: subtotal.value,
+    notes: form.value.notes,
+  };
+  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  cart.push(cartItem);
+  localStorage.setItem('cart', JSON.stringify(cart));
   const message = `
     已加入購物車：
     員工：${employeeStore.employeeDetail.name}
@@ -253,13 +315,17 @@ function addToCart() {
     預約時間：${form.value.time}
     備註：${form.value.notes || '無'}
     小計：${subtotal.value} 元
-  `
-  alert(message)
-  formReset()
+  `;
+  const confirmed = confirm(message); // 使用 confirm 提供選擇
+  if (confirmed) {
+    router.push('/order'); // 導航到訂單頁面
+  }
+  formReset();
 }
 
 function formReset() {
   form.value = {
+    employeeId: employeeId.value,
     pet: '',
     quantity: 1,
     date: '',
