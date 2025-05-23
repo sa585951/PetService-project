@@ -292,6 +292,11 @@ function addToCart() {
     alert('請完整填寫寵物種類、數量、預約日期、預約時間和備註');
     return;
   }
+
+  const combineNotes = `寵物種類:${form.value.pet}，${form.value.notes || '無'}`;
+
+  const walkStartTime = `${form.value.date}T${form.value.time}`;
+
   const cartItem = {
     employeeId: form.value.employeeId,
     employeeName: employeeStore.employeeDetail.name, // 包含員工姓名
@@ -303,6 +308,7 @@ function addToCart() {
     totalPrice: subtotal.value,
     notes: form.value.notes,
   };
+  
   let cart = JSON.parse(localStorage.getItem('cart') || '[]');
   cart.push(cartItem);
   localStorage.setItem('cart', JSON.stringify(cart));
@@ -320,6 +326,12 @@ function addToCart() {
   if (confirmed) {
     router.push('/order'); // 導航到訂單頁面
   }
+
+  const isValidDate = !isNaN(new Date(walkStartTime).getTime());
+  console.log('格式正確嗎?', isValidDate);
+  
+  cartStore.addItemToWalkCart(cartItem);
+  alert('已加入購物車');
   formReset();
 }
 

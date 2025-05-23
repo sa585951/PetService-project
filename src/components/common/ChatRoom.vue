@@ -1,29 +1,40 @@
-<template>
+<template> 
   <div>
     <div class="chat-toggle-button" v-if="!showChat" @click="openChat">💬</div>
-
     <transition name="chatroom-fade">
       <div class="chatroom-wrapper" v-if="showChat">
         <div class="chatroom-box" :style="userRole === 'member' ? { width: '350px' } : {}">
           <button class="close-chat-btn" @click="closeChat">-</button>
           <div class="container pt-5 h-100">
             <div class="row rounded-lg overflow-hidden shadow h-100">
-              <div class="col-5 px-0 user-list bg-light" v-if="userRole === 'employee'">
+              <div class="col-4 px-0 user-list bg-light" v-if="userRole === 'employee'">
                 <div class="input-group input-group-sm">
                   <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱" />
                   <button class="btn btn-outline-secondary">搜尋</button>
                 </div>
-                <div class="bg-gray px-1"><p class="mb-0 py-1">進行中對話</p></div>
-                <div class="messages-box">
+                <div class="bg-gray px-1">
+                  <button class="talklist btn btn-sm" @click="showActiveList = !showActiveList">
+                  {{ showActiveList ? '進行中對話' : '進行中對話' }}
+                </button>
+                </div>
+                
+                <div class="messages-box"  v-if="showActiveList">
                   <div class="list-group rounded-0">
                     <a
-                      v-for="user in filteredUsers"
-                      :key="user.id"
+                      v-for="user in filteredActiveUsers"
+                      :key="'active-' + user.sessionId"
                       @click="selectUser(user)"
                       class="list-group-item list-group-item-action border-0"
                     >
                       <div class="d-flex align-items-start">
-                        <img :src="user.avatar || 'https://i.pravatar.cc/40?img=5'" class="rounded-circle mr-1" :alt="user.name" width="40" height="40" />
+                        <img
+                          :src="`https://localhost:7089${user.avatar}`"
+                          @error="e => e.target.src = 'https://localhost:7089/uploads/avatars/default-avatar.jpg'"
+                          class="rounded-circle me-2"
+                          width="40"
+                          height="40"
+                          :alt="user.name"
+                        />
                         <div class="flex-grow-1 ml-3">
                           {{ user.name }}
                         </div>
@@ -31,10 +42,38 @@
                     </a>
                   </div>
                 </div>
-                <div class="bg-gray px-1"><p class="mb-0 py-1">已結束對話</p></div>
+                <div class="bg-gray px-1 py-1">
+                  <button class="talklist btn btn-sm" @click="showEndedList = !showEndedList">
+                  {{ showEndedList ? '已結束對話' : '已結束對話' }}
+                </button>
+                </div>
+                <div class="messages-box" v-if="showEndedList">
+                  <div class="list-group rounded-0">
+                    <a
+                      v-for="user in filteredEndedUsers"
+                      :key="'ended-' + user.sessionId"
+                      @click="selectUser(user)"
+                      class="list-group-item list-group-item-action border-0 text-muted"
+                    >
+                      <div class="d-flex align-items-start">
+                        <img
+                          :src="`https://localhost:7089${user.avatar}`"
+                          @error="e => e.target.src = 'https://localhost:7089/uploads/avatars/default-avatar.jpg'"
+                          class="rounded-circle me-2"
+                          width="40"
+                          height="40"
+                          :alt="user.name"
+                        />
+                        <div class="flex-grow-1 ml-3">
+                          {{ user.name }} <span class="badge bg-secondary"></span>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              <div :class="userRole === 'member' ? 'col-12' : 'col-7'" class="px-0 d-flex flex-column h-100">
+              <div v-if="shouldShowChatArea" :class="userRole === 'member' ? 'col-12' : 'col-8'" class="px-0 d-flex flex-column h-100">
                 <div ref="chatBox" class="px-4 py-2 chat-box bg-white flex-grow-1 overflow-auto">
                   <div v-for="msg in messages" :key="msg.id"
                        :class="['pb-4', isMessageFromMe(msg) ? 'chat-message-right' : 'chat-message-left']">
@@ -49,21 +88,29 @@
                   </div>
                 </div>
 
-                <div class="bot-options d-flex flex-row overflow-auto px-3 py-2 bg-white" style="white-space: nowrap;" v-if="userRole === 'member'">
+                <div class="bot-options d-flex flex-row overflow-auto px-3 py-2 bg-white" style="white-space: nowrap;" v-if="userRole === 'member'">      
                   <button v-for="opt in botOptions" :key="opt.label" class="btn btn-sm btn-outline-secondary me-2" @click="botOptionClicked(opt)">
                     {{ opt.label }}
                   </button>
                 </div>
+                
 
                 <div class="bot-options px-3 py-2 bg-white" v-if="userRole === 'employee'">
                   <button class="btn btn-sm btn-outline-secondary" @click="endConversation">結束對話</button>
                 </div>
-                <div v-if="conversationEnded" class="alert alert-warning text-center">此對話已結束</div>
+                
 
                 <div class="chat-input d-flex p-2 border-top">
-                  <textarea class="form-control message-type" placeholder="輸入您的訊息" v-model="messageText" rows="1"
-                            @keydown.enter.exact.prevent="sendMessage"></textarea>
-                  <button class="btn btn-color ml-2" @click="onClickSend">
+                  <textarea class="form-control message-type"
+                            :placeholder="inputPlaceholder"
+                            v-model="messageText"
+                            rows="1"
+                            :disabled="isInputDisabled"
+                            @keydown.enter.exact.prevent="sendMessage">
+                  </textarea>
+                  <button class="btn btn-color ml-2"
+                          @click="onClickSend"
+                          :disabled="isInputDisabled">
                     <i class="bi bi-send"></i>
                   </button>
                 </div>
@@ -76,10 +123,12 @@
   </div>
 </template>
 
-<script>
+
+<script>  
 import DOMPurify from 'dompurify';
 import * as signalR from "@microsoft/signalr";
 import { jwtDecode } from 'jwt-decode';
+import { isReadonly } from 'vue';
 
 
 export default {
@@ -92,12 +141,14 @@ export default {
       messages: [],
       searchQuery: "",
       users: [],
+      endedUsers: [],
       targetUser: null,
+      currentUserAvatarUrl: "",
       botOptions: [
+        { label: '客服協助', view: null },
         { label: '訂單管理', view: 'OrderManagement' },
         { label: '立即散步', view: 'WalkView' },
         { label: '寵物住宿', view: 'HotelView' },
-        { label: '客服協助', view: null },
         { label: '常見問題', view: 'FAQ' }
       ],
       currentUserEmail: '',  // ✅ email 作為 sender
@@ -110,23 +161,96 @@ export default {
       isConnected: false,
       senderId: "",      // 自己的 userId
       receiverId: "",
+      showActiveList: true,
+      showEndedList: true,
+      isReadOnly: false,
+      hasStartedConversation: false,
     };
   },
 
   computed: {
     filteredUsers() {
+      const allUsers = [...this.users, ...this.endedUsers]; // 合併兩邊
+      return allUsers.filter(u =>
+        !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+  
+    filteredActiveUsers() {
       return this.users.filter(u =>
         !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
+    },
+    filteredEndedUsers() {
+      return this.endedUsers.filter(u =>
+        !this.searchQuery || u.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+    inputPlaceholder() {
+      if (this.userRole === 'member') {
+        // ✅ 如果對話已結束或還沒開始
+        if (!this.hasStartedConversation || this.isReadOnly) {
+          return '真人客服請按客服協助';
+        }
+      }
+
+      if (this.userRole === 'employee' && this.isReadOnly) {
+        return '已結束對話';
+      }
+
+      return '輸入您的訊息';
+    },
+    isInputDisabled() {
+      // 會員未點客服協助 → 禁用
+      if (this.userRole === 'member' && (!this.hasStartedConversation || this.isReadOnly)) {
+        return true;
+      }
+      // 員工會話已結束 → 禁用
+      if (this.userRole === 'employee' && this.isReadOnly) {
+        return true;
+      }
+      // 其他情況允許輸入
+      return false;
+    },
+    shouldShowChatArea() {
+      if (this.userRole === 'member') return true;
+      if (this.userRole === 'employee' && this.targetUserId) return true;
+      return false;
     }
   },
+    
 
   methods: {
+    getAvatarUrl(path) {
+        return path
+          ? `https://localhost:7089${path}`
+          : 'https://localhost:7089/uploads/avatars/default-avatar.jpg';
+      },
+
+     async loadEmployeeSessions() {
+      this.users = []; // 先清空 → 強制觸發 reactivity
+      this.endedUsers = [];
+
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/Chat/GetActiveSessions", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      this.users = await res.json();
+
+      const endedRes = await fetch("/api/Chat/GetEndedSessions", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      this.endedUsers = await endedRes.json();
+      console.log("🧩 API 回傳進行中清單：", this.users);
+    },
+    
+
     async openChat() {
       console.log("💬 嘗試開啟聊天室");
-      this.showChat = true;
+      
       const token = localStorage.getItem("token");
       if (!token) return alert("未登入，無法開啟聊天室");
+      this.showChat = true;
 
       const decoded = jwtDecode(token);
       const email = decoded?.email?.toLowerCase();
@@ -151,72 +275,108 @@ export default {
         this.currentUserName = info.name;
         this.currentUserId = info.id.toString();
         if (this.userRole === "member") {
+          await this.checkIfSessionEnded();
         // 假設 chris@skz.com 的 ID 是 1001（依照你的資料庫）
           this.targetUserId = "2";
         }
-        else if (this.userRole === "employee") {
-        const res = await fetch("https://localhost:7089/api/Chat/GetAllMembers", {
-          headers: { Authorization: "Bearer " + token }
-        });
-        if (!res.ok) throw new Error("取得會員列表失敗");
-        this.users = await res.json();
-        console.log("📋 載入會員列表：", this.users);
-      }
-        console.log("👤 使用者名稱：", this.currentUserName);
-        console.log("👤 使用者ID：", this.currentUserId);
         
-        console.log("🚀 嘗試連線到 SignalR，網址：", `https://localhost:7089/chathub?userId=${this.currentUserId}`);
-        
+        //2025/520/9
+        if (this.userRole === "employee") {
+          const token = localStorage.getItem("token");
+
+          // ✅ 取得進行中會員
+          const res = await fetch("/api/Chat/GetActiveSessions", {
+            headers: {
+              Authorization: "Bearer " + token
+            }
+          });
+          if (!res.ok) {
+            console.error("❌ 取得進行中會員列表失敗", await res.text());
+            return;
+          }
+          this.users = await res.json(); // 進行中對話清單
+          console.log("📋 進行中會員：", this.users);
+
+      
+          // ✅ 取得已結束會員
+          const endedRes = await fetch("https://localhost:7089/api/Chat/GetEndedSessions", {
+            headers: { Authorization: "Bearer " + token }
+          });
+          if (!endedRes.ok) throw new Error("取得已結束對話失敗");
+          this.endedUsers = await endedRes.json();
+          console.log("📋 已結束會員：", this.endedUsers);
+        }
+
+
         // ✅ 建立 SignalR 連線
         this.connection = new signalR.HubConnectionBuilder()
           .withUrl(`https://localhost:7089/chathub?userId=${this.currentUserId}`)
           .withAutomaticReconnect()
           .build();
+         
         
-        
-        this.connection.on("ReceiveMessage", (fromUser, message) => {
+        this.connection.on("ReceiveMessage", async(msg) => {
+          const isMe = msg.senderId.toString() === this.currentUserId.toString();
+
           this.messages.push({
             id: Date.now(),
-            sender: fromUser,
-            avatar: "https://i.pravatar.cc/40?img=5",
-            text: DOMPurify.sanitize(message),
+            sender: msg.senderName,
+            avatar: this.getAvatarUrl(msg.senderAvatar),
+            text: DOMPurify.sanitize(msg.messageText),
             time: new Date().toLocaleTimeString(),
-            fromMe: fromUser === this.currentUserName
+            fromMe: isMe
           });
-          console.log("📩 收到訊息：", fromUser, message);
-          this.scrollToBottom();
-        });
 
+          this.scrollToBottom();      
+          if (this.userRole === "member") {
+            await this.checkIfSessionEnded();
+          }
+
+          if (this.userRole === "employee") {
+            await this.loadEmployeeSessions();
+          }
+
+          if (this.userRole === "employee") {
+            console.log("🔁 重新載入進行中對話...");
+            await this.loadEmployeeSessions(); // ⬅️ 自動刷新對話列表
+            console.log("📥 收到訊息：", msg);
+          }
+
+        
+
+        // ✅ 會員收到訊息時也去確認 status 是否變成已結束
+        if (this.userRole === "member") {
+          const sessionInfo = this.endedUsers.find(x => x.sessionId == this.sessionId);
+          if (sessionInfo) {
+            this.isReadOnly = true;
+            this.conversationEnded = true;
+          }
+        }
+        }); 
         await this.connection.start();
-        // this.isConnected = true;
-        // console.log("✅ SignalR 已連線",this.isConnected);
 
-        // // ✅ 建立會話（僅會員）
-        // const payload = {
-        //   dto: {
-        //     fMemberId: this.currentUserId,
-        //     fEmployeeId: this.targetUserId,
-        //     startTime: new Date().toISOString(),
-        //     status: "0",
-        //     role: this.userRole,
-        //   },
-        // };   
-        // console.log("✅ 發送資料：", payload);
-        //   const res = await fetch("https://localhost:7089/api/Chat/CreateOrGetSession", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(payload)
-        // });
-        // console.log("payload",payload);
-
-        // if (!res.ok) throw new Error("建立會話失敗");
-        // const sessionId = await res.json();
-        // this.sessionId = sessionId;
+        const response = await fetch('/api/Chat/CreateOrGetSession', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            FMemberId: this.currentUserId,
+            FEmployeeId: this.targetUserId,
+            Role: this.userRole,
+            
+          })
+        });
+        
+      const sessionId = await response.json();
+      this.sessionId = sessionId;
 
       } catch (err) {
         console.error("❌ SignalR 連線失敗：", err);
       }
     },
+    
 
     onClickSend() {
       console.log("🟢 按下送出");
@@ -224,76 +384,124 @@ export default {
     },
     
       async sendMessage() {
-        console.log("📨 [sendMessage] 嘗試傳送訊息");
-        console.log("👤 使用者名稱：", this.currentUserName);
 
+        this.messages = this.messages.filter(msg => {
+          return !(msg.sender === "方燦" && msg.text.includes("此對話已結束"));
+        });
         const receiver = this.userRole === "member"
           ? "chris@skz.com" // 🔧 測試帳號
           : this.targetUser.email;
 
-        console.log("✅ 傳送對象：", receiver);
-        console.log("✅ 訊息內容：", this.messageText);
-
         const sanitized = DOMPurify.sanitize(this.messageText);
-
-        // this.messages.push({
-        //   id: Date.now(),
-        //   sender: this.currentUserName,
-        //   avatar: "https://i.pravatar.cc/40?img=3",
-        //   text: sanitized,
-        //   time: new Date().toLocaleTimeString(),
-        //   fromMe: true
-        // });
-        console.log("📤 currentUserId：", this.currentUserId);
-        console.log("📤 targetUserId：", this.targetUserId);
-        console.log("📤 messageText：", this.messageText);
+     
         try {
-          // await this.connection.invoke(
-          //   "SendMessage",
-          //   this.sessionId,            // ✅ sessionId
-          //   this.currentUserId,        // ✅ senderId
-          //   receiver,                  // ✅ receiverId
-          //   this.userRole,             // ✅ senderRole
-          //   this.messageText           // ✅ messageText
-          // );
           await this.connection.invoke(
             "SendMessage",
             this.currentUserId,   // 自己
             this.targetUserId,    // 對方
             this.messageText      // 訊息內容
           );
+          
           console.log("📤 訊息已送出");
+          // ✅ Step2: 呼叫 API 儲存訊息（歷史）
+          await fetch("/api/Chat/SaveMessage", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+              FSessionId: this.sessionId,
+              FSenderId: this.currentUserId,
+              FSenderRole: this.userRole,
+              FMessageText: this.messageText,
+              FAttachmentUrl: "",
+              FMessageType: "text"
+            })
+          });
+          if (this.userRole === "employee") {
+            await this.loadEmployeeSessions();
+          }
         } catch (err) {
           console.error("❌ 傳送失敗：", err);
         }
-
         this.messageText = "";
         this.scrollToBottom();
       },
 
-        selectUser(user) {
+    async selectUser(user) {
       this.targetUser = user;
       this.targetUserId = user.id.toString();
       this.sessionId = user.sessionId;
-      this.conversationEnded = user.status === 1;
-      this.messages = [];
+      this.isReadOnly = user.status === "1"; 
+
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`/api/Chat/messages/${this.sessionId}`, {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (!res.ok) {
+        console.error("❌ 取得歷史訊息失敗", await res.text());
+        return;
+      }
+
+      const msgs = await res.json();
+      this.messages = msgs.map(m => {
+        const isMe = m.fSenderId.toString() === this.currentUserId.toString();
+        return {
+          id: m.fMessageId,
+          sender: m.senderName,
+          avatar: this.getAvatarUrl(m.senderAvatar),
+          text: DOMPurify.sanitize(m.fMessageText),
+          time: new Date(m.fSendTime).toLocaleTimeString(),
+          fromMe: isMe
+        };
+        
+      });
+      this.$nextTick(() => {
+      this.scrollToBottom(); 
+      });
+      
+      console.log("✅ 載入訊息完成，共", this.messages.length, "則");
     },
 
     async closeChat() {
-      if (this.connection) {
+      if (this.userRole === "member" && this.connection) {
         await this.connection.stop();
+        console.log("signalR 已斷線");
         this.connection = null;
+      } else if (this.userRole === "employee") {
+        console.log("保留SignalR連線");
       }
       this.showChat = false;
     },
 
-    botOptionClicked(option) {
+    async checkIfSessionEnded() {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/Chat/GetEndedSessions", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const endedList = await res.json();
+      const ended = endedList.find(s => s.sessionId == this.sessionId);
+      if (ended) {
+        this.isReadOnly = true;
+        this.conversationEnded = true;
+      } else {
+        this.isReadOnly = false;
+        this.conversationEnded = false;
+      }
+    },
+
+    async botOptionClicked(option) {
       const textMap = {
         "訂單管理": "了解訂單狀況，請點擊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='OrderManagement'>前往訂單管理</button></div>",
         "立即散步": "預約散步服務：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='WalkView'>選擇遛寵員</button></div>",
-        "客服協助": "點擊後開始線上客服：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='chathelp'>線上客服</button></div>",
         "寵物住宿": "更多住宿資訊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='HotelView'>旅館介紹</button></div>",
-        "常見問題": "請點擊查看常見問題：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='FAQ'>查看 FAQ</button></div>"
+        "常見問題": "請點擊查看常見問題：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='FAQ'>查看 FAQ</button></div>",
+        "客服協助": "<i class='text-muted'>- 開始對話 -</i>"
       };
 
       this.messages.push({
@@ -305,6 +513,27 @@ export default {
         fromMe: false
       });
 
+      if (option.label === "客服協助") {
+        const token = localStorage.getItem("token");
+        const response = await fetch('/api/Chat/CreateOrGetSession', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            FMemberId: this.currentUserId,
+            FEmployeeId: this.targetUserId,
+            Role: this.userRole,
+          })
+        });
+        this.sessionId = await response.json();
+        this.hasStartedConversation = true;
+        this.isReadOnly = false;
+        this.conversationEnded = false;
+        console.log("✅ 開始對話，解鎖輸入框");
+      }
+
       this.scrollToBottom();
     },
 
@@ -314,8 +543,7 @@ export default {
       const routes = {
         WalkView: "/Walk",
         HotelView: "/Hotel",
-        chathelp: "/ChatHelp",
-        OrderManagement: "/Order",
+        OrderManagement: "/Orders",
         FAQ: "/FAQ"
       };
       if (target.classList.contains("goto-button") && routes[view]) {
@@ -335,11 +563,24 @@ export default {
     },
 
     async endConversation() {
-      await fetch(`/api/Chat/EndSession/${this.sessionId}`, {
+      await fetch(`https://localhost:7089/api/Chat/EndSession/${this.sessionId}`, {
         method: "POST",
-        headers: { Authorization: "Bearer " + localStorage.getItem("Token") }
+        headers: { Authorization: "Bearer " + localStorage.getItem("token") }
       });
-      await this.closeChat();
+      await this.loadEmployeeSessions();
+
+      if (this.connection && this.targetUserId) {
+        try {
+          await this.connection.invoke(
+            "SendMessage",
+            this.currentUserId,
+            this.targetUserId,
+             "<i class='text-muted'>- 此對話已結束 -</i>",
+          );
+        } catch (err) {
+          console.error("❌ 無法傳送結束訊息：", err);
+        }
+      }
     }
   }
 };
@@ -474,5 +715,16 @@ export default {
   font-size: 0.65rem; /* 或 0.7rem / 10px，依你需求微調 */
   color: #999; /* 保持淡灰色 */
   white-space: nowrap;
+}
+
+.talklist{
+  background-color: #e9a44b;
+  color: white;
+  font-size: 14px;
+  padding: 5px 10px;;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  width: 100%; 
 }
 </style>

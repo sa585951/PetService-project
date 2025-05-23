@@ -9,16 +9,30 @@
 
     <div class="cart-menu" v-show="show">
       <p v-if="cartStore.walkcartitems.length === 0">購物車是空的</p>
-      <div v-else>
-        <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
-          <img :src="item.imageUrl" class="item-img" />
-          <div class="item-info">
-            <div class="item-name">{{ item.name }}</div>
-            <div class="item-date">{{ formatDateTime(item.walkStart) }}</div>
-            <div class="item-qty">隻 x {{ item.quantity }}</div>
-            <div class="item-price">NT${{ item.price }}</div>
-          </div>
-        </div>
+      <div v-if="cartStore.walkcartitems.length > 0 && cartStore.hotelcartitems.length === 0">
+    <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
+      <img :src="item.imageUrl" class="item-img" />
+      <div class="item-info">
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-date">{{ formatDateTime(item.walkStart) }}</div>
+        <div class="item-qty">隻 x {{ item.quantity }}</div>
+        <div class="item-price">NT${{ item.price }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 住宿服務 -->
+  <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
+    <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="item.backenedItem.hotelId + item.backenedItem.checkIn">
+      <img :src="item.imageUrl" class="item-img" />
+      <div class="item-info">
+        <div class="item-name">{{ item.hotelName }}</div>
+        <div class="item-date">入住：{{ item.backenedItem.checkIn }}<br>退房：{{ item.backenedItem.checkOut }}</div>
+        <div class="item-qty">房間數 x {{ item.backenedItem.roomQty }}</div>
+        <div class="item-price">NT${{ item.pricePerRoom }}</div>
+      </div>
+    </div>
+  </div>
 
         <div class="cart-total mt-2 mb-2">
           共 {{ cartStore.cartTotalItems }} 件商品 合計：
@@ -30,7 +44,6 @@
         </RouterLink>
       </div>
     </div>
-  </div>
 </template>
     
 <script setup >
