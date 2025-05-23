@@ -104,7 +104,7 @@
     const router = useRouter();
 
     const getWalkItemKey = (item) =>`${item.employeeServiceId}-${item.walkStart}`;
-    const getHotelItemKey = (item) =>`${item.backenedItem.hotelId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`;
+    const getHotelItemKey = (item) =>`${item.hotelId}-${item.roomDetailId}-${item.checkIn}-${item.checkOut}`;
 
     const selectedWalkItems = ref(cartStore.walkcartitems .map(getWalkItemKey))
     const isAllWalkSelected = ref(false);
@@ -125,7 +125,7 @@
       if(isAllHotelSelected.value){
         selectedHotelItems.value = [];
       }else{
-        selectedHotelItems.value = cartStore.hotelcartitems.map(getHotelItemKey);
+        selectedHotelItems.value = cartStore.hotelcartitems.map(item => getHotelItemKey(item.backenedItem));
       }
       isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     }

@@ -15,13 +15,14 @@
                 <label for="">旅館名稱 : {{hotel.name}}</label>
                 <label for="">房型 : {{props.roomName}}</label>
                 <label for="">單價 : {{props.price}}</label>
-                <label for="">入住日期 : {{checkInDate}}</label>
-                <label for="">退房日期 : {{checkOutDate}}</label>
+                <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
                 <label for="">房間數 : {{requiredRooms}}</label>
                 
                 <label>備註:</label>
-                <textarea v-model="AdditionlMessage" rows="4"></textarea>
+
+                <textarea v-model="AdditionalMessage" rows="4"></textarea>
                 <button @click="saveOrderInfo()">確認</button>
+
             </div>
           </div>
         </div>
@@ -36,9 +37,12 @@
 </template>
 
 <script setup>
-  import GoButton from '@/components/HotelBookingButton.vue';
+import GoButton from '@/components/HotelBookingButton.vue';
 import { defineProps, onMounted, ref } from 'vue'
 import { Modal } from 'bootstrap'
+import { useCartStore } from '@/stores/cart';
+
+const cartStore = useCartStore();
 
 const props = defineProps({
   hotel: Object,
@@ -95,28 +99,29 @@ const checkOutDate = ref(props.checkOutDate);
 const requiredRooms = ref(props.requiredRooms);
 const hotelId = ref(props.hotel.id);
 const hotels = ref(props.hotel);
-const AdditionlMessage = ref('');
+const AdditionalMessage = ref('');
 
 function saveOrderInfo() {
-        const orderInfo = {
-            "HotelId" : hotelId.value,
-            "RoomDetailId" : props.roomtype_id,  //房型Id
-            "CheckIn" : checkInDate.value,
-            "CheckOut" : checkOutDate.value,
-            "RoomQty" : requiredRooms.value,  //房間數
-            "AdditionlMessage" : AdditionlMessage.value,//備註
-        }
-        // 讀出目前的資料（如果沒有就預設是空陣列）
-        const NewOrders = JSON.parse(localStorage.getItem('orderInfos') || '[]');
-
-        // 加入新的 orderInfo
-        NewOrders.push(orderInfo);
-
-        // 存回 localStorage
-        localStorage.setItem('orderInfos', JSON.stringify(NewOrders));
-
-        console.log(orderInfo);
+    const backenedItem = {
+      hotelId : props.hotel?.id,
+      roomDetailId : props.roomtype_id,  //房型Id
+      checkIn : props.checkInDate,
+      checkOut : props.checkOutDate,
+      roomQty : props.requiredRooms,  //房間數
+      additionalMessage: AdditionalMessage.value,//備註
     }
+
+    const cartItem = {
+        backenedItem,
+        hotelName:props.hotel?.name,
+        imageUrl: props.hotel?.imageUrl,
+        pricePerRoom: props.price
+    }
+    cartStore.addItemToHotelCart(cartItem)
+
+    alert("已加入購物車")
+    bsModal.hide()
+}
 </script>
 
     
@@ -127,5 +132,16 @@ function saveOrderInfo() {
         left: 50%;
         transform: translate(-50%, -50%);
         width: 300px;
+        height: 500px;
+    }
+
+    label {
+      display: block;
+    }
+
+    .btn {
+      background-color: rgb(235, 207, 170);
+      display: block; 
+      justify-content: center;
     }
 </style>
