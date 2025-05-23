@@ -35,19 +35,20 @@
           <input type="checkbox" v-model="isAllWalkSelected" @change="toggleSelectAllWalk" />
           <label>全選 ({{ selectedWalkItems.length }})</label>
           <span>|</span>
-          <button @click="removeSelectedWalkItems" :disabled="selectedWalkItems.length === 0">刪除已選項目</button>
+          <button @click="removeselectedWalkItems" :disabled="selectedWalkItems.length === 0">刪除已選項目</button>
         </div>
       </div>
 
       <!-- Hotel 購物車 -->
       <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
-        <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item)">
-          <input type="checkbox" class="checkbox" :value="getHotelItemKey(item)" v-model="selectedHotelItems" />
+        <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item.backenedItem.roomDetailId)">
+          <input type="checkbox" class="checkbox" :value="getHotelItemKey(item.backenedItem)" v-model="selectedHotelItems" />
           <img :src="item.imageUrl" alt="hotel" />
           <div class="item-info">
             <div class="item-name">{{ item.hotelName }}</div>
-            <div class="item-walktime">入住：{{ item.checkIn }}，退房：{{ item.checkOut }}</div>
-            <div class="item-quantity">房間數量：{{ item.qty }}</div>
+            <div class="item-roomtype">{{ item.backenedItem.room }}</div>
+            <div class="item-walktime">入住：{{ item.backenedItem.checkIn }}，退房：{{ item.backenedItem.checkOut }}</div>
+            <div class="item-quantity">房間數量：{{ item.backenedItem.roomQty }}</div>
           </div>
           <div class="item-price">NT${{ item.pricePerRoom }}</div>
           <div class="item-actions">
@@ -103,7 +104,7 @@
     const router = useRouter();
 
     const getWalkItemKey = (item) =>`${item.employeeServiceId}-${item.walkStart}`;
-    const getHotelItemKey = (item) =>`${item.hotelId}-${item.checkIn}-${item.checkOut}`;
+    const getHotelItemKey = (item) =>`${item.backenedItem.hotelId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`;
 
     const selectedWalkItems = ref(cartStore.walkcartitems .map(getWalkItemKey))
     const isAllWalkSelected = ref(false);
@@ -124,7 +125,7 @@
       if(isAllHotelSelected.value){
         selectedHotelItems.value = [];
       }else{
-        selectedHotelItems.value = cart.hotelcartitems.map(getHotelItemKey);
+        selectedHotelItems.value = cartStore.hotelcartitems.map(getHotelItemKey);
       }
       isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     }
@@ -143,16 +144,17 @@
         isAllWalkSelected.value = false;
     };
 
-    const updateQuantity = (item,event) => {
+    const updateWalkQuantity = (item,event) => {
         const quantity = parseInt(event.target.value)
         if(!isNaN(quantity) && quantity > 0){
-            cartStore.updateItemQuantity(item.employeeServiceId, item.walkStart , quantity);
+            cartStore.updateWalkItemQuantity(item.employeeServiceId, item.walkStart , quantity);
         }
     }
 
     const removeHotelItem = (item) =>{
-      cartStore.removeHotelItemByKey(getHotelItemKey(item));
-      selectedHotelItems.value = selectedHotelItems.value.filter(k =>k !== getHotelItemKey(item));
+      const key = getHotelItemKey(item.backenedItem)
+      cartStore.removeHotelItemByKey(key);
+      selectedHotelItems.value = selectedHotelItems.value.filter(k =>k !== key);
       isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     }
 
@@ -174,7 +176,10 @@
             router.push('/login')
         })
         };
+        selectedWalkItems.value = cartStore.walkcartitems.map(item => getWalkItemKey(item));
         isAllWalkSelected.value = selectedWalkItems.value.length === cartStore.walkcartitems.length;
+
+        selectedHotelItems.value = cartStore.hotelcartitems.map(item => getHotelItemKey(item.backenedItem));
         isAllHotelSelected.value = selectedHotelItems.value.length === cartStore.hotelcartitems.length;
     });
 </script>

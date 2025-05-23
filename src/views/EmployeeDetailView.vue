@@ -292,34 +292,27 @@ function addToCart() {
     alert('請完整填寫寵物種類、數量、預約日期、預約時間和備註');
     return;
   }
+
+  const combineNotes = `寵物種類:${form.value.pet}，${form.value.notes || '無'}`;
+
+  const walkStartTime = `${form.value.date}T${form.value.time}`;
+
   const cartItem = {
     employeeId: form.value.employeeId,
     employeeName: employeeStore.employeeDetail.name, // 包含員工姓名
     pet: form.value.pet,
     quantity: form.value.quantity,
-    walkStart: getWalkTimes.value.start,
-    walkEnd: getWalkTimes.value.end,
-    servicePrice: employeeStore.employeeDetail.price,
-    totalPrice: subtotal.value,
-    notes: form.value.notes,
+    note: combineNotes,
+    name: employee.name,
+    imageUrl:employee.employee_photo,
+    price: employee.price
   };
-  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  cart.push(cartItem);
-  localStorage.setItem('cart', JSON.stringify(cart));
-  const message = `
-    已加入購物車：
-    員工：${employeeStore.employeeDetail.name}
-    寵物種類：${form.value.pet}
-    數量：${form.value.quantity}
-    預約日期：${form.value.date}
-    預約時間：${form.value.time}
-    備註：${form.value.notes || '無'}
-    小計：${subtotal.value} 元
-  `;
-  const confirmed = confirm(message); // 使用 confirm 提供選擇
-  if (confirmed) {
-    router.push('/order'); // 導航到訂單頁面
-  }
+
+  const isValidDate = !isNaN(new Date(walkStartTime).getTime());
+  console.log('格式正確嗎?', isValidDate);
+  
+  cartStore.addItemToWalkCart(cartItem);
+  alert('已加入購物車');
   formReset();
 }
 
