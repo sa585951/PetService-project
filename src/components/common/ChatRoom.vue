@@ -543,7 +543,7 @@ export default {
       const routes = {
         WalkView: "/Walk",
         HotelView: "/Hotel",
-        OrderManagement: "/Order",
+        OrderManagement: "/Orders",
         FAQ: "/FAQ"
       };
       if (target.classList.contains("goto-button") && routes[view]) {
