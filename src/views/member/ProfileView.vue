@@ -548,18 +548,12 @@ body {
 }
 
 .content-area {
-    overflow: auto;
+    margin-left: auto;
 }
 
 .dashboard-content {
     height: 100%;
     overflow: hidden;
-}
-
-.sidebar {
-    height: 100vh;
-    border-right: 1px solid #e5e5e5;
-    overflow-y: auto;
 }
 
 .sidebar-link {

@@ -1,5 +1,6 @@
 // src/stores/authStore.js（或 authStore.ts）
 import { defineStore } from 'pinia'
+import { jwtDecode } from 'jwt-decode';
 
 
 // 將打字特效需要的變數定義在 Store 外部，以便 Actions 可以共用它們
@@ -14,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
     userName: null, // 初始狀態為 null 或 ''
     isLoggedIn: false, // 初始狀態為 false
     memberId: null,
+    role: null,
 
     isLoggingIn: false,
     loginStatusText: '',
@@ -25,15 +27,20 @@ export const useAuthStore = defineStore('auth', {
     // 如果你在登入頁面是呼叫 setLoginState，則那邊也需要同步修改
     login({ userName, token, memberId }) { // 接收一個包含 userName 和 token 的物件
       console.log('Executing login action:', { userName, token, memberId }); // 添加 log
+
+      const tokenString = typeof token === 'object' && token.result ? token.result : token;
+
       this.isLoggedIn = true;
       this.userName = userName;
-      this.token = token;
+      this.token = tokenString;
       this.memberId = memberId;
+      this.role = this.getRole(tokenString);
 
       // 使用 localStorage 儲存個別項目
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', tokenString);
       localStorage.setItem('userName', userName);
       localStorage.setItem('memberId', memberId);
+      localStorage.setItem('role', this.role);
 
       this.stopLoading();
     },
@@ -44,37 +51,77 @@ export const useAuthStore = defineStore('auth', {
       this.userName = null; // 登出時狀態改回 null 更符合「沒有值」的語意
       this.token = null; // 登出時狀態改回 null
       this.memberId = null;
+      this.role = null;
       
       // 從 localStorage 移除個別項目
       localStorage.removeItem('token');
       localStorage.removeItem('userName');
       localStorage.removeItem('memberId');
+      localStorage.removeItem('role');
       this.stopLoading();
     },
 
     initialize() {
-      console.log('Executing initialize action'); // 添加 log
+      console.log('Executing initialize action');
       const token = localStorage.getItem('token');
-      const userName = localStorage.getItem('userName'); // 注意這裡的變數名要跟 localStorage key 對應
+      const userName = localStorage.getItem('userName');
       const memberId = localStorage.getItem('memberId');
 
+      let role = null;
+      if (token) {
+        console.log('準備解析token取得role');
+        role = this.getRole(token); // 從 token 解碼
+
+        console.log('Found state in localStorage:', { token, userName, memberId });
+        console.log('解碼結果:', jwtDecode(token));
+        console.log('取得 role:', role);
+
+      }
+
       if (token && userName) {
-        console.log('Found state in localStorage:', { token, userName , memberId}); // 添加 log
-        this.token = token;
-        this.userName = userName;
-        this.isLoggedIn = true;
-        this.memberId = memberId;
-        console.log('登入狀態還原成功');
+        try {
+          // 嘗試解碼 token，確認格式是否正確
+          jwt_decode(token);
+          console.log('Found state in localStorage:', { token, userName, memberId });
+
+          this.token = token;
+          this.userName = userName;
+          this.isLoggedIn = true;
+          this.memberId = memberId;
+
+          this.role = role;
+          console.log('登入狀態還原成功');
+          console.log('設定 this.role =', this.role);
+
+        } catch (error) {
+          console.warn('Token 解碼失敗，清除登入狀態', error);
+          // 清空狀態
+          this.token = null;
+          this.userName = null;
+          this.isLoggedIn = false;
+          this.memberId = null;
+          this.role = null;
+          localStorage.clear(); // 或選擇只刪除 token 相關欄位
+        }
       } else {
-         console.log('No state found or state incomplete in localStorage'); // 添加 log
-        // 如果 localStorage 沒有完整的狀態，也需要清除 store 的狀態
+        console.log('No state found or state incomplete in localStorage');
         this.token = null;
         this.userName = null;
         this.isLoggedIn = false;
         this.memberId = null;
-        console.log('尚未登入或資料遺失，狀態已清空');
+        this.role = null;
       }
     },
+    getRole(token) {
+      try {
+        const decoded = jwtDecode(token);
+        console.log('Decoded JWT:', decoded);
+        return decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+      } catch {
+        return null;
+      }
+    },
+
     // === 【新增】全域載入控制 Action ===// 啟動載入狀態和文字特效
 startLoading(initialText = '處理中...') {
  this.isLoggingIn = true;

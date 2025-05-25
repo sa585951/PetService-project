@@ -17,8 +17,7 @@ import ForgotPasswordView from '@/views/account/ForgotPasswordView.vue'
 import { useAuthStore } from '../stores/authStore.js'
 import ProfileView from '@/views/member/ProfileView.vue'
 import PetView from '@/views/member/PetView.vue'
-import AddPetView from '@/views/member/AddPetView.vue'
-import EditPetView from '@/views/member/EditPetView.vue'
+
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
@@ -107,16 +106,6 @@ const router = createRouter({
     {
       path: "/pet",
       component: PetView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/addpet",
-      component: AddPetView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/editpet",
-      component: EditPetView,
       meta: { requiresAuth: true },
     },
     {
