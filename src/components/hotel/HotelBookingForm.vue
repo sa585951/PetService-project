@@ -14,7 +14,7 @@
                 <label for="">訂購姓名: {{props.userName}}</label>
                 <label for="">旅館名稱 : {{hotel.name}}</label>
                 <label for="">預訂房型 : {{props.roomName}}</label>
-                <label for="">預訂單價 : {{props.price}} 元</label>
+                <label for="">房間單價 : {{props.price}} 元</label>
                 <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
                 <label for="">房間數 : {{requiredRooms}} 間</label>
                 
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import GoButton from '@/components/HotelBookingButton.vue';
+import GoButton from '@/components/hotel/HotelBookingButton.vue';
 import { ref, computed, defineProps, onMounted  } from 'vue'
 import { Modal } from 'bootstrap'
 import { useCartStore } from '@/stores/cart';
@@ -66,9 +66,9 @@ onMounted(() => {
   if (modal.value) {
     bsModal = new Modal(modal.value)
   }
-  console.log("hotel", props.hotel);
-  console.log("房價", props.roomtype_id);
-  console.log("會員資料",props.userName,props.memberId);
+  // console.log("hotel", props.hotel);
+  // console.log("房價", props.roomtype_id);
+  // console.log("會員資料",props.userName,props.memberId);
 })
 
 function openModal() {

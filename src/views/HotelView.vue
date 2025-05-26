@@ -10,7 +10,7 @@
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
                 <div class="col-4 d-flex justify-content-center align-items-center"> 
-                    <label for="petCount" class="me-2">房間需求數量:</label>
+                    <label for="petCount" class="me-2">房間數量:</label>
                     <select name="petCount" id="petCount" v-model.number="petCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -66,10 +66,10 @@
 
 <script setup>
     // new AirDatepicker('#Datepicker_start');
-    import HotelCard from '@/components/HotelCard.vue';
-    import SearchButton from '../components/HotelSearchButton.vue';
-    import Checkbox from '@/components/HotelCheckbox.vue'; 
-    import Notice from '../components/HotelNotice.vue';
+    import HotelCard from '@/components/hotel/HotelCard.vue';
+    import SearchButton from '../components/hotel/HotelSearchButton.vue';
+    import Checkbox from '@/components/hotel/HotelCheckbox.vue'; 
+    import Notice from '../components/hotel/HotelNotice.vue';
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";

@@ -9,7 +9,7 @@
     </h4>
 
     <div class="pet-section pet-body-size">
-      <h6 class="section-title">🐾 體型對照表</h6>
+      <h6 class="section-title">體型對照表</h6>
       <ul  class="custom-bullet">
         <li>小型犬：<strong>9 公斤以下</strong></li>
         <li>中型犬：<strong>9 ～ 25 公斤</strong></li>
@@ -18,7 +18,7 @@
     </div>
 
     <div class="pet-section">
-      <h6 class="section-title">🏠 房型建議</h6>
+      <h6 class="section-title">房型建議</h6>
 
       <div class="room-block room-small">
         <h6>小型犬房</h6>
