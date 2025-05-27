@@ -63,55 +63,47 @@ export const useAuthStore = defineStore('auth', {
 
     initialize() {
       console.log('Executing initialize action');
-      const token = localStorage.getItem('token');
+
+      const rawToken = localStorage.getItem('token');
+      const token = typeof rawToken === 'object' && rawToken.result ? rawToken.result : rawToken;
+
       const userName = localStorage.getItem('userName');
       const memberId = localStorage.getItem('memberId');
 
-      let role = null;
-      if (token) {
-        console.log('準備解析token取得role');
-        role = this.getRole(token); // 從 token 解碼
-
-        console.log('Found state in localStorage:', { token, userName, memberId });
-        console.log('解碼結果:', jwtDecode(token));
-        console.log('取得 role:', role);
-
-      }
-
-      if (token && userName) {
-        try {
-          // 嘗試解碼 token，確認格式是否正確
-          jwt_decode(token);
-          console.log('Found state in localStorage:', { token, userName, memberId });
+      try {
+        if (token && userName) {
+          const decoded = jwtDecode(token); // ✅ 如果不是有效 token，會跳 catch
+          const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
 
           this.token = token;
           this.userName = userName;
           this.isLoggedIn = true;
           this.memberId = memberId;
-
           this.role = role;
-          console.log('登入狀態還原成功');
-          console.log('設定 this.role =', this.role);
 
-        } catch (error) {
-          console.warn('Token 解碼失敗，清除登入狀態', error);
-          // 清空狀態
-          this.token = null;
-          this.userName = null;
-          this.isLoggedIn = false;
-          this.memberId = null;
-          this.role = null;
-          localStorage.clear(); // 或選擇只刪除 token 相關欄位
+          console.log('登入狀態還原成功');
+        } else {
+          throw new Error('token or userName is missing');
         }
-      } else {
-        console.log('No state found or state incomplete in localStorage');
-        this.token = null;
-        this.userName = null;
-        this.isLoggedIn = false;
-        this.memberId = null;
-        this.role = null;
+      } catch (error) {
+        console.warn('Token 解碼失敗，清除登入狀態', error);
+        this.logout(); // 清除所有狀態
       }
     },
+  clearState() {
+    this.token = null;
+    this.userName = null;
+    this.memberId = null;
+    this.isLoggedIn = false;
+    this.role = null;
+
+    // 你可以選擇只清除部分項目
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('memberId');
+
+    console.log('🧹 已清除登入狀態');
+  },
     getRole(token) {
       try {
         const decoded = jwtDecode(token);
