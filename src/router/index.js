@@ -23,6 +23,7 @@ import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
 import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
+import QAView from '../views/QAView.vue'
 
 
 const router = createRouter({
@@ -44,7 +45,8 @@ const router = createRouter({
     },
     {
       path: "/qa",
-      component: QA,
+      name: 'QA',
+      component: QAView,
     },
     {
       path: "/about",
