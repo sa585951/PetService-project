@@ -93,7 +93,7 @@
 <!-- 留言評論區 -->
                 <div>
                     <Reviews :review="review" :key="review.id"></Reviews> 
-                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id">去評論</HotelReviewForm>
+                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id">撰寫評語</HotelReviewForm>
                 </div>
 
             </div>

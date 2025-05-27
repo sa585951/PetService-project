@@ -1,72 +1,75 @@
 <template>
-  <div class="modal fade" id="userNoticeModal" tabindex="-1" aria-labelledby="userNoticeLabel" aria-hidden="true" ref="modal">
+  <div
+    class="modal fade"
+    id="userNoticeModal"
+    tabindex="-1"
+    aria-labelledby="userNoticeLabel"
+    ref="modal"
+  >
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-<div class="pet-room-modal">
-  <div class="pet-card">
-    <h4 class="pet-title">
-      <i class="bi bi-house-heart me-2"></i>寵物房型推薦
-    </h4>
+        <div class="pet-room-modal">
+          <div class="pet-card">
+            <h4 class="pet-title">
+              <i class="bi bi-house-heart me-2"></i>寵物房型推薦
+            </h4>
 
-    <div class="pet-section pet-body-size">
-      <h6 class="section-title">體型對照表</h6>
-      <ul  class="custom-bullet">
-        <li>小型犬：<strong>9 公斤以下</strong></li>
-        <li>中型犬：<strong>9 ～ 25 公斤</strong></li>
-        <li>大型犬：<strong>25 公斤以上</strong></li>
-      </ul>
-    </div>
+            <div class="pet-section pet-body-size">
+              <h6 class="section-title">體型對照表</h6>
+              <ul class="custom-bullet">
+                <li>小型犬：<strong>9 公斤以下</strong></li>
+                <li>中型犬：<strong>9 ～ 25 公斤</strong></li>
+                <li>大型犬：<strong>25 公斤以上</strong></li>
+              </ul>
+            </div>
 
-    <div class="pet-section">
-      <h6 class="section-title">房型建議</h6>
+            <div class="pet-section">
+              <h6 class="section-title">房型建議</h6>
 
-      <div class="room-block room-small">
-        <h6>小型犬房</h6>
-        <ul>
-          <li>1 隻中型犬</li>
-          <li>最多 2 隻小於 5 公斤的小型犬</li>
-        </ul>
-      </div>
+              <div class="room-block room-small">
+                <h6>小型犬房</h6>
+                <ul>
+                  <li>1 隻中型犬</li>
+                  <li>最多 2 隻小於 5 公斤的小型犬</li>
+                </ul>
+              </div>
 
-      <div class="room-block room-medium">
-        <h6>中型犬房</h6>
-        <ul>
-          <li>2 隻小型犬</li>
-          <li>1 隻中型犬 + 1 隻小型犬</li>
-        </ul>
-        <div class="warning">
-          <i class="bi bi-exclamation-triangle me-1"></i>
-          2 隻中型犬會偏擠，僅適合短時間入住
-          <i class="bi bi-exclamation-triangle me-1"></i>
+              <div class="room-block room-medium">
+                <h6>中型犬房</h6>
+                <ul>
+                  <li>2 隻小型犬</li>
+                  <li>1 隻中型犬 + 1 隻小型犬</li>
+                </ul>
+                <div class="warning">
+                  <i class="bi bi-exclamation-triangle me-1"></i>
+                  2 隻中型犬會偏擠，僅適合短時間入住
+                  <i class="bi bi-exclamation-triangle me-1"></i>
+                </div>
+              </div>
+
+              <div class="room-block room-large">
+                <h6>大型犬房</h6>
+                <ul>
+                  <li>2 隻中型犬</li>
+                  <li>1 隻大型犬 + 1 隻小型或中型犬</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="text-end mt-4">
+              <button type="button" class="btn" data-bs-dismiss="modal">我知道了</button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="room-block room-large">
-        <h6>大型犬房</h6>
-        <ul>
-          <li>2 隻中型犬</li>
-          <li>1 隻大型犬 + 1 隻小型或中型犬</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="text-end mt-4">
-      <button type="button" class="btn" data-bs-dismiss="modal">我知道了</button>
-    </div>
-  </div>
-</div>
-
-
-
       </div>
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { Modal } from 'bootstrap'
-import IKnowButton from './HotelBookingButton.vue'
 
 const modal = ref(null)
 let bsModal = null
@@ -74,17 +77,26 @@ let bsModal = null
 function show() {
   if (bsModal) {
     bsModal.show()
+
+    // 確保 aria-hidden 被 Bootstrap 處理完後再設 focus
+    nextTick(() => {
+      const firstFocusable = modal.value?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      firstFocusable?.focus()
+    })
   }
 }
 
 onMounted(() => {
   if (modal.value) {
-    bsModal = new Modal(modal.value)
+    bsModal = new Modal(modal.value, {
+      keyboard: true,       // 支援 ESC 鍵關閉
+    })
   }
 })
 
 defineExpose({ show })
 </script>
+
 
 <style scoped>
 .pet-room-modal {

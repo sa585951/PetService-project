@@ -74,6 +74,8 @@
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
     import Swal from 'sweetalert2';
+    import { useSearchHotelStore } from '@/stores/searchHotelStore'   //搜尋結果存進pinia
+
 //使用者須知
     const noticeModal = ref(null)
 //日期選擇器
@@ -84,6 +86,7 @@
     const petCount = ref();
     let startDate = null;
     let endDate = null;
+    const searchHotelStore = useSearchHotelStore()
 //預設顯示請搜尋圖片+不顯示hotelCard和服務區塊
     const showHotelSection = ref(false);
     onMounted(async () => {
@@ -96,10 +99,11 @@
             locale: zh_tw || "zh_tw" ,
             defaultDate: null,
             onChange: (selectedDates, dateStr, instance) => {
+                
                 if (selectedDates.length === 2) {
                     startDate = selectedDates[0];
                     endDate = selectedDates[1];
-                    console.log("1.", startDate, endDate);
+                    console.log("1.Date", startDate, endDate);
                     const formatDateToYMD = (date) => {
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -111,20 +115,45 @@
                     // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
                     checkInDate.value = formattedStartDate;
                     checkOutDate.value = formattedEndDate;
+//pinia區 開始                    
+                    //存進搜尋條件(日期)
+                    searchHotelStore.checkInDate = formattedStartDate;
+                    searchHotelStore.checkOutDate = formattedEndDate;
                 };
             }
         });
-        loadHotels();
 
+        // 從 Pinia 讀值
+        if (searchHotelStore.checkInDate && searchHotelStore.checkOutDate && searchHotelStore.petCount) {
+            checkInDate.value = searchHotelStore.checkInDate;
+            checkOutDate.value = searchHotelStore.checkOutDate;
+            petCount.value = searchHotelStore.petCount;
+            console.log("2.Date", checkInDate.value, checkOutDate.value, petCount.value);
+
+        // 將日期設定到 flatpickr UI（顯示出來）
+            fpInstance.setDate([
+                new Date(checkInDate.value),
+                new Date(checkOutDate.value)
+            ]);
+
+        // 自動執行搜尋
+            await loadHotels();
+            await searchHotels();
+        } else {
+            await loadHotels(); // 還是先載入所有旅館資料
+            noticeModal.value?.show();
+        }
+//pinia區 結束
+
+        //建議提醒的彈窗
         if (!checkInDate.value || !checkOutDate.value || !petCount.value) 
-            // alert("123");
-        // loadHotels();
         noticeModal.value?.show()
     });
     //開啟使用者須知
     function openNotice() {
-    noticeModal.value?.show()
-}
+        noticeModal.value?.show()
+    }
+    
 
  //GET全部
     const hotels = ref([]);
@@ -161,7 +190,9 @@
             CheckOutDate: checkOutDate.value,
             petCount: petCount.value
         };
-
+//pinia區  存進搜尋條件(房數))
+        searchHotelStore.petCount = petCount.value;
+        
         if (!checkInDate.value || !checkOutDate.value || !petCount.value) {
             Swal.fire({
                 icon: 'warning',
