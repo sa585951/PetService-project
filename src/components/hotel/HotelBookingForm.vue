@@ -11,17 +11,19 @@
           <div class="modal-body" >
             
             <div>
-                <label for="">姓名: {{props.userName}}</label>
+                <label for="">訂購姓名: {{props.userName}}</label>
                 <label for="">旅館名稱 : {{hotel.name}}</label>
-                <label for="">房型 : {{props.roomName}}</label>
-                <label for="">單價 : {{props.price}}</label>
+                <label for="">預訂房型 : {{props.roomName}}</label>
+                <label for="">房間單價 : {{props.price}} 元</label>
                 <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
-                <label for="">房間數 : {{requiredRooms}}</label>
+                <label for="">房間數 : {{requiredRooms}} 間</label>
                 
-                <label>備註:</label>
+                <label>備註 (100字以內) :</label>
 
-                <textarea v-model="AdditionalMessage" rows="4"></textarea>
-                <button @click="saveOrderInfo()">確認</button>
+                <textarea v-model="AdditionalMessage" @input="checkLength()" rows="4"></textarea>
+                
+                  <div :class="{'countHint-gray':!isOver100, 'countHint-red':isOver100 }">字數：{{ AdditionalMessage.length }}/100</div>
+                <button class="btn" @click="saveOrderInfo()">確認</button>
 
             </div>
           </div>
@@ -37,23 +39,25 @@
 </template>
 
 <script setup>
-import GoButton from '@/components/HotelBookingButton.vue';
-import { defineProps, onMounted, ref } from 'vue'
+import GoButton from '@/components/hotel/HotelBookingButton.vue';
+import { ref, computed, defineProps, onMounted  } from 'vue'
 import { Modal } from 'bootstrap'
 import { useCartStore } from '@/stores/cart';
+import Swal from 'sweetalert2';
 
 const cartStore = useCartStore();
 
 const props = defineProps({
   hotel: Object,
   roomName: String,
-  memberId : String,
+  memberId : Number,
   userName: String,
   checkInDate: String,
   checkOutDate: String,
   requiredRooms: Number,
   price: Number,
-  roomtype_id: Number
+  roomtype_id: Number,
+  hotelImage : String
 })
 
 const modal = ref(null)
@@ -63,9 +67,9 @@ onMounted(() => {
   if (modal.value) {
     bsModal = new Modal(modal.value)
   }
-  console.log("hotel", props.hotel);
-  console.log("房價", props.roomtype_id);
-  console.log("會員資料",props.userName,props.memberId);
+  // console.log("hotel", props.hotel);
+  // console.log("房價", props.roomtype_id);
+  // console.log("會員資料",props.userName,props.memberId);
 })
 
 function openModal() {
@@ -90,7 +94,12 @@ function openModal() {
   if (hasRoom) {
     bsModal?.show()
   } else {
-    alert('沒有空房！')
+    Swal.fire({
+      icon: 'warning',
+      title: '沒有空房！',
+      showConfirmButton: true,
+      confirmButtonColor: '#ACC572',
+    })
   }
 }
 
@@ -100,7 +109,7 @@ const requiredRooms = ref(props.requiredRooms);
 const hotelId = ref(props.hotel.id);
 const hotels = ref(props.hotel);
 const AdditionalMessage = ref('');
-
+const hotelImage = ref(props.hotelImage);  //旅館第一張照片
 function saveOrderInfo() {
     const backenedItem = {
       hotelId : props.hotel?.id,
@@ -109,6 +118,7 @@ function saveOrderInfo() {
       checkOut : props.checkOutDate,
       roomQty : props.requiredRooms,  //房間數
       additionalMessage: AdditionalMessage.value,//備註
+      hotelImage: hotelImage.value    //旅館第一張照片
     }
 
     const cartItem = {
@@ -119,9 +129,26 @@ function saveOrderInfo() {
     }
     cartStore.addItemToHotelCart(cartItem)
 
-    alert("已加入購物車")
+    Swal.fire({
+      icon: 'sussess',
+      title: '已加入購物車',
+      showConfirmButton: true,
+      confirmButtonColor: '#ACC572',
+    })
     bsModal.hide()
-}
+  }
+
+//備註的字數限制
+  function checkLength() {
+    // 字數超過100的部分截斷
+    if (AdditionalMessage.value.length > 100) {
+      AdditionalMessage.value = AdditionalMessage.value.slice(0, 100)
+    }
+  }
+
+  const isOver100 = computed(() => {
+    return AdditionalMessage.value.length >= 100
+  });
 </script>
 
     
@@ -136,12 +163,25 @@ function saveOrderInfo() {
     }
 
     label {
-      display: block;
+        display: block;
     }
 
     .btn {
-      background-color: rgb(235, 207, 170);
-      display: block; 
-      justify-content: center;
+        background-color: rgb(235, 207, 170);
+        display: block; 
+        justify-content: center;
+    }
+    textarea {
+        width: 100%;
+        resize: none;
+    }
+
+    .countHint-gray {
+        text-align: right;
+        color: rgb(150, 150, 150);
+    }
+    .countHint-red {
+        text-align: right;
+        color: rgb(255, 107, 97);
     }
 </style>
