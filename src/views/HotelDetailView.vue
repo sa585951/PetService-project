@@ -83,7 +83,7 @@
                             <div class="text-muted mb-2 ms-3">{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</div>
                             <div>
                                 <p v-if="memberId && userName && hotels[0] && roomDetail.roomtype_id && roomDetail.price"><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name"
-                                    :userName="userName" :memberId="Number(memberId)" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id"
+                                    :userName="userName" :memberId="Number(memberId)" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id" :hotelImage="hotels[0].image_1"
                                     :checkInDate="checkInDate" :checkOutDate="checkOutDate" :requiredRooms="requiredRooms">加入購物車</BookingButton></p>
                             </div>
                         </div>

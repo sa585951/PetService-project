@@ -56,7 +56,8 @@ const props = defineProps({
   checkOutDate: String,
   requiredRooms: Number,
   price: Number,
-  roomtype_id: Number
+  roomtype_id: Number,
+  hotelImage : String
 })
 
 const modal = ref(null)
@@ -108,7 +109,7 @@ const requiredRooms = ref(props.requiredRooms);
 const hotelId = ref(props.hotel.id);
 const hotels = ref(props.hotel);
 const AdditionalMessage = ref('');
-
+const hotelImage = ref(props.hotelImage);  //旅館第一張照片
 function saveOrderInfo() {
     const backenedItem = {
       hotelId : props.hotel?.id,
@@ -117,6 +118,7 @@ function saveOrderInfo() {
       checkOut : props.checkOutDate,
       roomQty : props.requiredRooms,  //房間數
       additionalMessage: AdditionalMessage.value,//備註
+      hotelImage: hotelImage.value    //旅館第一張照片
     }
 
     const cartItem = {
