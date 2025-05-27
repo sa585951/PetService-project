@@ -84,7 +84,7 @@
                         <div v-html="msg.text" @click="handleInnerClick"></div>
                       </div>
                     </div>
-                    <div class="chat-time mt-2">{{ msg.time }}</div>
+                    <small class="chat-time text-muted">{{ formatMessageTime(msg.time) }}</small>
                   </div>
                 </div>
 
@@ -126,9 +126,11 @@
 
 <script>  
 import DOMPurify from 'dompurify';
+import dayjs from 'dayjs';
 import * as signalR from "@microsoft/signalr";
 import { jwtDecode } from 'jwt-decode';
 import { isReadonly } from 'vue';
+
 
 
 export default {
@@ -377,6 +379,17 @@ export default {
       }
     },
     
+    formatMessageTime(timestamp) {
+      const now = dayjs();
+      const time = dayjs(timestamp);
+
+      // 判斷是否同一天
+      if (now.isSame(time, 'day')) {
+        return time.format('HH:mm');
+      } else {
+        return time.format('YYYY/MM/DD HH:mm');
+      }
+    },
 
     onClickSend() {
       console.log("🟢 按下送出");
@@ -456,7 +469,7 @@ export default {
           sender: m.senderName,
           avatar: this.getAvatarUrl(m.senderAvatar),
           text: DOMPurify.sanitize(m.fMessageText),
-          time: new Date(m.fSendTime).toLocaleTimeString(),
+          time: m.fSendTime ,
           fromMe: isMe
         };
         
