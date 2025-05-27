@@ -76,6 +76,12 @@
                       <i class="bi bi-heart-fill"></i>我的寵物
                     </router-link>
                   </li>
+                    <!-- Admin 專屬選項 -->
+                  <li v-if="authStore.role === 'Admin'">
+                    <router-link to="/membersourcechart" class="dropdown-item">
+                      <i class="bi bi-bar-chart-fill"></i> 數據分析
+                    </router-link>
+                  </li>
                   <li>
                     <hr class="dropdown-divider">
                   </li>

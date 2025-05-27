@@ -4,11 +4,11 @@
         <div class="row text-center text-md-left">
           <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
             <h5 class="text-uppercase mb-4 font-weight-bold text-warning">
-              <i class="fas fa-paw"></i> Pet Adoption & Care
+              <i class="fas fa-paw"></i> 毛孩管家
             </h5>
             <p>
-              我們是一個致力於為流浪寵物尋找永久家園的組織。
-              我們相信每個生命都值得被珍愛和尊重。
+              解決現代毛孩家庭的困境<br>
+              我們提供專業寵物散步服務，也整合優質寵物住宿選擇。
             </p>
           </div>
   
