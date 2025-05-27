@@ -71,7 +71,7 @@ const router = useRouter()
         },
         petCount: {
             type: Number,
-            default: 1
+            default: ''
         }
     });
     const hotels = computed(() => props.hotels);

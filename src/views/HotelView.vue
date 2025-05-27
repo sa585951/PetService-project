@@ -6,11 +6,11 @@
             <div class="search_bar2"> 
                 <div class="col-5 d-flex justify-content-center align-items-center"> 
                     <!-- <i class="bi bi-calendar4"></i> --> 
-                    <div class="w-75 d-flex justify-content-center">
+                    <div class="datePickerRef d-flex justify-content-center">
                     <input type="text" ref="datePickerRef" placeholder="選擇訂房日期" class="datepicker p-1"></div>
                 </div>
-                <div class="col-3 d-flex justify-content-center align-items-center"> 
-                    <label for="petCount" class="me-2">毛孩數量:</label>
+                <div class="col-4 d-flex justify-content-center align-items-center"> 
+                    <label for="petCount" class="me-2">房間數量:</label>
                     <select name="petCount" id="petCount" v-model.number="petCount">
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -18,7 +18,7 @@
                         <option value="4">4</option>
                     </select>
                 </div>
-                <div class="col-3 p-2 d-flex justify-content-center align-items-center">
+                <div class="col-2 p-2 d-flex justify-content-center align-items-center">
                     <div class=" p-2 text-center"> 
                         <SearchButton @click="searchHotels()" class="fw-bold">搜尋</SearchButton>
                     </div>
@@ -66,13 +66,16 @@
 
 <script setup>
     // new AirDatepicker('#Datepicker_start');
-    import HotelCard from '@/components/HotelCard.vue';
-    import SearchButton from '../components/HotelSearchButton.vue';
-    import Checkbox from '@/components/HotelCheckbox.vue'; 
-    import Notice from '../components/HotelNotice.vue';
+    import HotelCard from '@/components/hotel/HotelCard.vue';
+    import SearchButton from '../components/hotel/HotelSearchButton.vue';
+    import Checkbox from '@/components/hotel/HotelCheckbox.vue'; 
+    import Notice from '../components/hotel/HotelNotice.vue';
     import {onMounted, reactive, ref, computed} from 'vue';  //匯入 onMounted 函式
     import flatpickr from 'flatpickr';
     import { zh_tw } from "flatpickr/dist/l10n/zh-tw.js";
+    import Swal from 'sweetalert2';
+    import { useSearchHotelStore } from '@/stores/searchHotelStore'   //搜尋結果存進pinia
+
 //使用者須知
     const noticeModal = ref(null)
 //日期選擇器
@@ -83,6 +86,7 @@
     const petCount = ref();
     let startDate = null;
     let endDate = null;
+    const searchHotelStore = useSearchHotelStore()
 //預設顯示請搜尋圖片+不顯示hotelCard和服務區塊
     const showHotelSection = ref(false);
     onMounted(async () => {
@@ -95,10 +99,11 @@
             locale: zh_tw || "zh_tw" ,
             defaultDate: null,
             onChange: (selectedDates, dateStr, instance) => {
+                
                 if (selectedDates.length === 2) {
                     startDate = selectedDates[0];
                     endDate = selectedDates[1];
-                    console.log("1.", startDate, endDate);
+                    console.log("1.Date", startDate, endDate);
                     const formatDateToYMD = (date) => {
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -110,20 +115,45 @@
                     // 儲存起訖日期給 searchHotels 用（你可以放到 ref 或 reactive）
                     checkInDate.value = formattedStartDate;
                     checkOutDate.value = formattedEndDate;
+//pinia區 開始                    
+                    //存進搜尋條件(日期)
+                    searchHotelStore.checkInDate = formattedStartDate;
+                    searchHotelStore.checkOutDate = formattedEndDate;
                 };
             }
         });
-        loadHotels();
 
+        // 從 Pinia 讀值
+        if (searchHotelStore.checkInDate && searchHotelStore.checkOutDate && searchHotelStore.petCount) {
+            checkInDate.value = searchHotelStore.checkInDate;
+            checkOutDate.value = searchHotelStore.checkOutDate;
+            petCount.value = searchHotelStore.petCount;
+            console.log("2.Date", checkInDate.value, checkOutDate.value, petCount.value);
+
+        // 將日期設定到 flatpickr UI（顯示出來）
+            fpInstance.setDate([
+                new Date(checkInDate.value),
+                new Date(checkOutDate.value)
+            ]);
+
+        // 自動執行搜尋
+            await loadHotels();
+            await searchHotels();
+        } else {
+            await loadHotels(); // 還是先載入所有旅館資料
+            noticeModal.value?.show();
+        }
+//pinia區 結束
+
+        //建議提醒的彈窗
         if (!checkInDate.value || !checkOutDate.value || !petCount.value) 
-            // alert("123");
-        // loadHotels();
         noticeModal.value?.show()
     });
     //開啟使用者須知
     function openNotice() {
-    noticeModal.value?.show()
-}
+        noticeModal.value?.show()
+    }
+    
 
  //GET全部
     const hotels = ref([]);
@@ -160,13 +190,18 @@
             CheckOutDate: checkOutDate.value,
             petCount: petCount.value
         };
-
-        if (!checkInDate.value || !checkOutDate.value) {
-            alert("請先選擇完整的入住、退房日期");
-            return; } // 停止函式執行
-        if (!petCount.value) {
-            alert("請選擇入住寵物數量");
-            return; } // 停止函式執行
+//pinia區  存進搜尋條件(房數))
+        searchHotelStore.petCount = petCount.value;
+        
+        if (!checkInDate.value || !checkOutDate.value || !petCount.value) {
+            Swal.fire({
+                icon: 'warning',
+                html: '請先選擇入住、退房日期<br>與入住寵物數量！',
+                showConfirmButton: true,
+                confirmButtonColor: '#ACC572',
+            })
+            return;  // 停止函式執行
+            }
         const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/Search`;
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -257,6 +292,10 @@
         justify-content: center; /* 水平置中 */ 
         align-items: center; /* 垂直置中 */ 
     } 
+
+    .datePickerRef {
+        width: 90%;
+    }
 
     input { 
         width: 80%; 
