@@ -7,7 +7,7 @@ function getItemKeyWalk(item){
 }
 
 function getItemKeyHotel(item){
-    return `${item.hotelId}-${item.checkIn}-${item.checkOut}`;
+    return `${item.hotelId}-${item.roomDetailId}-${item.checkIn}-${item.checkOut}`;
 }
 
 export const useCartStore = defineStore('cart',{
@@ -93,16 +93,17 @@ export const useCartStore = defineStore('cart',{
         },
 
         addItemToHotelCart(item){
-            const existingItem = this.hotelcartitems.find(i => getItemKeyHotel(i.backenedItem) === getItemKeyHotel(item.backenedItem));
-            if(existingItem){
-                existingItem.backenedItem.roomQty += item.backenedItem.roomQty;
+            const key = getItemKeyHotel(item.backenedItem);
+            const exists = this.hotelcartitems.find(i => getItemKeyHotel(i.backenedItem) === key);
+            if(exists){
+                exists.backenedItem.roomQty += item.backenedItem.roomQty;
             }else{
                 this.hotelcartitems.push(item);
             }
         },
 
         removeHotelItemByKey(key){
-            this.hotelcartitems = this.hotelcartitems.filter(item => getItemKeyHotel(item) !== key);
+            this.hotelcartitems = this.hotelcartitems.filter(item => getItemKeyHotel(item.backenedItem) !== key);
         },
 
         prepareHotelOrderPayload(){
