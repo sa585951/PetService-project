@@ -8,40 +8,40 @@
 
     <hr />
     <h5>訂單明細</h5>
-    <div v-if="orderType?.toLowerCase() === 'walk'">
-    <ul>
+    
+    <ul v-if="normalizedType ==='walk'">
       <li v-for="(item, index) in orderDetail.items" :key="index">
+        <img :src="item.employeePhoto" alt="員工照片" class="item-image">
         <p>遛狗員：{{ item.employeeName }}</p>
         <p>開始時間：{{ formatDate(item.walkStart) }}</p>
         <p>結束時間：{{ formatDate(item.walkEnd) }}</p>
-        <p>數量：{{ item.amount }} 隻</p>
+        <p>數量：{{ item.amount }}</p>
         <p>單價：NT${{ item.servicePrice }}，小計：NT${{ item.totalPrice }}</p>
         <p>備註：{{ item.note }}</p>
       </li>
     </ul>
-    </div>
-    <div v-if="orderType?.toLowerCase() === 'hotel'">
-    <ul>
+    
+    <ul v-else-if="normalizedType === 'hotel'">
       <li v-for="(item, index) in orderDetail.items" :key="index">
+        <img :src="item.hotelRoomPhoto" alt="飯店照片" class="item-image">
         <p>飯店名稱：{{ item.hotelName }}</p>
+        <p>房型：{{item.roomName}}</p>
         <p>入住時間：{{ formatDate(item.checkIn) }}</p>
         <p>退房時間：{{ formatDate(item.checkOut) }}</p>
+        <p>入住天數：{{item.nights}}</p>
         <p>房間數量：{{ item.qty }}</p>
         <p>每間房價：NT${{ item.pricePerRoom }}，小計：NT${{ item.totalPrice }}</p>
         <p>備註：{{ item.note }}</p>
       </li>
     </ul>
-    </div>
   </div>     
 </template>
     
 <script setup >
-    import { computed, onMounted, ref  } from 'vue';
+    import { onMounted, ref, computed } from 'vue';
     import axios from 'axios';
     import Swal from 'sweetalert2';
     import { useAuthStore } from '@/stores/authStore';
-
-    const authStore = useAuthStore();
 
     const props = defineProps({
         orderId:[Number,String],
@@ -49,29 +49,14 @@
         orderData: Object
     });
 
+    const authStore = useAuthStore();
     const orderDetail = ref(props.orderData || null);
     const isLoading = ref(!props.orderData);
 
-    function normalizeOrderType(type){
-        if (type?.toLowerCase() === 'walk' || type === '散步') return 'walk';
-        if (type?.toLowerCase() === 'hotel' || type === '住宿') return 'hotel';
-        return '';
-    }
-
-    function getApiPath () {
-        const type = normalizeOrderType(props.orderType || orderDetail.value?.orderType ||'walk');
-        const id = props.orderData?.orderId || props.orderId;
-        if(!id)return '';
-        switch(type){
-            case  'walk':
-                return `/api/order/walk/${id}`
-            case 'hotel':
-                return `/api/order/hotel/${id}`
-                default:
-                    return''
-        }
-    };
-
+    const normalizedType = computed(() => {
+        const t = (props.orderType||'').toString().toLowerCase()
+        return t === 'hotel'|| t==='住宿' ? 'hotel' : 'walk'
+    })
 
     const formatDate = (val) => {
         return new Date(val).toLocaleString();
@@ -80,7 +65,8 @@
     onMounted(async () =>{
         if(!orderDetail.value && props.orderId){
             try{
-                const res = await axios.get(getApiPath(),{
+                const url = `/api/order/${normalizedType.value}/${props.orderId}`;
+                const res = await axios.get(url,{
                     headers:{
                         Authorization: `Bearer ${authStore.token}`
                     }

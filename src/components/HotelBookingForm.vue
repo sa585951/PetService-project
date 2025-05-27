@@ -114,7 +114,7 @@ function saveOrderInfo() {
     const cartItem = {
         backenedItem,
         hotelName:props.hotel?.name,
-        imageUrl: props.hotel?.imageUrl,
+        roomName: props.roomName,
         pricePerRoom: props.price
     }
     cartStore.addItemToHotelCart(cartItem)

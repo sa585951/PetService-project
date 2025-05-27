@@ -3,8 +3,8 @@
     <div style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
       <ol class="breadcrumb breadcrumb-black">
         <li class="breadcrumb-item active">購物車</li>
-        <li class="breadcrumb-item">填寫資料以及付款</li>
-        <li class="breadcrumb-item">訂購完成</li>
+        <li class="breadcrumb-item">確認訂單資訊</li>
+        <li class="breadcrumb-item">訂單送出</li>
       </ol>
     </div>
     
@@ -15,7 +15,7 @@
       <div v-if="cartStore.walkcartitems.length > 0 && cartStore.hotelcartitems.length === 0">
         <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="getWalkItemKey(item)">
           <input type="checkbox" class="checkbox" :value="getWalkItemKey(item)" v-model="selectedWalkItems" />
-          <img :src="item.imageUrl" alt="walk" />
+          <img :src="item.imageUrl" alt="walk" class="item-image" />
           <div class="item-info">
             <div class="item-name">{{ item.name }}</div>
             <div class="item-walktime">{{ item.walkStart }}</div>
@@ -43,10 +43,10 @@
       <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
         <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item.backenedItem.roomDetailId)">
           <input type="checkbox" class="checkbox" :value="getHotelItemKey(item.backenedItem)" v-model="selectedHotelItems" />
-          <img :src="item.imageUrl" alt="hotel" />
+          <img :src="item.imageUrl" alt="hotel" class="item-image" />
           <div class="item-info">
             <div class="item-name">{{ item.hotelName }}</div>
-            <div class="item-roomtype">{{ item.backenedItem.room }}</div>
+            <div class="item-name">房型：{{ item.roomName }}</div>
             <div class="item-walktime">入住：{{ item.backenedItem.checkIn }}，退房：{{ item.backenedItem.checkOut }}</div>
             <div class="item-quantity">房間數量：{{ item.backenedItem.roomQty }}</div>
           </div>
