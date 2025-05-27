@@ -152,6 +152,7 @@ const router = createRouter({
     {
       path: "/membersourcechart",
       component: MemberSourceChart,
+      meta: { requiresAuth: true },
     },
   ],
 })

@@ -91,6 +91,13 @@ async function login() {
     const data = await res.json(); // 假設後端成功時返回 { token: ..., name: ... }
 
     console.log('Login successful. Data:', data);
+    Swal.fire({
+      icon: 'success',
+      title: '登入成功',
+      text: '歡迎回來，' + data.userName,
+      timer: 2000,
+      showConfirmButton: false
+    })
 
     // === 呼叫 Pinia 的 login Action ===
     // 根據 authStore.js 中 login Action 的定義 (login({ userName, token }))

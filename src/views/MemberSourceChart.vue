@@ -3,21 +3,25 @@
     <div class="row">
       <MemberSidebar />
       <div class="col-md-10 p-r content-area">
-          <div class="p-4 welcome-container ">
-            <div class="row"></div>
-              <div class="welcome-card">
-                <h2 class="text-xl font-bold mb-4">即時會員來源統計</h2>
-                <canvas id="sourceChart"></canvas>
+          <div class="p-4 welcome-container">
+            <div class="charts-row">
+              <div class="chart-col">
+                <div class="welcome-card">
+                  <h2 class="text-xl font-bold mb-4">即時會員來源統計</h2>
+                  <canvas id="sourceChart"></canvas>
+                </div>
               </div>
-              <div class="welcome-card">
-                <h2 class="text-xl font-bold mb-4">每日註冊會員統計</h2>
-                <canvas id="signupChart"></canvas>
+              <div class="chart-col">
+                <div class="welcome-card">
+                  <h2 class="text-xl font-bold mb-4">每日註冊會員統計</h2>
+                  <canvas id="signupChart"></canvas>
+                </div>
               </div>
+            </div>
           </div>
       </div>
     </div>
   </div>
-
 </template>
 
 <script setup>
@@ -260,27 +264,72 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height:200px;
+  min-height: 200px;
   padding: 20px;
   overflow: hidden;
 }
 
+.charts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.chart-col {
+  flex: 1;
+  min-width: 0; /* 防止 flex item 超出容器 */
+  max-width: 600px;
+}
+
 .welcome-card {
-  margin-right: 20px;
   min-height: 200px;
   background-color: white;
   border-radius: 20px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
   padding: 40px;
-  width: calc(50% - 20px); /* 兩張卡片各佔一半寬度，並留有間距 */
-  max-width: 600px;
+  width: 100%;
   overflow: hidden;
   text-align: center;
-  margin-bottom: 20px; /* 為移動端或其他窄螢幕增加底部間距 */
-}
-.content-area {
-    /* 確保內容區域不會被Sidebar覆蓋 */
-    margin-left: auto; /* 配合Sidebar的寬度調整 */
 }
 
+.content-area {
+  /* 確保內容區域不會被Sidebar覆蓋 */
+  margin-left: auto; /* 配合Sidebar的寬度調整 */
+}
+
+/* 當螢幕寬度小於等於 50% 的常見桌面大小時（約768px），改為上下排列 */
+@media (max-width: 768px) {
+  .charts-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .chart-col {
+    flex: none;
+    width: 100%;
+    max-width: none;
+    margin-bottom: 20px;
+  }
+  
+  .chart-col:last-child {
+    margin-bottom: 0;
+  }
+  
+  .welcome-card {
+    padding: 30px 20px; /* 在小螢幕上減少內邊距 */
+  }
+}
+
+/* 額外的小屏幕優化 */
+@media (max-width: 480px) {
+  .welcome-container {
+    padding: 10px;
+  }
+  
+  .welcome-card {
+    padding: 20px 15px;
+  }
+}
 </style>
