@@ -13,7 +13,7 @@
                                 <img :src="selectedImage" class="img-fluid rounded-start mb-2" style="height: 100%; width: 100%; object-fit: cover;"/>
                             </div>
                                 <!-- 小圖：垂直排列 -->
-                                <div class="d-flex flex-column justify-content-between ps-2" style="width: 180px;" v-if="hotels.length > 0">
+                                <div class="d-flex  flex-column justify-content-between ps-2" style="width: 180px;" v-if="hotels.length > 0">
                                     <img :src="`/Hotel/${hotels[0].image_1}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_1}`"/>
                                     <img :src="`/Hotel/${hotels[0].image_2}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_2}`"/>
                                     <img :src="`/Hotel/${hotels[0].image_3}`" class="img-thumbnail mb-2" style="height: calc(100% / 3); object-fit: cover; cursor: pointer;" @click="selectedImage = `/Hotel/${hotels[0].image_3}`"/>
@@ -26,8 +26,8 @@
                                     <div class="d-flex align-items-center">
                                     <h4 class="card-title fw-bold m-0">{{hotels[0].name}}</h4>
                                     <div class="p-0 ps-2">
-                                        <img v-for="i in hotels[0].review?.[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
-                                        <img v-for="i in 5 - (hotels[0].review?.[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
+                                        <img v-for="i in hotels[0]?.rating" :key="'light_' + i" class="star" src="/Hotel/star_light.png">
+                                        <img v-for="i in 5 - (hotels[0]?.rating || 0)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png">
                                     </div>
                                     <div class="ratingbox">{{getRating(hotels[0].rating)}}</div>
                                     </div></div>
@@ -83,11 +83,17 @@
                             <div class="text-muted mb-2 ms-3">{{ getRoomQty(hotels[0], hotels[0].roomTypes[index].name) }}</div>
                             <div>
                                 <p v-if="memberId && userName && hotels[0] && roomDetail.roomtype_id && roomDetail.price"><BookingButton :hotel="hotels[0]" :roomName="hotels[0].roomTypes[index].name"
-                                    :userName="userName" :memberId="memberId" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id"
+                                    :userName="userName" :memberId="Number(memberId)" :price="roomDetail.price" :roomtype_id="roomDetail.roomtype_id" :hotelImage="hotels[0].image_1"
                                     :checkInDate="checkInDate" :checkOutDate="checkOutDate" :requiredRooms="requiredRooms">加入購物車</BookingButton></p>
                             </div>
                         </div>
                     </div>
+                </div>
+            <hr>
+<!-- 留言評論區 -->
+                <div>
+                    <Reviews :review="review" :key="review.id"></Reviews> 
+                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id">撰寫評語</HotelReviewForm>
                 </div>
 
             </div>
@@ -96,14 +102,16 @@
 </template>
     
 <script setup>
-    import Map from '@/components/HotelMap.vue';
-    import GoButton from '@/components/HotelBookingButton.vue';
-    import BookingButton from '@/components/HotelBookingForm.vue'
+    import Map from '@/components/hotel/HotelMap.vue';
+    import GoButton from '@/components/hotel/HotelBookingButton.vue';
+    import BookingButton from '@/components/hotel/HotelBookingForm.vue'
+    import Reviews from '@/components/hotel/HotelReview.vue';
     import { useAuthStore } from '@/stores/authStore';
     import 'leaflet/dist/leaflet.css'
     import { ref, computed, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router'
 
+    import HotelReviewForm from '@/components/hotel/HotelReviewForm.vue';
 
     const today = ref(new Date()); // 預設為今天
     const tomorrow = ref(new Date());
@@ -145,6 +153,7 @@
 //GET詳細
     const hotels = ref({});
     const HotelDetailQty = ref({});
+    const review = ref({});
     const requiredRooms = ref();
     const selectedImage = ref(null); // 保持為響應式引用，預設為null
     const loadHotelDetail = async () => {
@@ -162,8 +171,9 @@
         const datas = await response.json();
         hotels.value = datas.hotels;
         HotelDetailQty.value = datas.hotelDetailQty;
+        review.value = datas.review;
         requiredRooms.value = datas.hotelDetailQty[0].requiredRooms;
-        console.log("1",hotels.value,"2", HotelDetailQty.value,"3", requiredRooms.value);
+        console.log("1",hotels.value,"2", HotelDetailQty.value,"3", review.value);
         // 確保資料存再再初始化大圖
     if (hotels.value.length > 0) {
         selectedImage.value = `/Hotel/${hotels.value[0].image_1}`;
@@ -211,7 +221,8 @@ function getRoomQty(hotel, roomName) {
         }
     }
 
-    
+//評論留言區
+
     
 </script>
     

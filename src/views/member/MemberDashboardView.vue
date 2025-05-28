@@ -250,6 +250,8 @@ const setActiveTab = (tabName) => {
 
 const fetchProfile = async () => {
   const token = localStorage.getItem("token");
+  console.log('token from localStorage:', token, typeof token);
+  console.log('Current role:', authStore.role);
   
   if (!token) {
     router.push('/login');
@@ -293,7 +295,7 @@ const fetchProfile = async () => {
       router.push('/login');
     }
     authStore.userName = null;
-    authStore.isLoggedIn(false);
+    authStore.isLoggedIn=false;
   }finally{
     console.log('個人資料加載完成');
     profileLoading.value = false;

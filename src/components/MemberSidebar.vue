@@ -11,16 +11,27 @@
     >
       <i :class="route.icon"></i> {{ route.label }}
     </router-link>
+
+    <router-link
+      v-if="authStore.role === 'Admin'" :to="{ path: '/membersourcechart' }" class="sidebar-link admin-link"
+      active-class="active"
+      :class="{ active: activeTab === 'analytics' }"
+      @click="setActiveTab('analytics')"
+    >
+      <i class="bi bi-bar-chart"></i> 數據分析
+    </router-link>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 
 const router = useRouter();
 const route = useRoute();
 const activeTab = ref('');
+const authStore = useAuthStore();
 
 const links = {
   memberdashboard: { label: '總覽', icon: 'bi bi-house-door', path: '/memberdashboard' },
@@ -28,6 +39,7 @@ const links = {
   orders: { label: '我的訂單', icon: 'bi bi-bag-check', path: '/orders' },
   pets: { label: '我的寵物', icon: 'bi bi-heart', path: '/pet' },
 };
+
 
 const setActiveTab = (tabName) => {
   activeTab.value = tabName; // 設定 activeTab 狀態
@@ -37,7 +49,8 @@ const setActiveTab = (tabName) => {
     'memberdashboard': '/memberdashboard',
     'profile': '/profile',
     'orders': '/orders',
-    'pet': '/pet'
+    'pet': '/pet',
+    'analytics': '/membersourcechart'
   };
   
   if (routeMap[tabName]) {
@@ -55,6 +68,8 @@ const getActiveTabFromPath = (path) => {
     return 'orders';
   } else if (path.includes('/pet')) {
     return 'pet';
+  }else if (path.includes('/membersourcechart')) {
+    return 'membersourcechart';
   }
   return 'memberdashboard'; // 預設值
 };
