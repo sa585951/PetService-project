@@ -20,6 +20,7 @@
               <router-link to="/news" class="nav-link">
                 <i class="fa fa-home"></i> 最新公告
               </router-link>
+              </li>
             <li class="nav-item dropdown" @click="toggleDropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                 <i class="fa fa-paw"></i> 服務項目
