@@ -326,22 +326,21 @@ function addToCart() {
     quantity: form.value.quantity,
     walkStart: getWalkTimes.value.start,
     walkEnd: getWalkTimes.value.end,
-    servicePrice: Number(employeeStore.employeeDetail?.price) || 0,
-  totalPrice: Number(subtotal.value) || 0,
+    servicePrice: employeeStore.employeeDetail?.price,
+    totalPrice: subtotal.value,
     note: combineNotes,
-    // name: employee.name,
-    // imageUrl:employee.employee_photo,
-    // price: employee.price
+    name: employee.name,
+    imageUrl:employee.employee_photo,
+    price: employee.price
   };
 
-    try {
-      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      if (!Array.isArray(cart)) cart = [];
-      cart.push(cartItem);
-      localStorage.setItem('cart', JSON.stringify(cart));
-    } catch (e) {
-      console.error('localStorage 寫入錯誤:', e);
-    }
+    
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    cart.push(cartItem);
+    localStorage.setItem('cart', JSON.stringify(cart));
+  
+      
+    
   const message = `
     已加入購物車：
     員工：${employeeStore.employeeDetail.name}
