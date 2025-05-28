@@ -25,9 +25,9 @@
     </div>
 
     <!-- 按鈕   @click="orderInfo()" -->
-    <button class="btn btn-secondary" @click="openModal">  
+    <GoButton @click="openModal">  
       <slot></slot>
-    </button>
+    </GoButton>
   </div>
 </template>
     

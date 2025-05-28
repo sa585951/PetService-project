@@ -92,8 +92,10 @@
             <hr>
 <!-- 留言評論區 -->
                 <div>
+                    <span  class="mb-3">
+                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id" v-show="isVisible">撰寫評語</HotelReviewForm></span>
                     <Reviews :review="review" :key="review.id"></Reviews> 
-                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id">撰寫評語</HotelReviewForm>
+                    
                 </div>
 
             </div>
@@ -222,7 +224,8 @@ function getRoomQty(hotel, roomName) {
     }
 
 //評論留言區
-
+    //控制評論按鈕顯示
+    const isVisible = true;
     
 </script>
     
