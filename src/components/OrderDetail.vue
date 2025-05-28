@@ -11,7 +11,7 @@
     
     <ul v-if="normalizedType ==='walk'">
       <li v-for="(item, index) in orderDetail.items" :key="index">
-        <img :src="item.employeePhoto" alt="員工照片" class="item-image">
+        <img :src="`${imgUrl}${item.employeePhoto}`" alt="員工照片" class="item-image">
         <p>遛狗員：{{ item.employeeName }}</p>
         <p>開始時間：{{ formatDate(item.walkStart) }}</p>
         <p>結束時間：{{ formatDate(item.walkEnd) }}</p>
@@ -23,7 +23,7 @@
     
     <ul v-else-if="normalizedType === 'hotel'">
       <li v-for="(item, index) in orderDetail.items" :key="index">
-        <img :src="item.hotelRoomPhoto" alt="飯店照片" class="item-image">
+        <img :src="`/Hotel/${item.hotelPhoto}`" alt="飯店照片" class="item-image">
         <p>飯店名稱：{{ item.hotelName }}</p>
         <p>房型：{{item.roomName}}</p>
         <p>入住時間：{{ formatDate(item.checkIn) }}</p>
@@ -42,6 +42,8 @@
     import axios from 'axios';
     import Swal from 'sweetalert2';
     import { useAuthStore } from '@/stores/authStore';
+    
+    const imgUrl = import.meta.env.VITE_API_IMAGE_URL;
 
     const props = defineProps({
         orderId:[Number,String],
@@ -90,7 +92,19 @@
 </script>
     
 <style scoped>
-    ul{
+ul{
         list-style-type: none;
-    }
+}
+.item-image {
+  width: 200px;
+  height: 200px;
+  margin-right: 15px;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
 </style>

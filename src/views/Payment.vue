@@ -30,7 +30,7 @@
                  <div v-else-if="hasHotelItems" class="payment-left">
                   <!-- 住宿服務明細 -->
                   <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item)">
-                    <img :src="item.imageUrl" alt="飯店照片" class="item-image">
+                    <img :src="`/Hotel/${item.hotelImage}`" alt="飯店照片" class="item-image">
                     <div class="item-title">{{ item.hotelName }}</div>
                     <div class="item-detail">房型：{{item.roomName}}</div>
                     <div class="item-detail">入住：{{ formatDateTime(item.backenedItem.checkIn) }}</div>

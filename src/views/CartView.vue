@@ -43,7 +43,7 @@
       <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
         <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item.backenedItem.roomDetailId)">
           <input type="checkbox" class="checkbox" :value="getHotelItemKey(item.backenedItem)" v-model="selectedHotelItems" />
-          <img :src="item.imageUrl" alt="hotel" class="item-image" />
+          <img :src="`/Hotel/${item.hotelImage}`" alt="hotel" class="item-image" />
           <div class="item-info">
             <div class="item-name">{{ item.hotelName }}</div>
             <div class="item-name">房型：{{ item.roomName }}</div>
