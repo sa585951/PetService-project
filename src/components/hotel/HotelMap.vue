@@ -5,7 +5,7 @@
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="mapModalLabel">地址: 高雄市前鎮區民權二路615號</h5>
+            <h5 class="modal-title" id="mapModalLabel">{{address}}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
           </div>
           <!-- 阻止點擊地圖時關閉 modal -->
@@ -24,24 +24,30 @@
 </template>
     
 <script setup>
-import GoButton from '@/components/HotelBookingButton.vue';
+  import GoButton from '@/components/hotel/HotelBookingButton.vue';
     import { onMounted } from 'vue'
-import L from 'leaflet'
+  import L from 'leaflet'
 
-onMounted(() => {
-  const modalEl = document.getElementById('mapModal')
-  let mapInstance = null
-
-  modalEl.addEventListener('shown.bs.modal', () => {
-    if (mapInstance) return
-
-    mapInstance = L.map('map').setView([22.6167880, 120.3061829], 16)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(mapInstance)
-    L.marker([22.6167880, 120.3061829]).addTo(mapInstance)
+  const props = defineProps({
+      latitude: Number,
+      longitude: Number,
+      address: String
   })
-})
+
+  onMounted(() => {
+    const modalEl = document.getElementById('mapModal')
+    let mapInstance = null
+
+    modalEl.addEventListener('shown.bs.modal', () => {
+      if (mapInstance) return
+
+      mapInstance = L.map('map').setView([props.latitude, props.longitude], 15)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(mapInstance)
+      L.marker([props.latitude, props.longitude]).addTo(mapInstance)
+    })
+  })
 </script>
     
 <style scoped>

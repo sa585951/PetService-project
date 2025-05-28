@@ -1,4 +1,11 @@
 <template>
+    <div v-if="isDataLoading" class="loading-overlay">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <div class="loading-text">載入中...</div>
+    </div>
+  </div>
+
 <template v-if="isLoggedIn">
   <div class="container-fluid">
     <div class="row">
@@ -42,21 +49,25 @@
                     <i class="bi bi-gear"></i> 管理
                   </button>
                 </div>
+                  <div v-if="pets.length === 0" class="text-center p-5 text-muted">
+                        目前沒有寵物資料。
+                    </div>
+              <div v-else>
                 <div class="card-body pet-scrollable">
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                             <div class="col" v-for="pet in pets" :key="pet.id">
                                 <div class="pet-card card h-100 position-relative shadow-sm">
                                     <div class="pet-name-overlay  text-white text-center ">
-                                        <div class="pet-name-text" style="font-size: 1.25rem; font-weight: bold;">
+                                        <div class="pet-name-text" style="font-size: 1rem; font-weight: bold;">
                                         {{ pet.petName }}
                                        </div>
                                     </div>
-                                    <img :src="getPetPhotoUrl(pet.petImagePath)" class="card-img-top pet-photo" :alt="pet.petName">
-                                    
+                                    <div class="pet-image-wrapper">
+                                      <img :src="getPetPhotoUrl(pet.petImagePath)" class="card-img-top" :alt="pet.petName">
+                                    </div>                                   
+                              
                                     <div class="card-body">
                                         <p class="card-text">
-                                            <i class="fas fa-paw"></i>
-                                             年紀: {{ pet.petAge !== null && pet.petAge !== undefined ? pet.petAge + '歲' : '未知' }}<br>
                                             <i class="bi bi-cake2 me-1"></i>
                                             生日: {{ formatBirthday(pet.petBirthday) }}<br>
                                         </p>
@@ -65,6 +76,7 @@
                             </div>
                   </div>
                  </div>
+                </div>
               </div>
             </div>
                           <!-- 右側內容: 訂單資訊 -->
@@ -73,42 +85,59 @@
               <div class="card order-card">
                 <div class="card-header d-flex align-items-center">
                   <span>我的訂單</span>
-                  <button class="secondary-btn" @click="router.push(`/member/orders`)">
+                  <button class="secondary-btn" @click="router.push(`/orders`)">
                     查看所有訂單
                   </button>
                 </div>
                 <div class="card-body order-scrollable p-0">
-                  <div v-for="o in orders" :key="o.fId" class="order-item d-flex align-items-center justify-content-between p-3 border-bottom">
+                  <div v-for="o in orders" :key="o.id" class="order-item d-flex align-items-center justify-content-between p-3 border-bottom">
                     <div class="d-flex align-items-center">
-                      <i class="bi bi-box fs-4 me-3"></i>
-                         <span class="fw-bold me-3">訂單 #{{ o.fId }}</span>
+                      <i
+                        class="fs-4 me-3"
+                        :class="{
+                          'bi bi-person-walking': o.orderType === '散步',
+                          'bi bi-house-door': o.orderType === '住宿',
+                          'bi bi-box': o.orderType !== '散步' && o.orderType !== '住宿'
+                        }"
+                      ></i>
+                         <span class="fw-bold me-3">訂單 #{{ o.id }}</span>
                       <div>
                         <span class="badge me-3" :class="{
-                          'bg-warning text-dark': o.fOrderStatus === '未付款',
-                          'bg-success text-white': o.fOrderStatus === '已付款',
-                          'bg-secondary text-white': o.fOrderStatus === '已取消'
+                          'bg-warning text-dark': o.orderStatus === '未付款',
+                          'bg-success text-white': o.orderStatus === '已付款',
+                          'bg-secondary text-white': o.orderStatus === '已取消'
                         }">
-                         {{ o.fOrderStatus }}
+                         {{ o.orderStatus }}
                         </span>
                       </div>
                     </div>
-                        <span class="fw-bold me-3">NT$ {{ o.fTotalAmount }}</span>
-                        <small class="">{{ formatDate(o.fCreatedAt) }}</small>
+                    <div>
+                        <span class="fw-bold me-3">{{ o.orderType }}</span>
+                      </div>
+                        <span class="fw-bold me-3">NT$ {{ o.totalAmount }}</span>
+                        <small class="">{{ formatDate(o.createdAt) }}</small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            </div>
           </div>
         </div>
-    </div>
       </div>
+    </div>
+  </template>
 
-</template>
-<template v-else>
-      {/* 未登入狀態顯示 */}
-      <p>請登入以查看會員中心</p>
-   </template>
+  <template v-else>
+    <div class="container mt-5 text-center">
+      <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        請登入以查看會員中心
+      </div>
+      <button class="btn btn-primary mt-3" @click="router.push('/login')">
+        前往登入
+      </button>
+    </div>
+  </template>
 </template>
 
   
@@ -131,9 +160,15 @@ const authStore = useAuthStore();
 const orderStore = useOrderStore();
 const { orders } = storeToRefs(orderStore);
 
+const isLoading = ref(false);
+const profileLoading = ref(false);
+const orderLoading = ref(false);
+const petLoading = ref(false);
+
 const currentPage = ref(1);
 const pageSize = 10;
 function loadDashboardOrders(){
+  orderLoading.value = true;
   orderStore.fetchOrders({
     memberId: authStore.memberId,
     keywords: '',
@@ -141,6 +176,12 @@ function loadDashboardOrders(){
     sortBy:'date_asc',
     page: currentPage.value,
     pageSize
+  }).then(() => {
+    console.log('訂單載入成功');
+    orderLoading.value = false;
+  }).catch(error => {
+    console.error('訂單載入失敗', error);
+    orderLoading.value = false;
   })
 }
 // 從 Auth Store 獲取登入狀態
@@ -198,7 +239,7 @@ const setActiveTab = (tabName) => {
   const routeMap = {
     'memberdashboard': '/memberdashboard',
     'profile': '/profile',
-    'orders': '/member/orders',
+    'orders': '/orders',
     'pet': '/pet'
   };
   
@@ -209,6 +250,8 @@ const setActiveTab = (tabName) => {
 
 const fetchProfile = async () => {
   const token = localStorage.getItem("token");
+  console.log('token from localStorage:', token, typeof token);
+  console.log('Current role:', authStore.role);
   
   if (!token) {
     router.push('/login');
@@ -216,6 +259,7 @@ const fetchProfile = async () => {
   }
   
   try {
+    profileLoading.value = true;
     const response = await axios.get(`${baseAddress}/api/Member/GetProfile`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -251,7 +295,10 @@ const fetchProfile = async () => {
       router.push('/login');
     }
     authStore.userName = null;
-    authStore.isLoggedIn(false);
+    authStore.isLoggedIn=false;
+  }finally{
+    console.log('個人資料加載完成');
+    profileLoading.value = false;
   }
 };
 
@@ -262,7 +309,7 @@ const getActiveTabFromPath = (path) => {
     return 'memberdashboard';
   } else if (path.includes('/profile')) {
     return 'profile';
-  } else if (path.includes('/member/orders')) {
+  } else if (path.includes('/orders')) {
     return 'orders';
   } else if (path.includes('/pet')) {
     return 'pet';
@@ -278,6 +325,7 @@ const fetchPets = async () => {
         return;
     }
     try {
+        petLoading.value = true;
         const response = await axios.get(`${baseAddress}/api/Pet/GetPetData`, {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -294,6 +342,9 @@ const fetchPets = async () => {
         } else {
             alert('載入寵物資料失敗，請稍後再試。' + (error.response?.data?.message || error.message));
         }
+      }finally{
+        console.log('寵物資料加載完成');
+        petLoading.value = false;  
     }
 };
 
@@ -326,13 +377,32 @@ const formatBirthday = (birthday) => {
         return '格式錯誤';
     }
 };
+
+const isDataLoading = computed(() =>{
+  console.log(`加載狀態 - profile: ${profileLoading.value}, orders: ${orderLoading.value}, pets: ${petLoading.value}, 整體: ${isLoading.value}`);
+  return isLoading.value;
+});
 // 生命週期
 onMounted(() => {
+  isLoading.value = true; 
   // 根據當前的路由路徑來判斷 activeTab
   const currentPath = route.path;
   activeTab.value = getActiveTabFromPath(currentPath);
   
   console.log('MemberDashboard mounted. Initial activeTab:', activeTab.value, 'Current path:', currentPath);
+
+  const checkAllDataLoaded = () => {
+    if(!profileLoading.value && !orderLoading.value && !petLoading.value){
+      console.log('所有資料都已載入');
+      setTimeout(() => {
+        isLoading.value = false;
+        console.log('isLoading set to false');
+      }, 300);
+    }else{
+      console.log('還有資料未載入');
+    }
+  };
+  watch([profileLoading, orderLoading, petLoading], checkAllDataLoaded);
   
   // 獲取用戶資料
   fetchProfile();
@@ -341,6 +411,7 @@ onMounted(() => {
     loadDashboardOrders();
   }
   fetchPets();
+  const unwatch = watch([profileLoading, orderLoading, petLoading], checkAllDataLoaded, { immediate: true });
 });
 // 監聽路由變化，保持 activeTab 與路由同步
 watch(() => route.path, (newPath) => {
@@ -348,9 +419,62 @@ watch(() => route.path, (newPath) => {
   activeTab.value = getActiveTabFromPath(newPath);
   console.log('activeTab updated to:', activeTab.value);
 });
+
+setTimeout(() => {
+  if (isLoading.value) {
+    console.log('载入超时，强制关闭载入提示');
+    isLoading.value = false;
+    // 将所有加载状态设为false
+    profileLoading.value = false;
+    orderLoading.value = false;
+    petLoading.value = false;
+  }
+}, 10000);
 </script>
   
 <style scoped>
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.loading-text {
+  margin-top: 15px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 body {
   font-family: 'Microsoft JhengHei', Arial, sans-serif;
   overflow: hidden;
@@ -375,10 +499,11 @@ body {
 }
 
 .pet-section {
-    height: calc(100% - 220px); /* 減去會員卡片高度和間距 */
+    /*height: calc(100% - 220px); /* 減去會員卡片高度和間距 */
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
+  min-height: 100px;
 }
 
 .pet-scrollable {
@@ -391,11 +516,26 @@ body {
   margin-top: 10px;
 }
 
+.pet-image-wrapper{
+    width: 80%;
+    height: 100px;
+    overflow: hidden;
+
+}
+
+.pet-image-wrapper img{
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
 .order-card {
-  height: 100%;
+  /* height: 100%; */
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
+  min-height: 100px;
 }
 
 .order-scrollable {
@@ -411,10 +551,11 @@ body {
 }
 
 .left-column, .right-column {
-  height: calc(100vh - 100px);
+  /* height: calc(100vh - 100px); */
   display: flex;
   flex-direction: column;
   padding-bottom: 20px; /* 添加底部間距，防止內容被擋住 */
+  min-height: 120px;
 }
 .card {
   border-radius: 15px;
@@ -520,8 +661,8 @@ body {
 }
 
 .pet-name {
-  margin: 10px;
-  font-weight: 600;
+  padding: 5px 10px;
+  font-weight: 450;
 }
 
 .add-pet-card {
@@ -554,12 +695,14 @@ body {
 /* 假設你的樣式檔 */
 .pet-name-overlay {
   /* 使用 RGBA 設定半透明黑色背景，0.6 表示 60% 不透明度 */
-  background-color: rgba(153, 151, 54, 0.6);
+  background-color: goldenrod;
   /* 確保疊加層在圖片上方 (如果圖片或其他元素有 z-index 設定，可能需要調整) */
   /* 確保文字能正常換行，防止名字太長跑版 */
   white-space: normal;
   word-break: break-word; /* 或 overflow-wrap: break-word; */
   border-radius: 80px;
+  padding: 1px 10px;
+  margin-bottom: 3px;
 }
 
 /* 如果你使用了 div 內部 div 顯示名字，可以這樣控制字體大小和粗細 */
