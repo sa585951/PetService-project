@@ -24,7 +24,7 @@
   <!-- 住宿服務 -->
   <div v-else-if="cartStore.hotelcartitems.length > 0 && cartStore.walkcartitems.length === 0">
     <div class="cart-item" v-for="item in cartStore.hotelcartitems" :key="item.backenedItem.hotelId + item.backenedItem.checkIn">
-      <img :src="item.imageUrl" class="item-img" />
+      <img :src="`/Hotel/${item.hotelImage}`" class="item-img" />
       <div class="item-info">
         <div class="item-name">{{ item.hotelName }}</div>
         <div class="item-date">入住：{{ item.backenedItem.checkIn }}<br>退房：{{ item.backenedItem.checkOut }}</div>

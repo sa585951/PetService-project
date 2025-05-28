@@ -118,14 +118,14 @@ function saveOrderInfo() {
       checkOut : props.checkOutDate,
       roomQty : props.requiredRooms,  //房間數
       additionalMessage: AdditionalMessage.value,//備註
-      hotelImage: hotelImage.value    //旅館第一張照片
     }
 
     const cartItem = {
         backenedItem,
         hotelName:props.hotel?.name,
-        imageUrl: props.hotel?.imageUrl,
-        pricePerRoom: props.price
+        roomName: props.roomName,
+        pricePerRoom: props.price,
+        hotelImage: hotelImage.value    //旅館第一張照片
     }
     cartStore.addItemToHotelCart(cartItem)
 

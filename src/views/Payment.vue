@@ -12,17 +12,14 @@
         <div class="payment-box">
             <h3>訂單確認</h3>
             <hr>
-            <div v-if="isWalkMode && cartStore.walkcartitems.length === 0">
-                <p>目前沒有選擇服務,請先回購物車選擇服務</p>
-            </div>
-            <div v-else-if="!isWalkMode && cartStore.hotelcartitems.length === 0">
-                <!-- <p>目前沒有選擇服務,請先回購物車選擇服務</p> -->
-            </div>
-             <!-- 左側:明細 -->
-            <div v-else class="payment-left">
-                <div v-if="isWalkMode">
+               <!-- 左側:明細 -->
+                <div v-if=" !hasWalkItems && !hasHotelItems">
+                 <p>目前沒有選擇服務,請先回購物車選擇服務</p>
+                </div>
+                <div v-else-if="hasWalkItems" class="payment-left">
                   <!-- 散步服務明細 -->
                   <div class="order-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
+                    <img :src="item.imageUrl" alt="員工照片" class="item-image">
                     <div class="item-title">{{ item.name }}</div>
                     <div class="item-detail">時間：{{ formatDateTime(item.walkStart) }}</div>
                     <div class="item-detail">數量：{{ item.quantity }} 隻</div>
@@ -30,27 +27,28 @@
                     <div class="item-subtotal">小計：NT${{ item.price * item.quantity }}</div>
                   </div>
                  </div>
-                 <div v-else>
+                 <div v-else-if="hasHotelItems" class="payment-left">
                   <!-- 住宿服務明細 -->
                   <div class="order-item" v-for="item in cartStore.hotelcartitems" :key="getHotelItemKey(item)">
+                    <img :src="`/Hotel/${item.hotelImage}`" alt="飯店照片" class="item-image">
                     <div class="item-title">{{ item.hotelName }}</div>
-                    <div class="item-detail">房型：{{item.backenedItem.roomDetailId}}</div>
+                    <div class="item-detail">房型：{{item.roomName}}</div>
                     <div class="item-detail">入住：{{ formatDateTime(item.backenedItem.checkIn) }}</div>
                     <div class="item-detail">退房：{{ formatDateTime(item.backenedItem.checkOut) }}</div>
+                    <div class="item-detail">天數：{{getNights(item)}}晚</div>
                     <div class="item-detail">數量：{{ item.backenedItem.roomQty }} 間</div>
                     <div class="item-detail">單價：NT${{ item.pricePerRoom }}</div>
-                    <div class="item-subtotal">小計：NT${{ item.pricePerRoom * item.backenedItem.roomQty }}</div>
+                    <div class="item-subtotal">小計：NT${{ getNights(item) * item.pricePerRoom * item.backenedItem.roomQty }}</div>
                   </div>
-                 </div>
-            </div>
+              </div>
         </div>
     </div>
                  <!-- 右側:卡片總計與送出按鈕 -->
                   <div class="col-md-4">
                 <div class="payment-right">
                     <div class="card-box">
-                    <div class="summary-line">共 {{ isWalkMode ? cartStore.cartTotalItems : cartStore.cartTotalItems }} 件服務</div>
-                    <div class="summary-total">總金額：NT${{ isWalkMode ? cartStore.cartTotalPrice : cartStore.cartTotalPrice }}</div>
+                    <div class="summary-line">共 {{ cartStore.cartTotalItems }} 件服務</div>
+                    <div class="summary-total">總金額：NT${{ cartStore.cartTotalPrice }}</div>
                     <button class="btn-submit" @click="handleSubmitOrder" :disabled="isSubmitting">
                     {{ isSubmitting ? '送出中...' : '送出訂單' }}
                     </button>
@@ -62,64 +60,77 @@
 </template>
     
 <script setup >
-    import { useCartStore } from '@/stores/cart';
+    import { useCartStore, getNights } from '@/stores/cart';
     import { useAuthStore } from '@/stores/authStore';
-    import { useRoute, useRouter } from 'vue-router';
+    import {  useRouter } from 'vue-router';
     import Swal from 'sweetalert2';
     import { ref,onMounted,computed } from 'vue';
 
-    const route = useRoute();
     const cartStore = useCartStore();
     const authStore = useAuthStore();
     const router = useRouter();
-
     const isSubmitting = ref(false);
 
-    const getHotelItemKey = (item) =>
-    `${item.backenedItem.hotelId}-${item.backenedItem.roomDetailId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`
+    const hasWalkItems = computed(() => cartStore.walkcartitems.length > 0);
+    const hasHotelItems = computed(() => cartStore.hotelcartitems.length > 0);
 
-    const isWalkMode = computed (() =>
-     route.query.type === 'walk');
-
-    const handleSubmitOrder = async() =>{
-      const isEmpty = isWalkMode.value
-      ? cartStore.walkcartitems.length ===0
-      : cartStore.hotelcartitems.length ===0;
-
-      if (isEmpty) {
-        alert('購物車是空的,請先選擇服務');
-        return;
-      }
-
-  isSubmitting.value = true;
-
-  // 顯示 loading 畫面
-  Swal.fire({
-    title: '處理中',
-    text: '正在送出訂單，請稍後...',
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    showConfirmButton: false,
-    didOpen: () => {
-      Swal.showLoading();
+    function getHotelItemKey(item) {
+    return `${item.backenedItem.hotelId}-${item.backenedItem.roomDetailId}-${item.backenedItem.checkIn}-${item.backenedItem.checkOut}`
     }
-  });
 
-  try {
-    const orderId = isWalkMode.value
-      ? await cartStore.submitWalkOrder()
-      : await cartStore.submitHotelOrder()
+    function formatDateTime(isoString) {
+      return new Date(isoString).toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+        });
+    }
 
-    Swal.close(); // ✅ 關閉 loading
 
+  async function handleSubmitOrder(){
+    if(!hasWalkItems.value && !hasHotelItems.value){
+      return alert ('購物車是空的，請先選擇服務');
+    }
+
+    const isWalk = hasWalkItems.value;
+
+    isSubmitting.value = true;
+    // 顯示 loading 畫面
     Swal.fire({
+      title: '處理中',
+      text: '正在送出訂單，請稍後...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      let orderId
+      if(isWalk) {
+        orderId = await cartStore.submitWalkOrder()
+    } else {
+        orderId = await cartStore.submitHotelOrder()
+    }
+
+    Swal.close(); // 關閉 loading
+    await Swal.fire({
       icon:'success',
       title:'訂單成立成功',
       text:'已寄送訂單確認信至您的信箱，請查收📧！'
-    }).then(() =>{
-      // 導向成功頁面
-      router.push(`/orders/success/${orderId}?type=${isWalkMode.value ? 'Walk' : 'Hotel'}`);
     });
+      // 導向成功頁面
+      const type = isWalk ? 'walk' : 'hotel'
+      router.push({
+        path: `/orders/success/${orderId}`,
+        query: {type}
+    });
+    ;
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -129,18 +140,8 @@
   } finally {
     isSubmitting.value = false;
   }
-    }
+}
 
-    function formatDateTime(isoString) {
-        return new Date(isoString).toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-        });
-    }
 
     onMounted(() =>{
         if(!authStore.isLoggedIn){
@@ -159,11 +160,12 @@
     
 <style scoped>
 .container {
-  padding: 20px;
+  padding: 0px,15px;
 }
 
 ol.breadcrumb{
   padding: 20px 0px;
+  margin-bottom: 0%;
 }
 
 .breadcrumb-black li.active{
@@ -274,5 +276,18 @@ ol.breadcrumb{
 
 .btn-submit:hover {
   background-color: #009c94;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  margin-right: 15px;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
 }
 </style>
