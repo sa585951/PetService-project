@@ -17,12 +17,12 @@ import ForgotPasswordView from '@/views/account/ForgotPasswordView.vue'
 import { useAuthStore } from '../stores/authStore.js'
 import ProfileView from '@/views/member/ProfileView.vue'
 import PetView from '@/views/member/PetView.vue'
-import AddPetView from '@/views/member/AddPetView.vue'
-import EditPetView from '@/views/member/EditPetView.vue'
+
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
 import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
+import QAView from '../views/QAView.vue'
 import CartView from '@/views/CartView.vue'
 import Payment from '@/views/Payment.vue'
 import OrderSuccess from '@/views/OrderSuccess.vue'
@@ -47,7 +47,8 @@ const router = createRouter({
     },
     {
       path: "/qa",
-      component: QA,
+      name: 'QA',
+      component: QAView,
     },
     {
       path: "/about",
@@ -110,16 +111,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/addpet",
-      component: AddPetView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/editpet",
-      component: EditPetView,
-      meta: { requiresAuth: true },
-    },
-    {
       path: "/resetpassword",
       component: ResetPasswordView,
     },
@@ -163,6 +154,7 @@ const router = createRouter({
     {
       path: "/membersourcechart",
       component: MemberSourceChart,
+      meta: { requiresAuth: true },
     },
   ],
 })

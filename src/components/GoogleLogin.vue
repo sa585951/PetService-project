@@ -21,6 +21,7 @@
 import { ref,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -154,6 +155,14 @@ const handleGoogleResponse = async (response) => {
       router.push("/googlesignupsupplement"); // 使用 router 實例進行導航
     } else {
       router.push("/memberdashboard"); // 使用 router 實例進行導航
+      console.log('Login successful. Data:', data);
+      Swal.fire({
+        icon: 'success',
+        title: '登入成功',
+        text: '歡迎回來，' + data.userName,
+        timer: 2000,
+        showConfirmButton: false
+      })
     }
   } catch (err) {
     console.error("登入失敗", err);

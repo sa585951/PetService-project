@@ -16,6 +16,11 @@
               </router-link>
             </li>
 
+            <li class="nav-item">
+              <router-link to="/news" class="nav-link">
+                <i class="fa fa-home"></i> 最新公告
+              </router-link>
+              </li>
             <li class="nav-item dropdown" @click="toggleDropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                 <i class="fa fa-paw"></i> 服務項目
@@ -34,6 +39,11 @@
               </ul>
             </li>
 
+            <li class="nav-item">
+              <router-link to="/qa" class="nav-link">
+                <i class="fa fa-home"></i> 常見問題
+              </router-link>
+            </li>
             <li class="nav-item">
               <router-link to="/about" class="nav-link">
                 <i class="fa fa-info-circle"></i> 關於我們
@@ -74,6 +84,12 @@
                   <li>
                     <router-link to="/pet" class="dropdown-item">
                       <i class="bi bi-heart-fill"></i>我的寵物
+                    </router-link>
+                  </li>
+                    <!-- Admin 專屬選項 -->
+                  <li v-if="authStore.role === 'Admin'">
+                    <router-link to="/membersourcechart" class="dropdown-item">
+                      <i class="bi bi-bar-chart-fill"></i> 數據分析
                     </router-link>
                   </li>
                   <li>
