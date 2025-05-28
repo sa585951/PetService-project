@@ -1,6 +1,12 @@
 <template> 
   <div>
-    <div class="chat-toggle-button" v-if="!showChat" @click="openChat">💬</div>
+    <div class="chat-toggle-button" v-if="!showChat" @click="openChat">💬
+      <span
+        v-if="hasUnread"
+        class="position-absolute start-75 translate-middle p-2 bg-danger border border-light rounded-circle"
+        style="width: 10px; height: 10px;"
+      ></span>
+    </div>
     <transition name="chatroom-fade">
       <div class="chatroom-wrapper" v-if="showChat">
         <div class="chatroom-box" :style="userRole === 'member' ? { width: '350px' } : {}">
@@ -8,9 +14,8 @@
           <div class="container pt-5 h-100">
             <div class="row rounded-lg overflow-hidden shadow h-100">
               <div class="col-4 px-0 user-list bg-light" v-if="userRole === 'employee'">
-                <div class="input-group input-group-sm">
-                  <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱" />
-                  <button class="btn btn-outline-secondary">搜尋</button>
+                <div class="input-group input-group-sm py-1 px-1">
+                  <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱" /> 
                 </div>
                 <div class="bg-gray px-1">
                   <button class="talklist btn btn-sm" @click="showActiveList = !showActiveList">
@@ -37,6 +42,10 @@
                         />
                         <div class="flex-grow-1 ml-3">
                           {{ user.name }}
+                          <span
+                            v-if="unreadUserIds.includes(user.id.toString())"
+                            class="dot ms-2"
+                          ></span>
                         </div>
                       </div>
                     </a>
@@ -167,7 +176,24 @@ export default {
       showEndedList: true,
       isReadOnly: false,
       hasStartedConversation: false,
+      autoReadIntervalId: null, // ✅ 用來清除 interval
+      unreadUserIds: [] ,
     };
+  },
+
+  watch: {
+    messages: {
+      deep: true,
+      handler() {
+        if (
+          this.showChat &&
+          this.targetUserId &&
+          this.messages.some(m => !m.isRead && !m.fromMe) // 有未讀的對方訊息
+        ) {
+          this.markCurrentSessionAsRead();
+        }
+      }
+    }
   },
 
   computed: {
@@ -195,11 +221,9 @@ export default {
           return '真人客服請按客服協助';
         }
       }
-
       if (this.userRole === 'employee' && this.isReadOnly) {
         return '已結束對話';
       }
-
       return '輸入您的訊息';
     },
     isInputDisabled() {
@@ -218,9 +242,13 @@ export default {
       if (this.userRole === 'member') return true;
       if (this.userRole === 'employee' && this.targetUserId) return true;
       return false;
+    },
+      hasUnread() {
+      return this.unreadUserIds.length > 0;
     }
   },
     
+  
 
   methods: {
     getAvatarUrl(path) {
@@ -230,26 +258,82 @@ export default {
       },
 
      async loadEmployeeSessions() {
-      this.users = []; // 先清空 → 強制觸發 reactivity
-      this.endedUsers = [];
-
       const token = localStorage.getItem("token");
+
       const res = await fetch("/api/Chat/GetActiveSessions", {
         headers: { Authorization: "Bearer " + token }
       });
-      this.users = await res.json();
+      const activeList = await res.json();
 
       const endedRes = await fetch("/api/Chat/GetEndedSessions", {
         headers: { Authorization: "Bearer " + token }
       });
-      this.endedUsers = await endedRes.json();
-      console.log("🧩 API 回傳進行中清單：", this.users);
+      const endedList = await endedRes.json();
+
+      // ✅ 正確命名：使用 activeList / endedList
+      this.users.splice(0, this.users.length, ...activeList);
+      this.endedUsers.splice(0, this.endedUsers.length, ...endedList);
     },
     
+    async initSignalR() {
+      if (this.connection) return;
+
+      this.connection = new signalR.HubConnectionBuilder()
+        .withUrl(`https://localhost:7089/chathub?userId=${this.currentUserId}`)
+        .withAutomaticReconnect()
+        .build();
+
+      this.connection.on("ReceiveMessage", async (msg) => {
+        const isMe = msg.senderId.toString() === this.currentUserId.toString();
+
+        // ✅ 判斷是否為員工的未讀訊息通知
+        if (this.userRole === "employee" && !isMe) {
+          const fromUserId = msg.senderId.toString();
+          if (fromUserId !== this.targetUserId) {
+            if (!this.unreadUserIds.includes(fromUserId)) {
+              this.unreadUserIds.push(fromUserId);
+              console.log("🆕 新增未讀訊息標記：", fromUserId);
+            }
+          }
+        }
+
+        this.messages.push({
+          id: Date.now(),
+          sender: msg.senderName,
+          avatar: this.getAvatarUrl(msg.senderAvatar),
+          text: DOMPurify.sanitize(msg.messageText),
+          time: new Date(),
+          fromMe: isMe,
+          isRead: isMe ? true : false
+        });
+
+        this.scrollToBottom();
+
+        if (this.userRole === "member") {
+          await this.checkIfSessionEnded();
+          const sessionInfo = this.endedUsers.find(x => x.sessionId == this.sessionId);
+          if (sessionInfo) {
+            this.isReadOnly = true;
+            this.conversationEnded = true;
+          }
+        }
+
+        if (this.userRole === "employee") {
+          await this.loadEmployeeSessions();
+        }
+      });
+
+      try {
+        await this.connection.start();
+        console.log("✅ SignalR 已連線");
+      } catch (err) {
+        console.error("❌ SignalR 連線失敗：", err);
+      }
+    },
 
     async openChat() {
       console.log("💬 嘗試開啟聊天室");
-      
+
       const token = localStorage.getItem("token");
       if (!token) return alert("未登入，無法開啟聊天室");
       this.showChat = true;
@@ -261,9 +345,9 @@ export default {
       this.currentUserEmail = email;
       const employeeList = ["chris@skz.com"];
       this.userRole = employeeList.includes(email) ? "employee" : "member";
-      
+
       try {
-        // ✅ 取得顯示名稱
+        // ✅ 取得顯示名稱與 ID
         const infoRes = await fetch(`https://localhost:7089/api/Chat/GetNameByEmail?email=${email}`, {
           headers: { Authorization: "Bearer " + token }
         });
@@ -272,113 +356,62 @@ export default {
           console.error("❌ 取得使用者名稱失敗：", errorText);
           return;
         }
+
         const info = await infoRes.json();
-        console.log("info",info);
+        console.log("info", info);
         this.currentUserName = info.name;
         this.currentUserId = info.id.toString();
+
+        // ✅ 會員預設目標客服 ID，並確認是否有已結束對話
         if (this.userRole === "member") {
+          this.targetUserId = "2"; // 固定客服 ID
           await this.checkIfSessionEnded();
-        // 假設 chris@skz.com 的 ID 是 1001（依照你的資料庫）
-          this.targetUserId = "2";
         }
-        
-        //2025/520/9
+
+        // ✅ 員工載入進行中與已結束會話清單，並建立 SignalR 連線
         if (this.userRole === "employee") {
-          const token = localStorage.getItem("token");
-
-          // ✅ 取得進行中會員
-          const res = await fetch("/api/Chat/GetActiveSessions", {
-            headers: {
-              Authorization: "Bearer " + token
-            }
-          });
-          if (!res.ok) {
-            console.error("❌ 取得進行中會員列表失敗", await res.text());
-            return;
-          }
-          this.users = await res.json(); // 進行中對話清單
-          console.log("📋 進行中會員：", this.users);
-
-      
-          // ✅ 取得已結束會員
-          const endedRes = await fetch("https://localhost:7089/api/Chat/GetEndedSessions", {
-            headers: { Authorization: "Bearer " + token }
-          });
-          if (!endedRes.ok) throw new Error("取得已結束對話失敗");
-          this.endedUsers = await endedRes.json();
-          console.log("📋 已結束會員：", this.endedUsers);
+          await this.loadEmployeeSessions();
+          await this.initSignalR(); // ✅ 改為抽離的初始化方法
         }
-
-
-        // ✅ 建立 SignalR 連線
-        this.connection = new signalR.HubConnectionBuilder()
-          .withUrl(`https://localhost:7089/chathub?userId=${this.currentUserId}`)
-          .withAutomaticReconnect()
-          .build();
-         
-        
-        this.connection.on("ReceiveMessage", async(msg) => {
-          const isMe = msg.senderId.toString() === this.currentUserId.toString();
-
-          this.messages.push({
-            id: Date.now(),
-            sender: msg.senderName,
-            avatar: this.getAvatarUrl(msg.senderAvatar),
-            text: DOMPurify.sanitize(msg.messageText),
-            time: new Date().toLocaleTimeString(),
-            fromMe: isMe
-          });
-
-          this.scrollToBottom();      
-          if (this.userRole === "member") {
-            await this.checkIfSessionEnded();
-          }
-
-          if (this.userRole === "employee") {
-            await this.loadEmployeeSessions();
-          }
-
-          if (this.userRole === "employee") {
-            console.log("🔁 重新載入進行中對話...");
-            await this.loadEmployeeSessions(); // ⬅️ 自動刷新對話列表
-            console.log("📥 收到訊息：", msg);
-          }
-
-        
-
-        // ✅ 會員收到訊息時也去確認 status 是否變成已結束
-        if (this.userRole === "member") {
-          const sessionInfo = this.endedUsers.find(x => x.sessionId == this.sessionId);
-          if (sessionInfo) {
-            this.isReadOnly = true;
-            this.conversationEnded = true;
-          }
-        }
-        }); 
-        await this.connection.start();
-
-        const response = await fetch('/api/Chat/CreateOrGetSession', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({
-            FMemberId: this.currentUserId,
-            FEmployeeId: this.targetUserId,
-            Role: this.userRole,
-            
-          })
-        });
-        
-      const sessionId = await response.json();
-      this.sessionId = sessionId;
 
       } catch (err) {
-        console.error("❌ SignalR 連線失敗：", err);
+        console.error("❌ openChat 發生錯誤：", err);
+      }
+
+      // ✅ 啟用「自動已讀判斷」
+      this.autoReadIntervalId = setInterval(() => {
+        const hasUnread = this.messages.some(m => !m.isRead && !m.fromMe);
+        if (this.showChat && this.sessionId && this.targetUserId && hasUnread) {
+          this.markCurrentSessionAsRead();
+        }
+      }, 1000);
+    },
+
+    
+    async markCurrentSessionAsRead() {
+      try {
+        await fetch("/api/Chat/MarkAsRead", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({
+            sessionId: parseInt(this.sessionId),
+            userId: parseInt(this.currentUserId)
+          })
+        });
+        console.log("✅ 自動已讀");
+        // 更新前端的已讀狀態
+        this.messages = this.messages.map(m => ({
+          ...m,
+          isRead: m.fromMe ? m.isRead : true
+        }));
+      } catch (err) {
+        console.error("❌ 自動已讀失敗", err);
       }
     },
-    
+
     formatMessageTime(timestamp) {
       const now = dayjs();
       const time = dayjs(timestamp);
@@ -441,12 +474,29 @@ export default {
         this.messageText = "";
         this.scrollToBottom();
       },
+    
+      async markMessagesAsRead(sessionId, userId) {
+        try {
+          await fetch("https://localhost:7145/api/Chat/MarkAsRead", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+            },
+            body: JSON.stringify({ sessionId, userId }),
+          });
+        } catch (error) {
+          console.error("標記已讀失敗:", error);
+        }
+      },
 
     async selectUser(user) {
       this.targetUser = user;
       this.targetUserId = user.id.toString();
       this.sessionId = user.sessionId;
       this.isReadOnly = user.status === "1"; 
+
+      this.unreadUserIds = this.unreadUserIds.filter(id => id !== user.id.toString());
 
       const token = localStorage.getItem("token");
 
@@ -470,26 +520,67 @@ export default {
           avatar: this.getAvatarUrl(m.senderAvatar),
           text: DOMPurify.sanitize(m.fMessageText),
           time: m.fSendTime ,
-          fromMe: isMe
+          fromMe: isMe,
+          isRead: m.fIsRead === true || m.fIsRead === 1 , // ✅ 判斷已讀狀態
         };
         
       });
+      console.log("123",this.messages)
+
       this.$nextTick(() => {
       this.scrollToBottom(); 
       });
       
       console.log("✅ 載入訊息完成，共", this.messages.length, "則");
+      
+      await fetch("/api/Chat/MarkAsRead", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({
+          sessionId: parseInt(this.sessionId),   // <-- 強制轉為數字
+          userId: parseInt(this.currentUserId) // <-- 強制轉為數字
+        })
+      });
+
+      if (this.autoReadIntervalId) clearInterval(this.autoReadIntervalId); // 清除前一次的
+        this.autoReadIntervalId = setInterval(() => {
+          const hasUnread = this.messages.some(m => !m.isRead && !m.fromMe);
+          if (this.showChat && this.sessionId && this.targetUserId && hasUnread) {
+            this.markCurrentSessionAsRead();
+          }
+        }, 1000);
     },
 
     async closeChat() {
       if (this.userRole === "member" && this.connection) {
-        await this.connection.stop();
-        console.log("signalR 已斷線");
-        this.connection = null;
+        // await this.connection.stop();
+        // console.log("signalR 已斷線");
+        // this.connection = null;
       } else if (this.userRole === "employee") {
         console.log("保留SignalR連線");
       }
+      // this.showChat = false;
+      // if (this.autoReadIntervalId) {
+      //   clearInterval(this.autoReadIntervalId);
+      //   this.autoReadIntervalId = null;
+      // }
       this.showChat = false;
+      this.targetUser = null;
+      this.targetUserId = null;
+      this.sessionId = null;
+      this.messages = [];
+      this.isReadOnly = true;
+      this.conversationEnded = false;
+      this.hasStartedConversation = false;
+
+      // ✅ 3. 停止已讀監聽計時器
+      if (this.autoReadIntervalId) {
+        clearInterval(this.autoReadIntervalId);
+        this.autoReadIntervalId = null;
+      }
     },
 
     async checkIfSessionEnded() {
@@ -520,14 +611,36 @@ export default {
       this.messages.push({
         id: Date.now(),
         sender: "系統小幫手",
-        avatar: "https://i.pravatar.cc/40?img=4",
+        avatar: 'https://localhost:7089/uploads/avatars/default-avatar.jpg',
         text: DOMPurify.sanitize(textMap[option.label] || ""),
-        time: new Date().toLocaleTimeString(),
+        time: new Date(),
         fromMe: false
       });
 
+      // if (option.label === "客服協助") {
+      //   const token = localStorage.getItem("token");
+      //   const response = await fetch('/api/Chat/CreateOrGetSession', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'Authorization': 'Bearer ' + token
+      //     },
+      //     body: JSON.stringify({
+      //       FMemberId: this.currentUserId,
+      //       FEmployeeId: this.targetUserId,
+      //       Role: this.userRole,
+      //     })
+      //   });
+      //   this.sessionId = await response.json();
+      //   this.hasStartedConversation = true;
+      //   this.isReadOnly = false;
+      //   this.conversationEnded = false;
+      //   console.log("✅ 開始對話，解鎖輸入框");
+      // }
       if (option.label === "客服協助") {
         const token = localStorage.getItem("token");
+
+        // ✅ 建立 / 取得聊天會話
         const response = await fetch('/api/Chat/CreateOrGetSession', {
           method: 'POST',
           headers: {
@@ -540,12 +653,19 @@ export default {
             Role: this.userRole,
           })
         });
+
         this.sessionId = await response.json();
         this.hasStartedConversation = true;
         this.isReadOnly = false;
         this.conversationEnded = false;
         console.log("✅ 開始對話，解鎖輸入框");
+
+        // ✅ 僅在尚未連線時建立 SignalR
+        if (!this.connection) {
+          await this.initSignalR();
+        }
       }
+
 
       this.scrollToBottom();
     },
@@ -580,7 +700,9 @@ export default {
         method: "POST",
         headers: { Authorization: "Bearer " + localStorage.getItem("token") }
       });
-      await this.loadEmployeeSessions();
+
+      this.isReadOnly = true;
+      
 
       if (this.connection && this.targetUserId) {
         try {
@@ -594,6 +716,15 @@ export default {
           console.error("❌ 無法傳送結束訊息：", err);
         }
       }
+
+      
+      // ✅ 重點：清空目前對話對象與訊息
+      this.targetUserId = null;
+      this.sessionId = null;
+      this.messages = [];
+      this.isReadOnly = false; // 清掉也可以，或等下次選人再判斷
+
+      await this.loadEmployeeSessions();
     }
   }
 };
@@ -601,6 +732,14 @@ export default {
 </script>
 
 <style scoped>
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+}
+
 .chatroom-wrapper {
   position: fixed;
   bottom: 20px;
