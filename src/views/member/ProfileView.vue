@@ -39,7 +39,7 @@
                                    <div class="col-md-6">
                                        <div class="mb-3">
                                            <label for="name" class="form-label">姓名</label>
-                                           <small class="text-muted">姓名無法修改</small>
+                                           <small class="text-muted">(無法修改)</small>
                                            <input 
                                                type="text" 
                                                class="form-control bg-light" 
@@ -52,7 +52,7 @@
                                    <div class="col-md-6">
                                        <div class="mb-3">
                                            <label for="email" class="form-label">電子信箱</label>
-                                           <small class="text-muted">信箱為帳號識別，無法修改</small>
+                                           <small class="text-muted">(帳號識別，無法修改)</small>
                                            <div class="input-group">
                                                <input 
                                                    type="email" 
@@ -548,18 +548,12 @@ body {
 }
 
 .content-area {
-    overflow: auto;
+    margin-left: auto;
 }
 
 .dashboard-content {
     height: 100%;
     overflow: hidden;
-}
-
-.sidebar {
-    height: 100vh;
-    border-right: 1px solid #e5e5e5;
-    overflow-y: auto;
 }
 
 .sidebar-link {

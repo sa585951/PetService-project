@@ -24,7 +24,7 @@
 </template>
     
 <script setup>
-  import GoButton from '@/components/HotelBookingButton.vue';
+  import GoButton from '@/components/hotel/HotelBookingButton.vue';
     import { onMounted } from 'vue'
   import L from 'leaflet'
 
