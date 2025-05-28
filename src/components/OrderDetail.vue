@@ -5,7 +5,12 @@
     <p><strong>建立時間：</strong>{{ formatDate(orderDetail.createdAt) }}</p>
     <p><strong>狀態：</strong>{{ orderDetail.status }}</p>
     <p><strong>總金額：</strong>NT${{ orderDetail.totalAmount }}</p>
-
+    
+    <div v-if="orderDetail.status ==='未付款'" class="order-action">
+      <button @click="handlePay" class="btn btn-primary me-2">付款</button>
+      <button @click="handleCancle" class="btn btn-danger">取消訂單</button>
+    </div>
+    
     <hr />
     <h5>訂單明細</h5>
     
@@ -34,6 +39,10 @@
         <p>備註：{{ item.note }}</p>
       </li>
     </ul>
+    <div class="text-center">
+    <button @click="router.push('/orders')" class="btn btn-warning " >回到訂單
+    </button>  
+    </div>
   </div>     
 </template>
     
@@ -42,6 +51,7 @@
     import axios from 'axios';
     import Swal from 'sweetalert2';
     import { useAuthStore } from '@/stores/authStore';
+import router from '@/router';
     
     const imgUrl = import.meta.env.VITE_API_IMAGE_URL;
 
@@ -62,6 +72,40 @@
 
     const formatDate = (val) => {
         return new Date(val).toLocaleString();
+    }
+
+    function handlePay(){
+      router.push({
+        path:'/payment-gateway',
+        query:{ orderId : props.orderId }
+      })
+    }
+
+    async function handleCancle(){
+      const {isConfirmed} = await Swal.fire({
+        title:'確定要取消這筆訂單嗎?',
+        text:'取消後將無法恢復',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText:'是，我要取消',
+        cancelButtonText:'再想想'
+      })
+      if(!isConfirmed) return
+
+      try{
+        await axios.patch(
+          `/api/order/${props.orderId}/cancel`,
+          null,
+          {headers:
+            { Authorization:`Bearer ${authStore.token}`}
+          }
+        )
+        await Swal.fire('已取消','訂單已成功取消','success')
+        router.push('/orders')
+      }catch(e){
+        console.error(e);
+        Swal.fire('失敗','取消訂單失敗，請稍後再試','error')
+      }
     }
 
     onMounted(async () =>{
@@ -106,5 +150,13 @@ ul{
   height: 100%;
   object-fit: cover;
   border-radius: 5px;
+}
+
+.order-actions {
+  margin: 16px 0;
+}
+
+.order-actions .btn {
+  min-width: 100px;
 }
 </style>
