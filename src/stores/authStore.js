@@ -1,6 +1,7 @@
 // src/stores/authStore.js（或 authStore.ts）
 import { defineStore } from 'pinia'
 import { jwtDecode } from 'jwt-decode';
+import Swal from 'sweetalert2';
 
 
 // 將打字特效需要的變數定義在 Store 外部，以便 Actions 可以共用它們
@@ -23,10 +24,13 @@ export const useAuthStore = defineStore('auth', {
 
   // === 2. 定義 Actions ===
   actions: {
-    // 修改了方法名稱為 login，更符合語意
-    // 如果你在登入頁面是呼叫 setLoginState，則那邊也需要同步修改
     login({ userName, token, memberId }) { // 接收一個包含 userName 和 token 的物件
-      console.log('Executing login action:', { userName, token, memberId }); // 添加 log
+      console.log('Executing login action:', {
+      userName,
+      token,
+      memberId,
+      tokenType: typeof token, 
+  });
 
       const tokenString = typeof token === 'object' && token.result ? token.result : token;
 
@@ -63,16 +67,26 @@ export const useAuthStore = defineStore('auth', {
 
     initialize() {
       console.log('Executing initialize action');
-
-      const rawToken = localStorage.getItem('token');
-      const token = typeof rawToken === 'object' && rawToken.result ? rawToken.result : rawToken;
-
+    
+      const token = localStorage.getItem('token');
       const userName = localStorage.getItem('userName');
       const memberId = localStorage.getItem('memberId');
 
+      console.log('Token from localStorage:', typeof token, token)
+
+      if (!token || !userName) {
+        console.log('尚未登入，略過登入狀態還原');
+        return;
+      }
+
       try {
         if (token && userName) {
-          const decoded = jwtDecode(token); // ✅ 如果不是有效 token，會跳 catch
+          const decoded = jwtDecode(token); // token格式
+          //token校期
+          if(decoded.exp && Date.now() >= decoded.exp * 1000) {
+            throw new Error('Token 已過期');
+          }
+
           const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
 
           this.token = token;
@@ -86,24 +100,31 @@ export const useAuthStore = defineStore('auth', {
           throw new Error('token or userName is missing');
         }
       } catch (error) {
-        console.warn('Token 解碼失敗，清除登入狀態', error);
+        console.warn('Token 驗證失敗，清除登入狀態', error);
+        
+        // 只有在特定錯誤情況下才顯示提示給用戶
+        if (error.message === 'Token expired') {
+          // Token 過期 - 用戶原本是登入狀態，需要提示
+          Swal.fire({
+            icon: 'warning',
+            title: '登入已過期',
+            text: '您的登入已過期，請重新登入',
+            confirmButtonText: '確定',
+            confirmButtonColor: '#3085d6'
+          });
+        } else if (error.message !== 'token or userName is missing') {
+          // Token 格式錯誤或其他異常 - 但排除正常的「未登入」狀態
+          Swal.fire({
+            icon: 'error',
+            title: '登入狀態異常',
+            text: '登入資料有誤，請重新登入',
+            confirmButtonText: '確定',
+            confirmButtonColor: '#3085d6'
+          });
+        }
         this.logout(); // 清除所有狀態
       }
     },
-  clearState() {
-    this.token = null;
-    this.userName = null;
-    this.memberId = null;
-    this.isLoggedIn = false;
-    this.role = null;
-
-    // 你可以選擇只清除部分項目
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('memberId');
-
-    console.log('🧹 已清除登入狀態');
-  },
     getRole(token) {
       try {
         const decoded = jwtDecode(token);
