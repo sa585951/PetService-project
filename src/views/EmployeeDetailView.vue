@@ -13,60 +13,31 @@
       <div class="row">
         <!-- 左側：圖片 + 詳細介紹 + 服務項目 -->
         <div class="col-md-7">
-          <!-- 圖片輪播區 -->
-          <div
-            id="carouselExample"
-            class="carousel slide mb-3"
-            data-bs-ride="carousel"
-            data-bs-interval="3000"
-            ref="carouselRef"
-          >
-            <div class="carousel-inner">
+          <!-- 圖片展示區 -->
+          <div class="mb-3">
+            <div class="row">
               <div
-                class="carousel-item"
-                :class="{ active: i === 0 }"
-                v-for="(img, i) in processedCarousel"
+                v-for="(img, i) in displayedImages"
                 :key="i"
+                class="col-4 mb-2"
               >
                 <img
                   :src="img"
-                  class="d-block w-100"
-                  style="width: 500px; height: 500px; object-fit: cover;"
+                  class="img-fluid"
+                  style="width: 100%; height: 200px; object-fit: cover;"
                   @error="onImageError"
                 />
               </div>
             </div>
-            <button
-              class="carousel-control-prev"
-              type="button"
-              data-bs-target="#carouselExample"
-              data-bs-slide="prev"
-            >
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button
-              class="carousel-control-next"
-              type="button"
-              data-bs-target="#carouselExample"
-              data-bs-slide="next"
-            >
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          </div>
-
-          <!-- 小縮圖點選切換 -->
-          <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
-            <img
-              v-for="(img, i) in processedCarousel"
-              :key="i"
-              :src="img"
-              class="img-thumbnail"
-              style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
-              @click="goToSlide(i)"
-              @error="onImageError"
-            />
+            <!-- 更多圖片按鈕 -->
+            <div class="text-center mt-2" v-if="processedCarousel.length > 3">
+              <button
+                class="btn btn-outline-primary"
+                @click="toggleShowAll"
+              >
+                {{ showAllImages ? '收起圖片' : '更多圖片' }}
+              </button>
+            </div>
           </div>
 
           <!-- 詳細介紹 -->
@@ -155,6 +126,7 @@
 
       <!-- 地圖區塊 -->
       <div class="row mt-4">
+        
         <div class="col-12">
           <iframe
             :src="employeeStore.employeeDetail.map"
@@ -166,6 +138,32 @@
           ></iframe>
         </div>
       </div>
+      <!-- 🔽 新增評論區塊：放在這裡 -->
+<div class="row mt-5">
+  <div class="col-12">
+    <h4 class="mb-3">使用者評論</h4>
+
+    <!-- 評論列表 -->
+    <div v-for="(comment, index) in comments" :key="index" class="mb-3 border-bottom pb-2">
+      <p><strong>{{ comment.name }}</strong>：</p>
+      <p>{{ comment.text }}</p>
+    </div>
+
+    <!-- 新增評論表單 -->
+    <form @submit.prevent="submitComment">
+      <div class="mb-2">
+        <label class="form-label">姓名</label>
+        <input v-model="newComment.name" type="text" class="form-control" required />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">評論內容</label>
+        <textarea v-model="newComment.text" class="form-control" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">送出評論</button>
+    </form>
+  </div>
+</div>
+<!-- 🔼 評論區塊結束 -->
     </div>
   </div>
 </template>
@@ -173,12 +171,22 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'; //導入 useRouter
-import { Carousel } from 'bootstrap';
 import { useEmployeeStore } from '@/stores/employeeStore';
+import { useCartStore } from '@/stores/cart'
 
+const comments = ref([])//使用者評論
+const newComment = ref({ name: '', text: '' })
+
+const submitComment = () => {
+  if (newComment.value.name && newComment.value.text) {
+    comments.value.push({ ...newComment.value })
+    newComment.value = { name: '', text: '' }
+  }
+}
 const employeeStore = useEmployeeStore();
 const route = useRoute();
 const router = useRouter(); //實例化 router
+const cartStore = useCartStore()
 const employeeId = ref(null);
 
 // 錯誤處理 employeeId
@@ -191,28 +199,35 @@ try {
   employeeId.value = null;
 }
 
-//定義 carouselRef 和 bsCarousel 用於輪播初始化
-const carouselRef = ref(null);
-const bsCarousel = ref(null);
+const showAllImages = ref(false);
 
-//使用 async onMounted 確保 fetchEmployeeDetail 完成後初始化輪播
+const displayedImages = computed(() => {
+  // 確保 processedCarousel.value 存在且為陣列
+  if (!processedCarousel.value || !Array.isArray(processedCarousel.value)) {
+    return [];
+  }
+  return showAllImages.value ? processedCarousel.value : processedCarousel.value.slice(0, 3);
+});
+
+function toggleShowAll() {
+  showAllImages.value = !showAllImages.value;
+}
+
+
+//載入員工資料
 onMounted(async () => {
   if (employeeId.value !== null) {
     await employeeStore.fetchEmployeeDetail(employeeId.value); //調用 API 獲取單個員工資料
-    if (carouselRef.value) {
-      bsCarousel.value = new Carousel(carouselRef.value, {
-        interval: 3000,
-        ride: 'carousel',
-      });
-    }
+  }
+  const savedCart = localStorage.getItem('cart');
+  console.log('Initial cart from localStorage on mount:', savedCart ? JSON.parse(savedCart) : null);
+  if (savedCart) {
+    const parsedCart = JSON.parse(savedCart);
+    parsedCart.forEach(item => cartStore.addItemToWalkCart(item));
   }
 });
 
-function goToSlide(index) {
-  if (bsCarousel.value) {
-    bsCarousel.value.to(index);
-  }
-}
+
 
 const form = ref({
   employeeId: employeeId.value,
@@ -248,7 +263,7 @@ const processedCarousel = computed(() => {
 });
 
 const onImageError = (event) => {
-  event.target.src = '/path/to/default-image.jpg'; //圖片載入失敗時顯示預設圖片
+  event.target.src = '@/src/assets/walkservicesimages/default-image.jpg'; //圖片載入失敗時顯示預設圖片
 };
 
 const today = new Date();
@@ -263,7 +278,14 @@ function checkQuantity() {
 }
 
 const subtotal = computed(() => {
-  return (employeeStore.employeeDetail?.price || 0) * form.value.quantity || 0;
+  if (!employeeStore.employeeDetail) {
+    console.warn('employeeDetail is undefined');
+    return 0;
+  }
+  const price = Number(employeeStore.employeeDetail.price) || 0;
+  const quantity = Number(form.value.quantity) || 1;
+  console.log('price:', price, 'quantity:', quantity, 'subtotal:', price * quantity);
+  return price * quantity;
 });
 
 const getWalkTimes = computed(() => {
@@ -295,47 +317,24 @@ function addToCart() {
 
   const combineNotes = `寵物種類:${form.value.pet}，${form.value.notes || '無'}`;
 
-  const walkStartTime = `${form.value.date}T${form.value.time}`;
+  //計算ISO 8601的起始時間
+  const walkStart = getWalkTimes.value.start;
 
   const cartItem = {
-    employeeId: form.value.employeeId,
-    employeeName: employeeStore.employeeDetail.name, // 包含員工姓名
-    pet: form.value.pet,
-    quantity: form.value.quantity,
-    walkStart: getWalkTimes.value.start,
-    walkEnd: getWalkTimes.value.end,
-    servicePrice: employeeStore.employeeDetail.price,
-    totalPrice: subtotal.value,
+    //store 拿來當key的欄位
+    employeeServiceId: form.value.employeeId,
+    //訂單核心資料
+    walkStart,
+    quantity:form.value.quantity,
     note: combineNotes,
-    name: employee.name,
-    imageUrl:employee.employee_photo,
-    price: employee.price
-  };
-
-  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  cart.push(cartItem);
-  localStorage.setItem('cart', JSON.stringify(cart));
-  const message = `
-    已加入購物車：
-    員工：${employeeStore.employeeDetail.name}
-    寵物種類：${form.value.pet}
-    數量：${form.value.quantity}
-    預約日期：${form.value.date}
-    預約時間：${form.value.time}
-    備註：${form.value.notes || '無'}
-    小計：${subtotal.value} 元
-  `;
-  
-  const confirmed = confirm(message); // 使用 confirm 提供選擇
-  if (confirmed) {
-    router.push('/order'); // 導航到訂單頁面
-  }
-  
-  const isValidDate = !isNaN(new Date(walkStartTime).getTime());
-  console.log('格式正確嗎?', isValidDate);
+    //顯示用:遛狗員名子、照片、單價
+    name:employeeStore.employeeDetail.name,
+    imageUrl:`${baseImageUrl}${employeeStore.employeeDetail.employee_photo}`,
+    price:employeeStore.employeeDetail.price
+  }  
   
   cartStore.addItemToWalkCart(cartItem);
-  alert('已加入購物車');
+  alert(`已將 ${employeeStore.employeeDetail.name} 的服務加入購物車！`);
   formReset();
 }
 
@@ -356,5 +355,13 @@ function formReset() {
 <style scoped>
 textarea {
   resize: none;
+}
+.img-fluid {
+  border: 1px solid #ddd; 
+  border-radius: 5px; 
+  transition: transform 0.2s; /* 懸停放大效果 */
+}
+.img-fluid:hover {
+  transform: scale(1.2);
 }
 </style>
