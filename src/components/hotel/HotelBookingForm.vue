@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 彈窗 -->
-    <div class="modal fade orderBox" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true" ref="modal">
+    <div class="modal fade orderBox" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" ref="modal">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -18,12 +18,14 @@
                 <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
                 <label for="">房間數 : {{requiredRooms}} 間</label>
                 
-                <label>備註 (100字以內) :</label>
+                <label class="mb-1">備註 (100字以內) :</label>
 
-                <textarea v-model="AdditionalMessage" @input="checkLength()" rows="4"></textarea>
+                <textarea ref="messageInput" v-model="AdditionalMessage" @input="checkLength()" rows="4"></textarea>
                 
-                  <div :class="{'countHint-gray':!isOver100, 'countHint-red':isOver100 }">字數：{{ AdditionalMessage.length }}/100</div>
-                <button class="btn" @click="saveOrderInfo()">確認</button>
+                <div :class="{'countHint-gray':!isOver100, 'countHint-red':isOver100 }">字數：{{ AdditionalMessage.length }}/100</div>
+                <div class="btn-center">
+                  <button class="btn btn-confirm" @click="saveOrderInfo()">確認</button>
+                </div>
 
             </div>
           </div>
@@ -46,7 +48,7 @@ import { useCartStore } from '@/stores/cart';
 import Swal from 'sweetalert2';
 
 const cartStore = useCartStore();
-
+const messageInput = ref(null);  // 指向 textarea 元素
 const props = defineProps({
   hotel: Object,
   roomName: String,
@@ -93,6 +95,7 @@ function openModal() {
 
   if (hasRoom) {
     bsModal?.show()
+    
   } else {
     Swal.fire({
       icon: 'warning',
@@ -130,7 +133,7 @@ function saveOrderInfo() {
     cartStore.addItemToHotelCart(cartItem)
 
     Swal.fire({
-      icon: 'sussess',
+      icon: 'success',
       title: '已加入購物車',
       showConfirmButton: true,
       confirmButtonColor: '#ACC572',
@@ -183,5 +186,31 @@ function saveOrderInfo() {
     .countHint-red {
         text-align: right;
         color: rgb(255, 107, 97);
+    }
+    
+    .btn-center {
+        display: flex;
+        justify-content: center;
+    }
+    .btn {
+        font-size: 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.2s ease;
+    }
+    .btn-confirm {
+        background-color: rgb(228, 187, 134);
+        color: rgb(88, 50, 3);
+        border: none;
+    }
+
+    .btn-confirm:hover {
+        background-color: rgb(200, 160, 110); /* 深一點 */
+    }
+
+    .btn-confirm:active {
+        background-color: rgb(180, 140, 100);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 </style>
