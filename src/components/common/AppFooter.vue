@@ -18,13 +18,10 @@
               <router-link to="/" class="text-white" style="text-decoration: none;">首頁</router-link>
             </p>
             <p>
-              <router-link to="/pets" class="text-white" style="text-decoration: none;">寵物散步</router-link>
+              <router-link to="/walk" class="text-white" style="text-decoration: none;">寵物散步</router-link>
             </p>
             <p>
               <router-link to="/hotel" class="text-white" style="text-decoration: none;">寵物住宿</router-link>
-            </p>
-            <p>
-              <router-link to="/about" class="text-white" style="text-decoration: none;">關於我們</router-link>
             </p>
           </div>
   
@@ -40,7 +37,7 @@
               <router-link to="/profile" class="text-white" style="text-decoration: none;">個人資料</router-link>
             </p>
             <p>
-              <router-link to="/help" class="text-white" style="text-decoration: none;">幫助</router-link>
+              <router-link to="/qa" class="text-white" style="text-decoration: none;">幫助</router-link>
             </p>
           </div>
   

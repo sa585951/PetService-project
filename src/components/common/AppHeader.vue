@@ -3,7 +3,7 @@
     <nav class="navbar navbar-expand-lg">
       <div class="container">
         <router-link to="/" class="navbar-brand">
-          <i class="fas fa-paw"></i> 毛孩管家
+          <img src="../icons/logo.png" alt="" class="logo"> 毛孩管家
         </router-link>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
           <span class="navbar-toggler-icon"></span>
@@ -15,51 +15,36 @@
                 <i class="fa fa-home"></i> 首頁
               </router-link>
             </li>
-
-            <li class="nav-item">
-              <router-link to="/news" class="nav-link">
-                <i class="fa fa-home"></i> 最新公告
-              </router-link>
-              </li>
             <li class="nav-item dropdown" @click="toggleDropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                 <i class="fa fa-paw"></i> 服務項目
               </a>
-              <ul class="dropdown-menu" :class="{show: dropdownOpen}">
+              <ul class="dropdown-menu" :class="{ show: dropdownOpen }">
                 <li>
                   <router-link to="/walk" class="dropdown-item">
-                  <i class="fa fa-dog"></i> 寵物散步
+                    <i class="fa fa-dog"></i> 寵物散步
                   </router-link>
                 </li>
                 <li>
                   <router-link to="/hotel" class="dropdown-item">
-                  <i class="fa fa-building"></i> 寵物住宿
+                    <i class="fa fa-building"></i> 寵物住宿
                   </router-link>
                 </li>
               </ul>
             </li>
-
+            <li class="nav-item">
+              <router-link to="/news" class="nav-link">
+                <i class="fa-solid fa-rss"></i> 最新公告
+              </router-link>
+            </li>
             <li class="nav-item">
               <router-link to="/qa" class="nav-link">
-                <i class="fa fa-home"></i> 常見問題
+                <i class="fa-solid fa-question"></i> 常見問題
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/about" class="nav-link">
-                <i class="fa fa-info-circle"></i> 關於我們
-              </router-link>
+              <CartDropdown />
             </li>
-
-            <li class="nav-item">
-              <router-link to="/contact" class="nav-link">
-                <i class="fa fa-phone"></i> 聯繫我們
-              </router-link>
-            </li>
-
-            <li class="nav-item">
-            <CartDropdown />  
-            </li>
-            
             <template v-if="isLoggedIn">
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -86,7 +71,7 @@
                       <i class="bi bi-heart-fill"></i>我的寵物
                     </router-link>
                   </li>
-                    <!-- Admin 專屬選項 -->
+                  <!-- Admin 專屬選項 -->
                   <li v-if="authStore.role === 'Admin'">
                     <router-link to="/membersourcechart" class="dropdown-item">
                       <i class="bi bi-bar-chart-fill"></i> 數據分析
@@ -131,7 +116,7 @@ import { ref } from 'vue'
 import CartDropdown from '../CartDropdown.vue'
 
 const dropdownOpen = ref(false)
-const toggleDropdown =() => {
+const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
 }
 // router
@@ -158,7 +143,7 @@ const logout = () => {
   font-weight: 600;
 }
 
-.navbar{
+.navbar {
   background-color: #ffc272;
 }
 
@@ -169,17 +154,21 @@ const logout = () => {
   margin-right: 5px;
 }
 
-.nav-link{
+.nav-link {
   color: #8B4513;
 }
 
 .nav-link i {
   margin-right: 5px;
-  
+
 }
 
 .dropdown-item i {
   margin-right: 8px;
   width: 16px;
+}
+.logo{
+    width: 50px;
+    height: 50px;
 }
 </style>
