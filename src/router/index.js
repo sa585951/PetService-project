@@ -47,7 +47,7 @@ const router = createRouter({
     {
       path: "/qa",
       name: 'QA',
-      component: QAView,
+      component: QA,
     },
     {
       path: "/hotel",
@@ -128,15 +128,15 @@ const router = createRouter({
       path: "/orders/success/:id",
       component: OrderSuccess,
       props: route => ({
-      orderId: route.params.id,
-     orderType: route.query.type
+        orderId: route.params.id,
+        orderType: route.query.type
       }),
       meta: { requiresAuth: true },
     },
     {
       path: "/orders/:id",
       name: 'OrderDetail',
-      component: () =>import('@/views/OrderDetailView.vue'),
+      component: () => import('@/views/OrderDetailView.vue'),
       props: route => ({
         orderId: route.params.id,
         orderType: route.query.type
@@ -151,7 +151,7 @@ const router = createRouter({
       path: "/payment-gateway",
       name: "PaymentGateway",
       component: PaymentGateway,
-      meta: { requiresAuth: true } 
+      meta: { requiresAuth: true }
     }
   ],
 })
