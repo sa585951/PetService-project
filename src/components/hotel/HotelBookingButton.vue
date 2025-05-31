@@ -34,7 +34,7 @@
 .cta span {
   padding-bottom: 7px;
   letter-spacing: 4px;
-  font-size: 15px;
+  font-size: 18px;
   padding-right: 15px;
 }
 

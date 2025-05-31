@@ -81,11 +81,13 @@
                 style="height: 200px; object-fit: cover;">
               <div class="card-body">
                 <h5 class="card-title">{{ hotel.name }}</h5>
-                <div class="mb-2">
-                  <img v-for="i in hotel?.rating" :key="'light_' + i" src="/Hotel/star_light.png" class="star me-1">
-                  <img v-for="i in 5 - (hotel?.rating || 0)" :key="'gray_' + i" src="/Hotel/star_gray.png"
-                    class="star me-1">
-                  <span class="ms-2">{{ getRating(hotel.rating) }}</span>
+                <div class="d-flex  align-items-center mb-2">
+                  <div>
+                    <img v-for="i in hotel?.rating" :key="'light_' + i" src="/Hotel/star_light.png" class="star">
+                    <img v-for="i in 5 - (hotel?.rating || 0)" :key="'gray_' + i" src="/Hotel/star_gray.png"
+                      class="star">
+                  </div>
+                  <div class="ratingbox">{{ getRating(hotel.rating) }}</div>
                 </div>
               </div>
             </div>
@@ -193,12 +195,37 @@ onMounted(async () => {
 }
 
 .star {
-  width: 20px;
-  height: 20px;
+  width: 23px;
+  height: 23px;
 }
 .logo{
     width: 100px;
     height: 100px;
     margin-bottom: 10px;
 }
+/* 評分標籤 */
+    .ratingbox{
+        margin-left: 10px;
+        /* background-color: rgb(155, 97, 27); */
+        background-color: #96b848;
+        width: 45px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        border-radius: 10px 10px 10px 0px;
+    }
+    .btn-success {
+        background-color: #8aac3b;
+        border-color: #8aac3b;
+    }
+    .btn-success:hover {
+        background-color: #7c9e2d;
+        border-color: #7c9e2d;
+    }
+    .btn-success:active {
+        background-color: #6a8a1f;
+        border-color: #6a8a1f;
+    }
 </style>

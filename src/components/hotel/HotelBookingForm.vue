@@ -11,14 +11,14 @@
           <div class="modal-body" >
             
             <div>
-                <label for="">訂購姓名: {{props.userName}}</label>
-                <label for="">旅館名稱 : {{hotel.name}}</label>
-                <label for="">預訂房型 : {{props.roomName}}</label>
-                <label for="">房間單價 : {{props.price}} 元</label>
-                <label for="">日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
-                <label for="">房間數 : {{requiredRooms}} 間</label>
+                <label>訂購姓名: {{props.userName}}</label>
+                <label>旅館名稱 : {{hotel.name}}</label>
+                <label>預訂房型 : {{props.roomName}}</label>
+                <label>房間單價 : {{props.price}} 元</label>
+                <label>日期 : {{checkInDate}} ~ {{checkOutDate}}</label>
+                <label>房間數 : {{requiredRooms}} 間</label>
                 
-                <label class="mb-1">備註 (100字以內) :</label>
+                <label>備註 (100字以內) :</label>
 
                 <textarea ref="messageInput" v-model="AdditionalMessage" @input="checkLength()" rows="4"></textarea>
                 
@@ -162,11 +162,12 @@ function saveOrderInfo() {
         left: 50%;
         transform: translate(-50%, -50%);
         width: 300px;
-        height: 500px;
+        height: 600px;
     }
 
     label {
         display: block;
+        margin-bottom: 3px;
     }
 
     .btn {
