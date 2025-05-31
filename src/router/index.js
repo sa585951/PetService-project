@@ -5,8 +5,6 @@ import Home from '../views/HomeView.vue'
 import News from '../views/NewsView.vue'
 import NewsDtail from '../views/NewsDetailView.vue'
 import QA from '../views/QAView.vue'
-import About from '../views/AboutView.vue'
-import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
 import HotelDetail from '../views/HotelDetailView.vue'
 import LoginView from '@/views/account/LoginView.vue'
@@ -50,14 +48,6 @@ const router = createRouter({
       path: "/qa",
       name: 'QA',
       component: QAView,
-    },
-    {
-      path: "/about",
-      component: About,
-    },
-    {
-      path: "/contact",
-      component: Contact,
     },
     {
       path: "/hotel",

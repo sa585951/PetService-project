@@ -171,9 +171,10 @@ function loadDashboardOrders(){
   orderLoading.value = true;
   orderStore.fetchOrders({
     memberId: authStore.memberId,
-    keywords: '',
+    keyword: '',
     orderType: 'all',
-    sortBy:'date_asc',
+    orderStatus: 'all',
+    sortBy:'date_desc',
     page: currentPage.value,
     pageSize
   }).then(() => {
