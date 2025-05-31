@@ -92,10 +92,12 @@
             <hr>
 <!-- 留言評論區 -->
                 <div>
-                    <Reviews :review="review" :key="review.id"></Reviews> 
-                    <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id">撰寫評語</HotelReviewForm>
-                </div>
+                    <div class="ReviewForm">
+                        <h5>會員評語</h5>
+                        <HotelReviewForm :memberId="Number(memberId)" :hotelId="hotels[0].id" :unreviewedOrderIds="unreviewedOrderIds" v-if="isVisible" @refresh-data="handleReviewSubmitted" :key="unreviewedOrderIds.join('-')">撰寫評語</HotelReviewForm></div>
 
+                        <Reviews :review="review" :key="review.id"></Reviews> 
+                </div>
             </div>
         </div>
     </div>
@@ -135,18 +137,22 @@
     // let checkInDate = route.query.checkInDate
     // let checkOutDate = route.query.checkOutDate
     const petCount = route.query.petCount
-    console.log(hotelId,checkInDate,checkOutDate,petCount);
+    // console.log(hotelId,checkInDate,checkOutDate,petCount);
 
     const memberId = ref('')   //要傳子元件的會員資料
     const userName = ref('')
     const authStore = useAuthStore();
+    const isVisible = ref(false);  //控制評論按鈕顯示
+    const unreviewedOrderIds = ref([]);
+
     onMounted(async () => {
         await loadHotelDetail();
 //會員資料
     if (authStore.isLoggedIn) {
         memberId.value = authStore.memberId;
         userName.value = authStore.userName;
-        console.log('memberId', memberId.value, 'userName', userName.value);
+        // console.log('memberId', memberId.value, 'userName', userName.value,"hotelId",hotelId);
+        await checkReview();
     }
     })
 
@@ -173,7 +179,7 @@
         HotelDetailQty.value = datas.hotelDetailQty;
         review.value = datas.review;
         requiredRooms.value = datas.hotelDetailQty[0].requiredRooms;
-        console.log("1",hotels.value,"2", HotelDetailQty.value,"3", review.value);
+        // console.log("1",hotels.value,"2", HotelDetailQty.value,"3", review.value);
         // 確保資料存再再初始化大圖
     if (hotels.value.length > 0) {
         selectedImage.value = `/Hotel/${hotels.value[0].image_1}`;
@@ -220,10 +226,30 @@ function getRoomQty(hotel, roomName) {
             return "普通";
         }
     }
-
-//評論留言區
-
     
+//評論留言區
+    const checkReview = async () => {
+        const API_URL = `${import.meta.env.VITE_API_BaseURL}/Hotel/CheckReview`;
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({
+                MemberId: Number(memberId.value),
+                HotelId: Number(hotelId),
+            })
+        })
+        const data = await response.json();
+        isVisible.value = !data.allReviewed;
+        unreviewedOrderIds.value = data.unreviewedOrderIds;
+        // console.log(data.allReviewed,unreviewedOrderIds.value);
+    }
+    
+//子元件送出評論後更新畫面
+    function handleReviewSubmitted() {
+        // console.log('父元件接收到 review-submitted 事件');
+        loadHotelDetail();  // 重新載入詳細資料
+        checkReview();      // 檢查是否還有未評論的訂單
+    }
 </script>
     
 <style scoped>
@@ -265,5 +291,12 @@ function getRoomQty(hotel, roomName) {
         align-items: center;
         color: #fff;
         border-radius: 10px 10px 10px 0px;
+    }
+
+    .ReviewForm {
+        display: flex;
+        justify-content: space-between; /* 讓左右元素分開 */
+        align-items: center;            /* 垂直置中 */
+        /* margin-bottom: 5px; */
     }
 </style>

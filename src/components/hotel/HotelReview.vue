@@ -1,5 +1,5 @@
 <template>
-<div class="d-flex">
+<div class="review-grid">
     <div class="review-block" v-for="review in ReviewLines" :key="review.id">
         <div class="row">
             <div class="col-4">
@@ -13,7 +13,7 @@
                 </div>
             </div>
             <div class="star-box">
-                {{ review.roomtype }}
+                <!-- {{ review.roomtype }} -->
                 <img v-for="i in Math.min(review.rating || 0, 5)" :key="'light_' + i" class="star" src="/Hotel/star_light.png"/>
                 <img v-for="i in 5 - Math.min(review.rating || 0, 5)" :key="'gray_' + i" class="star" src="/Hotel/star_gray.png"/>
             </div>
@@ -33,12 +33,11 @@
     const props = defineProps({
         review: Object, // 單筆評論
     });
-console.log("子元件",props.review);
 
-console.log(props.review[0].content);
-console.log(props.review[0].memberName);
-console.log(props.review[0].createdAt);
-console.log(props.review[0].updatedAt);
+// console.log(props.review[0].content);
+// console.log(props.review[0].memberName);
+// console.log(props.review[0].createdAt);
+// console.log(props.review[0].updatedAt);
 
 // 將每筆評論加上分行後的 content（lines）
     const ReviewLines = computed(() => {
@@ -62,13 +61,18 @@ console.log(props.review[0].updatedAt);
 </script>
 
 <style scoped>
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
 .review-block {
-  margin-right: 1rem;
-  margin-bottom: 1rem;
   padding: 1rem;
-  background-color: #f5f5f5;
+  background-color: #fafafa;
+  border: 1px solid rgb(228, 180, 117);
   border-radius: 8px;
-  width: 31.5%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .review-time{

@@ -1,11 +1,5 @@
 <template>
-  <div
-    class="modal fade"
-    id="userNoticeModal"
-    tabindex="-1"
-    aria-labelledby="userNoticeLabel"
-    ref="modal"
-  >
+  <div class="modal fade" id="userNoticeModal" tabindex="-1" aria-labelledby="userNoticeLabel" ref="modal">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="pet-room-modal">
@@ -201,7 +195,23 @@ defineExpose({ show })
   border-radius: 1px;
 }
 .btn {
-  background-color: rgb(235, 207, 170);
-}
+        font-size: 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.2s ease;
+        background-color: rgb(228, 187, 134);
+        color: rgb(88, 50, 3);
+        border: none;
+    }
+
+    .btn:hover {
+        background-color: rgb(200, 160, 110); /* 深一點 */
+    }
+
+    .btn:active {
+        background-color: rgb(180, 140, 100);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 
 </style>
