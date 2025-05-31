@@ -100,7 +100,7 @@
                           'bi bi-box': o.orderType !== '散步' && o.orderType !== '住宿'
                         }"
                       ></i>
-                         <span class="fw-bold me-3">訂單 #{{ o.id }}</span>
+                         <span class="fw-bold me-3">訂單 #100{{ o.id }}</span>
                       <div>
                         <span class="badge me-3" :class="{
                           'bg-warning text-dark': o.orderStatus === '未付款',
@@ -171,9 +171,10 @@ function loadDashboardOrders(){
   orderLoading.value = true;
   orderStore.fetchOrders({
     memberId: authStore.memberId,
-    keywords: '',
+    keyword: '',
     orderType: 'all',
-    sortBy:'date_asc',
+    orderStatus: 'all',
+    sortBy:'date_desc',
     page: currentPage.value,
     pageSize
   }).then(() => {
@@ -250,6 +251,8 @@ const setActiveTab = (tabName) => {
 
 const fetchProfile = async () => {
   const token = localStorage.getItem("token");
+  console.log('token from localStorage:', token, typeof token);
+  console.log('Current role:', authStore.role);
   
   if (!token) {
     router.push('/login');
@@ -293,7 +296,7 @@ const fetchProfile = async () => {
       router.push('/login');
     }
     authStore.userName = null;
-    authStore.isLoggedIn(false);
+    authStore.isLoggedIn=false;
   }finally{
     console.log('個人資料加載完成');
     profileLoading.value = false;

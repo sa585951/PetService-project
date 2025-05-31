@@ -7,7 +7,15 @@ function getItemKeyWalk(item){
 }
 
 function getItemKeyHotel(item){
-    return `${item.hotelId}-${item.checkIn}-${item.checkOut}`;
+    return `${item.hotelId}-${item.roomDetailId}-${item.checkIn}-${item.checkOut}`;
+}
+
+export function getNights(item) {
+    const checkIn = new Date(item.backenedItem.checkIn);
+    const checkOut = new Date(item.backenedItem.checkOut);
+    const diffMs = checkOut - checkIn;
+    const days = Math.floor(diffMs /(1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
 }
 
 export const useCartStore = defineStore('cart',{
@@ -23,9 +31,16 @@ export const useCartStore = defineStore('cart',{
             state.hotelcartitems.reduce((t,i)=>t+i.backenedItem.roomQty,0),
 
 
-        cartTotalPrice:(state)=>
-            state.walkcartitems.reduce((total,item) => total + item.quantity * item.price, 0)+
-            state.hotelcartitems.reduce((t,i) => t+ i.backenedItem.roomQty *i.pricePerRoom,0),
+        cartTotalPrice:(state)=>{
+            const walkTotal = state.walkcartitems.reduce((sum,i) => sum + i.quantity * i.price, 0);
+
+            const hotelTotal = state.hotelcartitems.reduce((sum,i) => {
+                const nights = getNights(i);
+                return sum + nights * i.backenedItem.roomQty * i.pricePerRoom;
+            }, 0);
+
+            return walkTotal + hotelTotal;
+        },
 
         walkCartItems: (state) => state.walkcartitems,
 
@@ -93,16 +108,17 @@ export const useCartStore = defineStore('cart',{
         },
 
         addItemToHotelCart(item){
-            const existingItem = this.hotelcartitems.find(i => getItemKeyHotel(i.backenedItem) === getItemKeyHotel(item.backenedItem));
-            if(existingItem){
-                existingItem.backenedItem.roomQty += item.backenedItem.roomQty;
+            const key = getItemKeyHotel(item.backenedItem);
+            const exists = this.hotelcartitems.find(i => getItemKeyHotel(i.backenedItem) === key);
+            if(exists){
+                exists.backenedItem.roomQty += item.backenedItem.roomQty;
             }else{
                 this.hotelcartitems.push(item);
             }
         },
 
         removeHotelItemByKey(key){
-            this.hotelcartitems = this.hotelcartitems.filter(item => getItemKeyHotel(item) !== key);
+            this.hotelcartitems = this.hotelcartitems.filter(item => getItemKeyHotel(item.backenedItem) !== key);
         },
 
         prepareHotelOrderPayload(){
@@ -122,7 +138,7 @@ export const useCartStore = defineStore('cart',{
             try{
                 const payload = this.prepareHotelOrderPayload();
                 const token = useAuthStore().token;
-                const response = await axios.post("api/order/hotel/create",payload,{
+                const response = await axios.post("/api/order/hotel/create",payload,{
                     headers:{Authorization:`Bearer ${token}`}
                 });
                 this.hotelcartitems =[];

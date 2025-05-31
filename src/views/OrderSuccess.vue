@@ -1,55 +1,52 @@
 <template>
-        <div class="container">
-            <h3>訂單完成</h3>
-            <Transition name="fade">
-            <OrderDetail :order-data="orderDetail" :order-type="orderType" v-if="!isLoading && orderDetail" />
-            </Transition>
-        </div>
+  <div class="container">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <h3 class="page-title">訂單完成</h3>
+    </div>
+    <Transition name="fade">
+      <OrderDetail :order-id="orderId" :order-data="orderDetail" :order-type="orderType"
+        v-if="!isLoading && orderDetail" />
+    </Transition>
+  </div>
 </template>
-    
-<script setup >
-    import { onMounted,ref,computed } from 'vue';
-    import { useRoute } from 'vue-router';
-    import axios from 'axios';
-    import Swal from 'sweetalert2';
-    import { useAuthStore } from '@/stores/authStore';
-    import OrderDetail from '@/components/OrderDetail.vue';
 
-    const authStore = useAuthStore();
-    const route = useRoute();
-    const orderId = route.params.id;
-    const orderType = computed(() => route.query.type || 'Walk'); // 預設為 Walk
+<script setup>
+import { onMounted, ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useAuthStore } from '@/stores/authStore';
+import OrderDetail from '@/components/OrderDetail.vue';
 
-    const orderDetail = ref(null);
-    const isLoading = ref(true);
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
 
-    function normalizeType(type) {
-        if (type === '散步' || type === 'Walk') return 'Walk';
-        if (type === '住宿' || type === 'Hotel') return 'Hotel';
-     return '';
-    }
-    onMounted(async () => {
+const orderId = route.params.id;
+const orderType = computed(() => route.query.type?.toString().toLowerCase() || 'walk'); // 預設為 Walk
+
+const orderDetail = ref(null);
+const isLoading = ref(true);
+
+onMounted(async () => {
+  Swal.fire({
+    title: '處理中',
+    text: '正在送出訂單，請稍後...',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => Swal.showLoading()
+  });
   try {
-     Swal.fire({
-      title: '處理中',
-      text: '正在送出訂單，請稍後...',
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      didOpen: () => Swal.showLoading()
-    });
 
-    const normalizedType = normalizeType(orderType.value).toLowerCase();
-    const apiUrl = `/api/order/${normalizedType}/${orderId}`
-    const res = await axios.get(apiUrl,{
-        headers: {
-            Authorization: `Bearer ${authStore.token}`
-        }
+
+    const res = await axios.get(`/api/order/${orderType.value}/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${authStore.token}`
+      }
     });
     orderDetail.value = res.data;
-
     Swal.close();
-
     Swal.fire({
       icon: 'success',
       title: '訂單送出成功!',
@@ -69,24 +66,45 @@
   }
 });
 </script>
-    
+
 <style scoped>
 .container {
   padding: 20px;
 }
+
 ul {
   padding-left: 1rem;
 }
+
 li {
   margin-bottom: 15px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-.fade-enter-active, .fade-leave-active {
+
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
-.fade-enter-from, .fade-leave-to {
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
+.page-header {
+  padding: 16px 24px;
+  background-color: #f9f9f9;
+  border-left: 6px solid #ACC572;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #5a3e00;
+}
+
 </style>

@@ -1,35 +1,43 @@
 <template>
     <div class="container mt-5">
-        <div v-if="newsItem">
-            <h2>{{ newsItem.title }}</h2>
-            <p class="mt-3">{{ newsItem.content }}</p>
+        <div v-if="loading" class="text-center">
+            <p>載入中...</p>
+        </div>
+        <div v-else-if="error" class="text-danger text-center">
+            <p>發生錯誤：{{ error }}</p>
         </div>
         <div v-else>
-            <p>⚠️ 無法找到該公告。</p>
+            <h2 class="mb-3">{{ news.title }}</h2>
+            <p>{{ news.content }}</p>
         </div>
-        <router-link to="/news" class="btn btn-outline-primary mt-4">返回公告列表</router-link>
     </div>
 </template>
 
 <script>
-import { newsData } from '@/data/newsData';
+import axios from 'axios';
 
 export default {
+    name: 'NewsDetail',
     data() {
         return {
-            newsItem: null
+            news: {},
+            loading: true,
+            error: null,
         };
     },
-    created() {
-        const id = Number(this.$route.params.id);
-        for (const category of newsData) {
-            const found = category.items.find(item => item.id === id);
-            if (found) {
-                this.newsItem = found;
-                break;
-            }
-        }
-    }
+    mounted() {
+        const id = this.$route.params.id;
+        axios.get(`https://localhost:7089/api/News/GetById/${id}`)
+            .then(response => {
+                this.news = response.data;
+                this.loading = false;
+            })
+            .catch(error => {
+                console.error('載入詳細資料失敗:', error);
+                this.error = '找不到該公告或伺服器錯誤';
+                this.loading = false;
+            });
+    },
 };
 </script>
 <style scoped></style>

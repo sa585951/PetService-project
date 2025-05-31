@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="text-end">
-        <button class="btn btn-sm btn-primary" @click="viewDetail">
+        <button class="btn btn-sm btn-detail" @click="viewDetail">
           查看詳細
         </button>
       </div>
@@ -73,7 +73,9 @@ const formatDate = val => {
 <style scoped>
 .badge {
   padding: 0.5em 0.75em;
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 .list-group-item {
   border: none;               /* 只有下方做分隔線 */
@@ -86,5 +88,17 @@ const formatDate = val => {
 .list-group-item:hover {
   background-color: #f8f9fa;
 }
-
+.card{
+  transition: transform 0.2s ease, box-shadow 0.2s ease;  
+}
+.card:hover {
+  transform: scale(1.01);
+  box-shadow: 0px 0px 10px 2px rgb(231, 203, 167);
+  background-color: #fcfcfc;
+}
+.btn-detail{
+  background-color: #879a5a;
+  color: white;
+  font-weight: bold; 
+}
 </style>

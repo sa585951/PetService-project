@@ -5,8 +5,6 @@ import Home from '../views/HomeView.vue'
 import News from '../views/NewsView.vue'
 import NewsDtail from '../views/NewsDetailView.vue'
 import QA from '../views/QAView.vue'
-import About from '../views/AboutView.vue'
-import Contact from '../views/ContactView.vue'
 import Hotel from '../views/HotelView.vue'
 import HotelDetail from '../views/HotelDetailView.vue'
 import LoginView from '@/views/account/LoginView.vue'
@@ -17,16 +15,17 @@ import ForgotPasswordView from '@/views/account/ForgotPasswordView.vue'
 import { useAuthStore } from '../stores/authStore.js'
 import ProfileView from '@/views/member/ProfileView.vue'
 import PetView from '@/views/member/PetView.vue'
-import AddPetView from '@/views/member/AddPetView.vue'
-import EditPetView from '@/views/member/EditPetView.vue'
+
 import RegisterView from '@/views/account/RegisterView.vue'
 import ResetPasswordView from '@/views/account/ResetPasswordView.vue'
 import OrdersView from '@/views/member/OrdersView.vue'
 import GoogleSignupSupplementView from '@/views/member/GoogleSignupSupplementView.vue'
+import QAView from '../views/QAView.vue'
 import CartView from '@/views/CartView.vue'
 import Payment from '@/views/Payment.vue'
 import OrderSuccess from '@/views/OrderSuccess.vue'
 import MemberSourceChart from '@/views/MemberSourceChart.vue'
+import PaymentGateway from '@/views/PaymentGateway.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,15 +46,8 @@ const router = createRouter({
     },
     {
       path: "/qa",
+      name: 'QA',
       component: QA,
-    },
-    {
-      path: "/about",
-      component: About,
-    },
-    {
-      path: "/contact",
-      component: Contact,
     },
     {
       path: "/hotel",
@@ -110,16 +102,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/addpet",
-      component: AddPetView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/editpet",
-      component: EditPetView,
-      meta: { requiresAuth: true },
-    },
-    {
       path: "/resetpassword",
       component: ResetPasswordView,
     },
@@ -146,15 +128,15 @@ const router = createRouter({
       path: "/orders/success/:id",
       component: OrderSuccess,
       props: route => ({
-      orderId: route.params.id,
-     orderType: route.query.type
+        orderId: route.params.id,
+        orderType: route.query.type
       }),
       meta: { requiresAuth: true },
     },
     {
       path: "/orders/:id",
       name: 'OrderDetail',
-      component: () =>import('@/views/OrderDetailView.vue'),
+      component: () => import('@/views/OrderDetailView.vue'),
       props: route => ({
         orderId: route.params.id,
         orderType: route.query.type
@@ -163,7 +145,14 @@ const router = createRouter({
     {
       path: "/membersourcechart",
       component: MemberSourceChart,
+      meta: { requiresAuth: true },
     },
+    {
+      path: "/payment-gateway",
+      name: "PaymentGateway",
+      component: PaymentGateway,
+      meta: { requiresAuth: true }
+    }
   ],
 })
 

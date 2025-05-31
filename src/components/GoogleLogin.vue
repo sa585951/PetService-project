@@ -21,6 +21,7 @@
 import { ref,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -112,10 +113,6 @@ const handleGoogleResponse = async (response) => {
   console.log("檢查 showRenderedButton 變數:", showRenderedButton);
   console.log("檢查 showRenderedButton 的類型:", typeof showRenderedButton); // 也印出它的類型
 
-  // 如果 Rendered Button 顯示了，成功登入後把它隱藏起來
-  showRenderedButton.value = false; // 隱藏 Rendered Button 的容器
-
-
   // ****** 【修改】: 在呼叫後端 API 前啟動 Store 的全域載入狀態和打字特效 ******
   authStore.startLoading(); // 呼叫 Store 的 Action
 
@@ -154,7 +151,19 @@ const handleGoogleResponse = async (response) => {
       router.push("/googlesignupsupplement"); // 使用 router 實例進行導航
     } else {
       router.push("/memberdashboard"); // 使用 router 實例進行導航
+      console.log('Login successful. Data:', data);
+      Swal.fire({
+        icon: 'success',
+        title: '登入成功',
+        text: '歡迎回來，' + data.userName,
+        timer: 2000,
+        showConfirmButton: false
+      })
     }
+    
+    // 如果 Rendered Button 顯示了，成功登入後把它隱藏起來
+    showRenderedButton.value = false; // 隱藏 Rendered Button 的容器
+
   } catch (err) {
     console.error("登入失敗", err);
     alert(`Google 登入失敗: ${err.message || '未知錯誤'}`);

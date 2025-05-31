@@ -1,5 +1,7 @@
 // src/stores/authStore.js（或 authStore.ts）
 import { defineStore } from 'pinia'
+import { jwtDecode } from 'jwt-decode';
+import Swal from 'sweetalert2';
 
 
 // 將打字特效需要的變數定義在 Store 外部，以便 Actions 可以共用它們
@@ -14,6 +16,7 @@ export const useAuthStore = defineStore('auth', {
     userName: null, // 初始狀態為 null 或 ''
     isLoggedIn: false, // 初始狀態為 false
     memberId: null,
+    role: null,
 
     isLoggingIn: false,
     loginStatusText: '',
@@ -21,19 +24,27 @@ export const useAuthStore = defineStore('auth', {
 
   // === 2. 定義 Actions ===
   actions: {
-    // 修改了方法名稱為 login，更符合語意
-    // 如果你在登入頁面是呼叫 setLoginState，則那邊也需要同步修改
     login({ userName, token, memberId }) { // 接收一個包含 userName 和 token 的物件
-      console.log('Executing login action:', { userName, token, memberId }); // 添加 log
+      console.log('Executing login action:', {
+      userName,
+      token,
+      memberId,
+      tokenType: typeof token, 
+  });
+
+      const tokenString = typeof token === 'object' && token.result ? token.result : token;
+
       this.isLoggedIn = true;
       this.userName = userName;
-      this.token = token;
+      this.token = tokenString;
       this.memberId = memberId;
+      this.role = this.getRole(tokenString);
 
       // 使用 localStorage 儲存個別項目
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', tokenString);
       localStorage.setItem('userName', userName);
       localStorage.setItem('memberId', memberId);
+      localStorage.setItem('role', this.role);
 
       this.stopLoading();
     },
@@ -44,37 +55,86 @@ export const useAuthStore = defineStore('auth', {
       this.userName = null; // 登出時狀態改回 null 更符合「沒有值」的語意
       this.token = null; // 登出時狀態改回 null
       this.memberId = null;
+      this.role = null;
       
       // 從 localStorage 移除個別項目
       localStorage.removeItem('token');
       localStorage.removeItem('userName');
       localStorage.removeItem('memberId');
+      localStorage.removeItem('role');
       this.stopLoading();
     },
 
     initialize() {
-      console.log('Executing initialize action'); // 添加 log
+      console.log('Executing initialize action');
+    
       const token = localStorage.getItem('token');
-      const userName = localStorage.getItem('userName'); // 注意這裡的變數名要跟 localStorage key 對應
+      const userName = localStorage.getItem('userName');
       const memberId = localStorage.getItem('memberId');
 
-      if (token && userName) {
-        console.log('Found state in localStorage:', { token, userName , memberId}); // 添加 log
-        this.token = token;
-        this.userName = userName;
-        this.isLoggedIn = true;
-        this.memberId = memberId;
-        console.log('登入狀態還原成功');
-      } else {
-         console.log('No state found or state incomplete in localStorage'); // 添加 log
-        // 如果 localStorage 沒有完整的狀態，也需要清除 store 的狀態
-        this.token = null;
-        this.userName = null;
-        this.isLoggedIn = false;
-        this.memberId = null;
-        console.log('尚未登入或資料遺失，狀態已清空');
+      console.log('Token from localStorage:', typeof token, token)
+
+      if (!token || !userName) {
+        console.log('尚未登入，略過登入狀態還原');
+        return;
+      }
+
+      try {
+        if (token && userName) {
+          const decoded = jwtDecode(token); // token格式
+          //token校期
+          if(decoded.exp && Date.now() >= decoded.exp * 1000) {
+            throw new Error('Token 已過期');
+          }
+
+          const role = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+
+          this.token = token;
+          this.userName = userName;
+          this.isLoggedIn = true;
+          this.memberId = memberId;
+          this.role = role;
+
+          console.log('登入狀態還原成功');
+        } else {
+          throw new Error('token or userName is missing');
+        }
+      } catch (error) {
+        console.warn('Token 驗證失敗，清除登入狀態', error);
+        
+        // 只有在特定錯誤情況下才顯示提示給用戶
+        if (error.message === 'Token expired') {
+          // Token 過期 - 用戶原本是登入狀態，需要提示
+          Swal.fire({
+            icon: 'warning',
+            title: '登入已過期',
+            text: '您的登入已過期，請重新登入',
+            confirmButtonText: '確定',
+            confirmButtonColor: '#3085d6'
+          });
+        } else if (error.message !== 'token or userName is missing') {
+          // Token 格式錯誤或其他異常 - 但排除正常的「未登入」狀態
+          Swal.fire({
+            icon: 'error',
+            title: '登入狀態異常',
+            text: '登入資料有誤，請重新登入',
+            confirmButtonText: '確定',
+            confirmButtonColor: '#3085d6'
+          });
+        }
+        this.logout(); // 清除所有狀態
       }
     },
+    getRole(token) {
+      try {
+        const decoded = jwtDecode(token);
+        console.log('Decoded JWT:', decoded);
+        return decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+      } catch {
+        return null;
+      }
+    },
+
     // === 【新增】全域載入控制 Action ===// 啟動載入狀態和文字特效
 startLoading(initialText = '處理中...') {
  this.isLoggingIn = true;
