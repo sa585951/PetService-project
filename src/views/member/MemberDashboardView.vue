@@ -100,7 +100,7 @@
                           'bi bi-box': o.orderType !== '散步' && o.orderType !== '住宿'
                         }"
                       ></i>
-                         <span class="fw-bold me-3">訂單 #{{ o.id }}</span>
+                         <span class="fw-bold me-3">訂單 #100{{ o.id }}</span>
                       <div>
                         <span class="badge me-3" :class="{
                           'bg-warning text-dark': o.orderStatus === '未付款',
