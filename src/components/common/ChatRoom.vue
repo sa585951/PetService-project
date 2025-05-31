@@ -150,7 +150,6 @@ export default {
         { label: '訂單管理', view: 'OrderManagement' },
         { label: '立即散步', view: 'WalkView' },
         { label: '寵物住宿', view: 'HotelView' },
-        { label: '常見問題', view: 'FAQ' }
       ],
       currentUserEmail: '',  // ✅ email 作為 sender
       currentUserName: '',   // ✅ 顯示用名
@@ -530,7 +529,6 @@ export default {
         "訂單管理": "了解訂單狀況，請點擊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='OrderManagement'>前往訂單管理</button></div>",
         "立即散步": "預約散步服務：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='WalkView'>選擇遛寵員</button></div>",
         "寵物住宿": "更多住宿資訊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='HotelView'>旅館介紹</button></div>",
-        "常見問題": "請點擊查看常見問題：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='FAQ'>查看 FAQ</button></div>",
         "客服協助": "<i class='text-muted'>- 開始對話 -</i>"
       };
 
