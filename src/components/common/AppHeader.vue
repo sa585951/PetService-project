@@ -34,12 +34,12 @@
             </li>
             <li class="nav-item">
               <router-link to="/news" class="nav-link">
-                <i class="fa-solid fa-rss"></i> 最新公告
+                <i class="fa-solid fa-bullhorn"></i> 最新公告
               </router-link>
             </li>
             <li class="nav-item">
               <router-link to="/qa" class="nav-link">
-                <i class="fa-solid fa-question"></i> 常見問題
+                <i class="fa fa-circle-question"></i> 常見問題
               </router-link>
             </li>
             <li class="nav-item">
@@ -167,8 +167,9 @@ const logout = () => {
   margin-right: 8px;
   width: 16px;
 }
-.logo{
-    width: 50px;
-    height: 50px;
+
+.logo {
+  width: 50px;
+  height: 50px;
 }
 </style>
