@@ -9,8 +9,7 @@
             <div class="row rounded-lg overflow-hidden shadow h-100">
               <div class="col-4 px-0 user-list bg-light" v-if="userRole === 'employee'">
                 <div class="input-group input-group-sm">
-                  <input v-model="searchQuery" type="text" class="form-control" placeholder="搜尋會員名稱" />
-                  <button class="btn btn-outline-secondary">搜尋</button>
+                  <input v-model="searchQuery" type="text" class="form-control m-1" placeholder="搜尋會員名稱" />
                 </div>
                 <div class="bg-gray px-1">
                   <button class="talklist btn btn-sm" @click="showActiveList = !showActiveList">
@@ -96,10 +95,12 @@
                 
 
                 <div class="bot-options px-3 py-2 bg-white" v-if="userRole === 'employee'">
-                  <button class="btn btn-sm btn-outline-secondary" @click="endConversation">結束對話</button>
+                  <button class="btn btn-sm btn-outline-secondary me-2" @click="endConversation">結束對話</button>
+                  <button class="btn btn-sm btn-outline-secondary" @click="downloadHistory">
+                    匯出紀錄
+                  </button>
                 </div>
-                
-
+              
                 <div class="chat-input d-flex p-2 border-top">
                   <textarea class="form-control message-type"
                             :placeholder="inputPlaceholder"
@@ -129,7 +130,7 @@ import DOMPurify from 'dompurify';
 import * as signalR from "@microsoft/signalr";
 import { jwtDecode } from 'jwt-decode';
 import { isReadonly } from 'vue';
-
+import dayjs from 'dayjs';
 
 export default {
   name: "ChatRoom",
@@ -149,7 +150,6 @@ export default {
         { label: '訂單管理', view: 'OrderManagement' },
         { label: '立即散步', view: 'WalkView' },
         { label: '寵物住宿', view: 'HotelView' },
-        { label: '常見問題', view: 'FAQ' }
       ],
       currentUserEmail: '',  // ✅ email 作為 sender
       currentUserName: '',   // ✅ 顯示用名
@@ -228,8 +228,8 @@ export default {
       },
 
      async loadEmployeeSessions() {
-      this.users = []; // 先清空 → 強制觸發 reactivity
-      this.endedUsers = [];
+      // this.users = []; // 先清空 → 強制觸發 reactivity
+      // this.endedUsers = [];
 
       const token = localStorage.getItem("token");
       const res = await fetch("/api/Chat/GetActiveSessions", {
@@ -377,12 +377,41 @@ export default {
       }
     },
     
+    downloadHistory() {
+      if (!this.messages.length) {
+        alert("目前沒有聊天紀錄可匯出");
+        return;
+      }
+
+      const formatted = this.messages.map(m => {
+        const time = dayjs(m.fSendTime).format("YYYY/MM/DD HH:mm");
+        const sender = m.sender;
+        const text = m.text.replace(/<[^>]+>/g, ''); // 去掉 HTML 標籤（淨化訊息）
+        return `[${time}] ${sender}: ${text}`;
+      }).join('\n');
+
+      const blob = new Blob([formatted], { type: "text/plain;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      const name = this.targetUser?.name?.replace(/\s+/g, '_') || '系統小幫手';
+      link.download = `聊天紀錄-${name}-${dayjs().format("YYYYMMDD-HHmmss")}.txt`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      this.targetUser = null;
+      this.targetUserId = null;
+      this.sessionId = null;
+      this.messages = [];
+      this.isReadOnly = false;
+      this.conversationEnded = false;
+    },
 
     onClickSend() {
       console.log("🟢 按下送出");
       this.sendMessage();
     },
-    
       async sendMessage() {
 
         this.messages = this.messages.filter(msg => {
@@ -500,7 +529,6 @@ export default {
         "訂單管理": "了解訂單狀況，請點擊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='OrderManagement'>前往訂單管理</button></div>",
         "立即散步": "預約散步服務：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='WalkView'>選擇遛寵員</button></div>",
         "寵物住宿": "更多住宿資訊：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='HotelView'>旅館介紹</button></div>",
-        "常見問題": "請點擊查看常見問題：<br><div class='text-center'><button class='goto-button btn btn-sm btn-warning' data-target='FAQ'>查看 FAQ</button></div>",
         "客服協助": "<i class='text-muted'>- 開始對話 -</i>"
       };
 
@@ -581,6 +609,12 @@ export default {
           console.error("❌ 無法傳送結束訊息：", err);
         }
       }
+      this.targetUser = null;
+      this.targetUserId = null;
+      this.sessionId = null;
+      this.messages = [];
+      this.isReadOnly = false;
+      this.conversationEnded = false;
     }
   }
 };
