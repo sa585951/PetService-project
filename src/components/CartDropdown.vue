@@ -8,7 +8,7 @@
     </div>
 
     <div class="cart-menu" v-show="show">
-      <p v-if="cartStore.walkcartitems.length === 0">購物車是空的</p>
+      <p v-if="cartStore.walkcartitems.length === 0 && cartStore.hotelcartitems.length === 0">購物車是空的</p>
       <div v-if="cartStore.walkcartitems.length > 0 && cartStore.hotelcartitems.length === 0">
         <div class="cart-item" v-for="item in cartStore.walkcartitems" :key="item.employeeServiceId + item.walkStart">
           <img :src="item.imageUrl" class="item-img" />
@@ -136,11 +136,12 @@ function formatDateTime(isoString) {
   text-align: right;
 }
 
-.btn-checkCart{
+.btn-checkCart {
   background-color: #Acc572;
   color: white;
 }
-.btn-checkCart:hover{
+
+.btn-checkCart:hover {
   background-color: #7a8c51;
   color: white;
 }
