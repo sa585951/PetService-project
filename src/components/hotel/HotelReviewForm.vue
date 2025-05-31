@@ -9,9 +9,9 @@
                     <div>
                         <Rating v-model="rating" ></Rating>
                         <div v-if="errors.rating" class="text-danger">{{ errors.rating }}</div>
-                        <label>撰寫評論:</label>
+                        <!-- <label>撰寫評語:</label> -->
 
-                        <textarea v-model="content" rows="4"></textarea>
+                        <textarea v-model="content" rows="6" placeholder="請輸入評語"></textarea>
                         <div v-if="errors.content" class="text-danger">{{ errors.content }}</div>
                         <div class="button-group">
                             <button class="btn btn-cancel" @click="closeModal">取消</button>
