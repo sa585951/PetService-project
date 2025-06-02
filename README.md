@@ -104,5 +104,5 @@ VITE_ECPAY_URL=你的ECPay服務URL
 
 如有任何問題或建議，請透過以下方式聯繫我們：
 
-- 電子郵件：[您的郵箱]
-- 專案 Issues：[GitHub Issues 頁面](https://github.com/sa585951/PetService-project/issues)
+- 電子郵件：[sa58595189@gmail.com]
+- 後端專案連結：https://github.com/sa585951/PetService_Project_Api
