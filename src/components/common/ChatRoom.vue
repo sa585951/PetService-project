@@ -1,4 +1,4 @@
-<template> 
+<template>  
   <div>
     <div class="chat-toggle-button" v-if="!showChat" @click="openChat">💬</div>
     <transition name="chatroom-fade">
