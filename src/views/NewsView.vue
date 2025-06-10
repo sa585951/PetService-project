@@ -11,7 +11,7 @@
                         <h2 class="accordion-header" :id="`heading${cIndex}-${index}`">
                             <button class="accordion-button" :class="{ collapsed: activeItem !== item.id }"
                                 type="button" @click="toggleItem(item.id)">
-                                <span class="text-dark">
+                                <span class="bold-title">
                                     {{ item.title }}
                                 </span>
                             </button>
@@ -74,8 +74,15 @@ export default {
 </script>
 
 <style scoped>
-.see-more-link {
-    cursor: pointer;
-    text-decoration: underline;
+.see-more-link.no-underline {
+    text-decoration: none !important;
+}
+
+.bold-title {
+    font-weight: bold;
+}
+
+.accordion-button {
+    font-weight: 600;
 }
 </style>

@@ -141,11 +141,13 @@ const handleGoogleResponse = async (response) => {
     const data = await res.json();
     localStorage.setItem("token", data.token);
     localStorage.setItem("userName", data.userName);
+    localStorage.setItem("memberId", data.memberId);
 
     const authStore = useAuthStore();
     authStore.login({
       userName: data.userName,
-      token: data.token
+      token: data.token,
+      memberId: data.memberId
     })
     if (data.needSupplement) {
       router.push("/googlesignupsupplement"); // 使用 router 實例進行導航
